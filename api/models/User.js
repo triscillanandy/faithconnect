@@ -1,37 +1,37 @@
-import mongoose from 'mongoose';
+import { DataTypes } from 'sequelize';
 import bcrypt from 'bcryptjs';
+import { sequelize } from '../config/database.js';
 
-// Define User schema using Mongoose
-const UserSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true,
-    lowercase: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+// Define User model
 
-// Hash the password before saving the user document
-UserSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
-});
-
-// Method to validate the password during login
-UserSchema.methods.isValidPassword = async function (password) {
-  return await bcrypt.compare(password, this.password);
-};
-
-// Create and export the User model
-const User = mongoose.model('User', UserSchema);
-export default User;
+  
+  const User = sequelize.define('User', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    email: {
+      type: DataTypes.STRING,
+      unique: true,
+      allowNull: false,
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+  }, {
+    timestamps: true,
+  });
+  
+  // Password hash hook
+  User.beforeCreate(async (user) => {
+    user.password = await bcrypt.hash(user.password, 10);
+  });
+  
+  User.prototype.isValidPassword = async function (password) {
+    return await bcrypt.compare(password, this.password);
+  };
+  
+  export default User;
+  

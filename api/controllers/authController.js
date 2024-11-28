@@ -1,9 +1,12 @@
+
+
+
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import User from '../models/User.js';
-
+import { randomBytes } from 'crypto';
 dotenv.config();
 
 // Configure Nodemailer
@@ -26,9 +29,7 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
+   
     // Generate a verification token
     const verificationToken = jwt.sign({ email }, process.env.JWT_SECRET, {
       expiresIn: '1d',
@@ -38,7 +39,7 @@ export const register = async (req, res) => {
     const newUser = await User.create({
       username,
       email,
-      password: hashedPassword,
+      password,
       dateOfBirth,
       isVerified: false,
       verificationToken,
@@ -55,8 +56,8 @@ export const register = async (req, res) => {
 
     await transporter.sendMail(mailOptions);
 
-  
-res.status(201).json({ message: 'User registered successfully', user: { email: newUser.email } });
+
+    res.status(201).json({ message: 'User registered successfully', user: { email: newUser.email } });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -89,37 +90,6 @@ export const verifyEmail = async (req, res) => {
 
 
 
-export const login = async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    // Find the user
-    const user = await User.findOne({ where: { email } });
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid email or password' });
-    }
-
-    if (!user.isVerified) {
-      return res.status(400).json({ message: 'Please verify your email before logging in.' });
-    }
-
-    // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid email or password' });
-    }
-
-    // Generate a JWT
-    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
-      expiresIn: '1h',
-    });
-
-    res.json({ token, user: { id: user.id, email: user.email, username: user.username } });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
 
 export const getProtectedData = async (req, res) => {
   try {
@@ -135,3 +105,50 @@ export const getProtectedData = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+export const login = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    // Find the user by email
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+    if (!user.isVerified) {
+      return res.status(400).json({ message: 'Please verify your email before logging in.' });
+    }
+
+    // Check if the password is correct
+    const isMatch = await user.isValidPassword(password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
+    // Generate a JWT token
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+      expiresIn: '1h',
+    });
+
+    res.json({ token, message: 'Login successful', user: { email: user.email } });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Fetch authenticated user's profile
+export const getMyProfile = async (req, res) => {
+  try {
+    // Fetch user data using the authenticated user's ID
+    const user = await User.findByPk(req.user.id, {
+      attributes: ['id', 'username', 'email', 'dateOfBirth', 'isVerified'], // Limit exposed fields
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    res.json({ user });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+

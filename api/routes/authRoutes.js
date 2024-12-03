@@ -1,21 +1,6 @@
-// import express from 'express';
-// import passport from 'passport';
-// import { register, login } from '../controllers/authController.js';
-
-// const router = express.Router();
-
-// router.post('/register', register);
-// router.post('/login', login);
-
-// // Protected route example
-// router.get('/profile', passport.authenticate('jwt', { session: false }), (req, res) => {
-//   res.json({ user: req.user });
-// });
-
-// export default router;
 
 import express from 'express';
-import { register, verifyEmail, login, getProtectedData ,getMyProfile} from '../controllers/authController.js';
+import { register, verifyEmail, login, getProtectedData ,getMyProfile,updateProfile} from '../controllers/authController.js';
 import { isAuthenticated } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -25,6 +10,8 @@ router.post('/verify-email', verifyEmail); // React should send token here
 router.post('/login', login);
 router.get('/protected', isAuthenticated, getProtectedData);
 router.get('/profile', isAuthenticated, getMyProfile); // Authenticated user's profile
+router.put('/profile', isAuthenticated, updateProfile); // Endpoint for updating profile
+
 
 
 export default router;

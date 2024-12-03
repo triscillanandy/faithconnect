@@ -152,3 +152,29 @@ export const getMyProfile = async (req, res) => {
   }
 };
 
+// Update authenticated user's profile details
+export const updateProfile = async (req, res) => {
+  try {
+    const { username, email, dateOfBirth, preferences } = req.body;
+
+    // Find the user by the authenticated user's ID
+    const user = await User.findByPk(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Update user data with the provided fields
+    user.username = username || user.username;
+    user.email = email || user.email;
+    user.dateOfBirth = dateOfBirth || user.dateOfBirth;
+    user.preferences = preferences || user.preferences; // Update preferences if provided
+
+    // Save the updated user information
+    await user.save();
+
+    res.json({ message: 'Profile updated successfully.', user });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

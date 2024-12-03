@@ -1,5 +1,6 @@
 import express from 'express';
 import passport from 'passport';
+import cors from 'cors';
 import { sequelize } from './config/database.js'; // Updated import
 import authRoutes from './routes/authRoutes.js';
 import { configurePassport } from './config/passport.js';
@@ -9,6 +10,7 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 app.use(passport.initialize());
 
 // Passport configuration
@@ -16,6 +18,9 @@ configurePassport(passport);
 
 // Auth routes
 app.use('/api/auth', authRoutes);
+
+
+
 
 // Connect to PostgreSQL using Sequelize
 const connectDB = async () => {

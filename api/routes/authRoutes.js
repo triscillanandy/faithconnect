@@ -2,6 +2,7 @@
 import express from 'express';
 import { register, verifyEmail, login, getProtectedData ,getMyProfile,updateProfile,uploadProfileImage,updatePreferences, getPreferences} from '../controllers/authController.js';
 import { isAuthenticated } from '../middleware/authMiddleware.js';
+import { createPost,getPosts,getPostById,deletePost } from '../controllers/postController.js';
 import { upload } from '../middleware/uploadMiddleware.js';
 const router = express.Router();
 
@@ -17,9 +18,11 @@ router.put('/preferences', isAuthenticated, updatePreferences); // Update prefer
 router.get('/preferences', isAuthenticated, getPreferences);   // Fetch preferences
 
 
-
-
-
+//posts
+router.post('/posts', isAuthenticated, createPost);
+router.get('/getposts', isAuthenticated, getPosts);
+router.get('/posts/:id', isAuthenticated, getPostById); 
+router.delete('/posts/:id', isAuthenticated, deletePost);
 
 
 export default router;

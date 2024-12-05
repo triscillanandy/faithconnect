@@ -1,3 +1,5 @@
+
+import { sequelize } from '../config/database.js';
 class Follower extends Model {}
 
 Follower.init(

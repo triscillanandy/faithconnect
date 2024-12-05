@@ -6,51 +6,121 @@ import { mediaUpload } from '../middleware/mediaUploadMiddleware.js';  // Import
 import { v2 as cloudinary } from 'cloudinary';
 
 
+
+
 export const createPost = [
-    mediaUpload.array('media', 5), // Allows uploading up to 5 files
-  
-    async (req, res) => {
-      try {
-        const { description } = req.body;
-  
-        // Create the post in the database
-        const newPost = await Post.create({
-          description,
-          userId: req.user.id, // From isAuthenticated middleware
-        });
-  
-        // Upload media files to Cloudinary
-        if (req.files && req.files.length > 0) {
-          const mediaPromises = req.files.map(async (file) => {
-            // Upload each file to Cloudinary
-            const uploadResult = await cloudinary.uploader.upload(file.path, {
-              folder: 'posts',
-            });
-  
-            // Save media details in the database
+  mediaUpload.array('media', 5), // Allows uploading up to 5 files
+
+  async (req, res) => {
+    try {
+      const { description } = req.body;
+
+      // Create the post in the database
+      const newPost = await Post.create({
+        description,
+        userId: req.user.id, // From isAuthenticated middleware
+      });
+
+      // Upload media files to Cloudinary if they exist
+      if (req.files && req.files.length > 0) {
+        const mediaPromises = req.files.map(async (file) => {
+          let uploadResult;
+          const fileExtension = file.originalname.split('.').pop().toLowerCase();
+          const isVideo = ['mp4', 'avi', 'mov'].includes(fileExtension);
+
+          // Upload the file to Cloudinary with resource_type based on file type
+          try {
+            if (isVideo) {
+              // Upload video to Cloudinary
+              uploadResult = await cloudinary.uploader.upload(file.path, {
+                folder: 'posts',
+                resource_type: 'video', // Specify that it's a video
+              });
+            } else {
+              // Upload image to Cloudinary
+              uploadResult = await cloudinary.uploader.upload(file.path, {
+                folder: 'posts',
+                resource_type: 'image', // Specify that it's an image
+              });
+            }
+
+            // Save media details (URL, type, post ID) in the database
             const media = await Media.create({
-              mediaType: file.mimetype,
+              mediaType: file.mimetype, // File type (image/video)
               mediaUrl: uploadResult.secure_url, // Cloudinary URL
-              postId: newPost.id,
+              postId: newPost.id, // Link media to the post
             });
-  
-            // Delete local file after Cloudinary upload
+
+            // Delete the local file after successful upload to Cloudinary
             fs.unlinkSync(file.path);
             return media;
-          });
-  
-          await Promise.all(mediaPromises);
-        }
-  
-        res.status(201).json({
-          message: 'Post created successfully.',
-          post: newPost,
+          } catch (error) {
+            console.error('Error uploading media:', error);
+            throw new Error('Error uploading media to Cloudinary');
+          }
         });
-      } catch (error) {
-        res.status(500).json({ error: error.message });
+
+        // Wait for all media files to upload (images and videos)
+        await Promise.all(mediaPromises);
       }
-    },
-  ];
+
+      // Respond with success message and the created post
+      res.status(201).json({
+        message: 'Post created successfully.',
+        post: newPost,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+];
+
+
+// export const createPost = [
+//     mediaUpload.array('media', 5), // Allows uploading up to 5 files
+  
+//     async (req, res) => {
+//       try {
+//         const { description } = req.body;
+  
+//         // Create the post in the database
+//         const newPost = await Post.create({
+//           description,
+//           userId: req.user.id, // From isAuthenticated middleware
+//         });
+  
+//         // Upload media files to Cloudinary
+//         if (req.files && req.files.length > 0) {
+//           const mediaPromises = req.files.map(async (file) => {
+//             // Upload each file to Cloudinary
+//             const uploadResult = await cloudinary.uploader.upload(file.path, {
+//               folder: 'posts',
+//             });
+  
+//             // Save media details in the database
+//             const media = await Media.create({
+//               mediaType: file.mimetype,
+//               mediaUrl: uploadResult.secure_url, // Cloudinary URL
+//               postId: newPost.id,
+//             });
+  
+//             // Delete local file after Cloudinary upload
+//             fs.unlinkSync(file.path);
+//             return media;
+//           });
+  
+//           await Promise.all(mediaPromises);
+//         }
+  
+//         res.status(201).json({
+//           message: 'Post created successfully.',
+//           post: newPost,
+//         });
+//       } catch (error) {
+//         res.status(500).json({ error: error.message });
+//       }
+//     },
+//   ];
 // Create a new post with media
 // export const createPost = [
 //   // Apply the media upload middleware before handling post creation

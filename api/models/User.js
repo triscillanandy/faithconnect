@@ -41,7 +41,17 @@ const User = sequelize.define('users', {
   },
   verificationToken: {
     type: DataTypes.STRING,
-  }
+  },
+  profileImage: {
+    type: DataTypes.STRING, // Store filename or relative path
+    allowNull: true,
+    field: 'profile_image',
+  },
+  
+  preferences: {
+    type: DataTypes.JSON, // Use JSON to store user preferences
+    allowNull: true,
+  },
 }, {
   timestamps: true,
 });

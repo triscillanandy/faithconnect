@@ -7,6 +7,7 @@ import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import User from '../models/User.js';
 import { randomBytes } from 'crypto';
+import fs from 'fs';
 dotenv.config();
 
 // Configure Nodemailer
@@ -134,19 +135,47 @@ export const login = async (req, res) => {
   }
 };
 
-// Fetch authenticated user's profile
+// // Fetch authenticated user's profile
+// export const getMyProfile = async (req, res) => {
+//   try {
+//     // Fetch user data using the authenticated user's ID
+//     const user = await User.findByPk(req.user.id, {
+//       attributes: ['id', 'username', 'email', 'dateOfBirth', 'isVerified','profileImage'], // Limit exposed fields
+//     });
+
+//     if (!user) {
+//       return res.status(404).json({ message: 'User not found.' });
+//     }
+
+//     res.json({ user });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
 export const getMyProfile = async (req, res) => {
   try {
-    // Fetch user data using the authenticated user's ID
     const user = await User.findByPk(req.user.id, {
-      attributes: ['id', 'username', 'email', 'dateOfBirth', 'isVerified'], // Limit exposed fields
+      attributes: ['id', 'username', 'email', 'dateOfBirth', 'isVerified', 'profileImage'],
     });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
     }
 
-    res.json({ user });
+    const profileImageUrl = user.profileImage
+      ? `${req.protocol}://${req.get('host')}/uploads/profile-images/${user.profileImage}`
+      : null;
+
+    res.json({
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        dateOfBirth: user.dateOfBirth,
+        isVerified: user.isVerified,
+        profileImage: profileImageUrl, // Include full image URL
+      },
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -178,3 +207,71 @@ export const updateProfile = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const uploadProfileImage = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    if (req.file) {
+      // Delete old profile image if it exists
+      if (user.profileImage) {
+        fs.unlinkSync(`./uploads/profile-images/${user.profileImage}`);
+      }
+
+      user.profileImage = req.file.filename;
+      await user.save();
+    }
+
+    res.json({ message: 'Profile image uploaded successfully.', profileImage: user.profileImage });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+export const updatePreferences = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Update preferences
+    user.preferences = req.body.preferences || user.preferences;
+    await user.save();
+
+    // Return the updated user data with preferences
+    res.json({
+      id: user.id,
+      email: user.email,
+      preferences: user.preferences,
+      message: 'Preferences updated successfully.',
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getPreferences = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id, {
+      attributes: ['id', 'username','email', 'preferences'], // Include id, username, and preferences
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    res.json({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      preferences: user.preferences,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+

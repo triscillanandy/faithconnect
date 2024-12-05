@@ -4,6 +4,8 @@ import cors from 'cors';
 import { sequelize } from './config/database.js'; // Updated import
 import authRoutes from './routes/authRoutes.js';
 import { configurePassport } from './config/passport.js';
+import { fileURLToPath } from 'url'
+import path from 'path'; // Import path module
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -20,7 +22,10 @@ configurePassport(passport);
 app.use('/api/auth', authRoutes);
 
 
-
+// Resolve __dirname in ES module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use('/uploads/profile-images', express.static(path.join(__dirname, 'uploads/profile-images')));
 
 // Connect to PostgreSQL using Sequelize
 const connectDB = async () => {

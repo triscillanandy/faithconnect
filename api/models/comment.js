@@ -3,12 +3,8 @@ class Comment extends Model {}
 Comment.init(
   {
     comment: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(400),
       allowNull: false,
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      defaultValue: Sequelize.NOW,
     },
   },
   {
@@ -20,7 +16,8 @@ Comment.init(
 );
 
 // Relationships
-Comment.belongsTo(Post, { foreignKey: 'postId', as: 'post' }); // One-to-many relationship
-Comment.belongsTo(User, { foreignKey: 'userId', as: 'user' }); // One-to-many relationship
+Comment.belongsTo(Post, { foreignKey: 'postId', as: 'post' });
+Comment.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
 
 export default Comment;

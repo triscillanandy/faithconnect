@@ -6,6 +6,8 @@ import GroupPlan from "./Sections/Component/GroupPlan";
 import Login from "./Sections/Component/Login";
 import ForgotPassword from "./Sections/Component/ForgotPassword";
 import ResetPassword from "./Sections/Component/ResetPassword";
+import LandingPage from "./Sections/LandingPage";
+import Validation from "./Sections/Component/Validation";
 
 // import Plans from "../../Sections/Plans.jsx";
 // import Plans from "./Sections/Plans";
@@ -17,7 +19,8 @@ function App() {
       {/* <Plans /> */}
       <Router>
         <Routes>
-          <Route path="/" element={<Plans></Plans>}></Route>
+          <Route path="/" element={<LandingPage></LandingPage>} />
+          <Route path="/plans" element={<Plans></Plans>}></Route>
           <Route
             path="/individual-registration"
             element={<IndividualPlan></IndividualPlan>}
@@ -31,6 +34,10 @@ function App() {
           <Route
             path="/reset-password"
             element={<ResetPassword></ResetPassword>}
+          />
+          <Route
+            path="/email-verification"
+            element={<Validation></Validation>}
           />
         </Routes>
       </Router>

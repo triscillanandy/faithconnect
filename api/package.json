@@ -19,11 +19,13 @@
     "@nlpjs/nlp": "^4.27.0",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
+    "bull": "^4.16.4",
     "cloudinary": "^2.5.1",
     "cors": "^2.8.5",
     "csv-parser": "^3.0.0",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "express-rate-limit": "^7.4.1",
     "firebase": "^11.0.2",
     "firebase-admin": "^13.0.1",
     "jsonwebtoken": "^9.0.2",
@@ -35,6 +37,8 @@
     "passport-local": "^1.0.0",
     "pg": "^8.13.1",
     "pg-hstore": "^2.3.4",
+    "rate-limit-redis": "^4.2.0",
+    "redis": "^4.7.0",
     "sequelize": "^6.37.5",
     "sharp": "^0.33.5"
   }

@@ -24,13 +24,29 @@ User.init(
         isEmail: true,
       },
     },
+    phone: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: 'phone',
+    },
+    firstName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: 'firstName',
+    },
+    lastName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: 'lastName',
+    },
+ 
     password: {
       type: DataTypes.STRING,
       allowNull: false,
     },
     dateOfBirth: {
       type: DataTypes.DATEONLY,
-      allowNull: false,
+      allowNull: true,
       field: 'date_of_birth',
       validate: {
         isDate: true,

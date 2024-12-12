@@ -1,35 +1,41 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Pray from "./Registration-Images/Pray-white.png";
 import Lock from "./Registration-Images/Lock.png";
 import Hide from "./Registration-Images/Hide.png";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios"; // Import axios for API calls
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState(""); // To display error messages
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post("http://localhost:3001/api/auth/login", {
-        email,
-        password,
+      const response = await fetch("http://localhost:3001/api/auth/login", {
+        method: "POST",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email, // Assuming the username is the email in your API
+          password,
+        }),
       });
 
-      if (response.data.token) {
-        // Store token in local storage or context
-        localStorage.setItem("token", response.data.token);
+      if (response.ok) {
+        const data = await response.json();
+        const token = data.token;
+        localStorage.setItem("token", token); // Store token in local storage
         alert("Login successful!");
-        navigate("/dashboard"); // Navigate to dashboard or another route after successful login
+        navigate("/dashboard"); // Redirect to the dashboard
+      } else {
+        const errorData = await response.json();
+        setErrorMessage(errorData.message || "Invalid email or password.");
       }
     } catch (error) {
-      if (error.response) {
-        setErrorMessage(error.response.data.message || "Login failed.");
-      } else {
-        setErrorMessage("Something went wrong. Please try again.");
-      }
+      setErrorMessage("Something went wrong. Please try again.");
     }
   };
 
@@ -80,6 +86,15 @@ const Login = () => {
         >
           Login
         </button>
+        <p className="text-black text-center mt-6">
+          Don’t have an account?{" "}
+          <span
+            className="text-blue-500 cursor-pointer"
+            onClick={() => navigate("/individual-registration")}
+          >
+            Create Account
+          </span>
+        </p>
       </div>
     </div>
   );

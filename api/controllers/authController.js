@@ -21,7 +21,7 @@ const transporter = nodemailer.createTransport({
 
 // Register a new user
 export const register = async (req, res) => {
-  const { username, email, password, dateOfBirth } = req.body;
+  const { username, email, phone, firstName, lastName,password,  } = req.body;
 
   try {
     // Check if user already exists
@@ -40,8 +40,11 @@ export const register = async (req, res) => {
     const newUser = await User.create({
       username,
       email,
+      phone,
+      firstName, 
+      lastName,
       password,
-      dateOfBirth,
+    
       isVerified: false,
       verificationToken,
     });

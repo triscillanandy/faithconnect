@@ -11,9 +11,15 @@ import { v2 as cloudinary } from 'cloudinary';
 
 dotenv.config(); // Load environment variables
 
+// Middleware
+var corsOptions = {
+  origin: 'http://localhost:5173',
+};
 const app = express();
 app.use(express.json());
-app.use(cors());
+// app.use(cors());
+app.use(cors(corsOptions));
+
 app.use(passport.initialize());
 
 // Passport configuration

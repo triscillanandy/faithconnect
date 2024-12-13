@@ -8,6 +8,8 @@ import ForgotPassword from "./Sections/Component/ForgotPassword";
 import ResetPassword from "./Sections/Component/ResetPassword";
 import LandingPage from "./Sections/LandingPage";
 import Validation from "./Sections/Component/Validation";
+import SucessfulVerification from "./Sections/Component/SucessfulVerification";
+import EmailInstruction from "./Sections/Component/EmailInstruction";
 
 // import Plans from "../../Sections/Plans.jsx";
 // import Plans from "./Sections/Plans";
@@ -38,6 +40,14 @@ function App() {
           <Route
             path="/email-verification"
             element={<Validation></Validation>}
+          />
+          <Route
+            path="/verified"
+            element={<SucessfulVerification></SucessfulVerification>}
+          ></Route>
+          <Route
+            path="/email-popup"
+            element={<EmailInstruction></EmailInstruction>}
           />
         </Routes>
       </Router>

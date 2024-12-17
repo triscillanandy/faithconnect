@@ -44,7 +44,10 @@ const Login = () => {
         >
           Forgot Password?{" "}
         </a>
-        <button className="text-white bg-[#FF6132] rounded-[5px] w-[425px] h-[60px] text-center max-loginScreen1:w-[100%]">
+        <button
+          className="text-white bg-[#FF6132] rounded-[5px] w-[425px] h-[60px] text-center max-loginScreen1:w-[100%]"
+          onClick={() => navigate("/LoggedIn")}
+        >
           Login
         </button>
       </div>

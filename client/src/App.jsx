@@ -10,6 +10,7 @@ import LandingPage from "./Sections/LandingPage";
 import Validation from "./Sections/Component/Validation";
 import SucessfulVerification from "./Sections/Component/SucessfulVerification";
 import EmailInstruction from "./Sections/Component/EmailInstruction";
+import LoggedInUserScreen from "./Sections/Component/LoggedInUserScreen";
 
 // import Plans from "../../Sections/Plans.jsx";
 // import Plans from "./Sections/Plans";
@@ -45,6 +46,7 @@ function App() {
             path="/verified"
             element={<SucessfulVerification></SucessfulVerification>}
           ></Route>
+          <Route path="/LoggedIn" element={<LoggedInUserScreen />} />
           <Route
             path="/email-popup"
             element={<EmailInstruction></EmailInstruction>}

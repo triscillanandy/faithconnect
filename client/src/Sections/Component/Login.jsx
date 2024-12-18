@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Pray from "./Registration-Images/Pray-white.png";
 import Lock from "./Registration-Images/Lock.png";
 import Hide from "./Registration-Images/Hide.png";
 
@@ -40,7 +41,10 @@ const Login = () => {
 
   return (
     <div className="flex p-16 gap-20 container mx-auto max-loginScreen1:flex-col-reverse">
-      <PasswordSide />
+      <div className="bg-[#180F4B] w-[900px] h-[800px] rounded-[14px] flex flex-col items-center justify-center text-white loginScreen:w-full max-loginScreen1:w-[100%] max-loginScreen1:h-[400px]">
+        <img src={Pray} alt="" />
+        <h1 className="font-bold text-3xl">Faith Connect</h1>
+      </div>
       <div className="flex flex-col justify-center">
         <p className="text-black text-2xl mb-20">Login</p>
         {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}

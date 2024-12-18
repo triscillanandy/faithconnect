@@ -36,7 +36,47 @@ import img9 from "./PeopleImages/9.png";
 import Logo from "./LoggedInScreenImages/Logo.png";
 import notify from "./LoggedInScreenImages/notify.png";
 import chat from "./LoggedInScreenImages/chat.png";
+import React, { useState, useEffect } from "react";
+
 const LoggedInUserScreen = () => {
+
+  const [posts, setPosts] = useState([]);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const fetchPosts = async () => {
+    const token = localStorage.getItem("token"); // Retrieve token from local storage
+
+      if (!token) {
+        setErrorMessage("No token provided. Please log in.");
+        return;
+      }
+    try {
+      const response = await fetch("http://localhost:3001/api/auth/getposts", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPosts(data.posts); // Assuming the response contains a "posts" array
+      } else {
+        const errorData = await response.json();
+        setErrorMessage(errorData.message || "Failed to fetch posts.");
+      }
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      setErrorMessage("An error occurred while fetching posts.");
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []); // Empty dependency array means it runs once when the component mounts.
+
   return (
     <div className="grid grid-cols-[115.02px_1fr_352px] max-[1023px]:grid-cols-[100.02px_1fr_300px] max-[836px]:grid-cols-1 relative">
       <div className="hidden max-[836px]:flex max-[836px]:justify-between px-3 mb-3 items-center mt-3">
@@ -106,16 +146,24 @@ const LoggedInUserScreen = () => {
           <StoriesComponent imgSrc={userImg5} personName={"Devon Lane"} />
           <StoriesComponent imgSrc={userImg6} personName={"P & G"} />
         </div>
-        <PostsComponent
-          userImg={person1}
-          postImg={postImg1}
-          userName={"Eleanor Pena"}
-        />
-        <PostsComponent
-          userImg={person2}
-          postImg={postImg2}
-          userName={"Cameron Williamson"}
-        />
+        <div>
+        <div className="ml-6">
+        {/* Render Posts */}
+        {errorMessage ? (
+          <p className="text-red-500">{errorMessage}</p>
+        ) : (
+          posts.map((post) => (
+            <PostsComponent
+              key={post.id}
+              userImg={`https://via.placeholder.com/150?text=User+${post.userId}`} // Replace with actual user image URL if available
+              userName={`User ${post.userId}`} // Replace with actual user name if available
+              description={post.description}
+              media={post.media}
+            />
+          ))
+        )}
+      </div>
+    </div>
       </div>
       <div className="max-[836px]:hidden">
         <div className="flex justify-between items-center px-4 mt-6 mb-3 ">
@@ -152,25 +200,39 @@ function StoriesComponent({ imgSrc, personName }) {
       <p className="text-[10px] font-[400]">{personName}</p>
     </div>
   );
-}
-function PostsComponent({ userImg, postImg, userName }) {
+}function PostsComponent({ userImg, userName, description, media }) {
   return (
     <div className="mt-8">
+      {/* Post Header */}
       <div className="flex items-center gap-4 mb-3">
-        <img src={userImg} alt="" />
+        <img src={userImg} alt={`${userName}'s profile`} className="w-10 h-10 rounded-full" />
         <p>{userName}</p>
-        <div className="cursor-pointer ml-20">
-          <img src={dots} alt="" />
-          <img src={dots} alt="" />
-          <img src={dots} alt="" />
+        <div className="cursor-pointer ml-auto">
+          <img src={dots} alt="Options" className="w-5 h-5" />
         </div>
       </div>
-      <img src={postImg} alt="" />
+
+      {/* Post Description */}
+      <p className="mb-3">{description}</p>
+
+      {/* Post Media */}
+      <div className="flex gap-2 overflow-x-auto">
+        {media.map((item) => (
+          <img
+            key={item.id}
+            src={item.mediaUrl}
+            alt="Post media"
+            className="w-full h-auto max-h-[400px] object-cover rounded-lg"
+          />
+        ))}
+      </div>
+
+      {/* Post Actions */}
       <div className="flex mt-4 gap-2">
-        <img src={like} alt="" className="cursor-pointer  " />
-        <img className="cursor-pointer " src={comment} alt="" />
-        <img className="cursor-pointer " src={union} alt="" />
-        <img className="ml-52 cursor-pointer" src={save} alt="" />
+        <img src={like} alt="Like" className="cursor-pointer w-6 h-6" />
+        <img src={comment} alt="Comment" className="cursor-pointer w-6 h-6" />
+        <img src={union} alt="Share" className="cursor-pointer w-6 h-6" />
+        <img src={save} alt="Save" className="ml-auto cursor-pointer w-6 h-6" />
       </div>
     </div>
   );

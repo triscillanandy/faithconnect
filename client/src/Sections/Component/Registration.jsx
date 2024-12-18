@@ -42,7 +42,7 @@ function Registration({ text }) {
 
     try {
       // Example API endpoint
-      const response = await fetch("http://localhost:3001/api/auth/register", {
+      const response = await fetch("https://faithconnect.onrender.com/api/auth/register", {
         method: "POST",
         headers: {
           Accept: "application/json, text/plain, */*",

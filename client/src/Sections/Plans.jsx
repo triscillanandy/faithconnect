@@ -51,7 +51,12 @@ const Plans = () => {
       </div>
       <p className="text-[#FF6132] text-center mt-3">
         Already have an account?<span></span>{" "}
-        <a className="text-black cursor-pointer">Sign In</a>
+        <a
+          className="text-black cursor-pointer"
+          onClick={() => navigate("/Login")}
+        >
+          Sign In
+        </a>
       </p>
       <VisualImg />
     </div>

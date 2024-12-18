@@ -84,8 +84,8 @@ function Registration({ text }) {
           <img src={Rect2} className="w-[100px] h-[60px] mt-14" alt="" />
         </div>
       </div>
-      <div className="bg-[#FF6132] w-[650px] max-planSmallScreen:h-[100vh]">
-        <div className="flex justify-between mt-4 px-3">
+      <div className="bg-[#FF6132] w-[650px] max-planSmallScreen:h-[900px]">
+        <div className="flex justify-between mt-4 px-3 max-landingPageScreenFourthBreakPoint:hidden">
           <img src={Vector} alt="" />
           <img src={closeIcon} alt="" />
         </div>
@@ -171,7 +171,10 @@ function Registration({ text }) {
             <a className="text-blue-700 cursor-pointer">Terms and Conditions</a>
           </p>
           <button
+           
             className="text-center w-[357.74px] h-[50.54px] rounded-[11.85px] pt-[15.79px] pr-[47.38px] pb-[15.79px] pl-[47.38px] text-[#ff6132] bg-white mt-6"
+            onClick={() => navigate("/email-verification")}
+          
             onClick={handleRegistration}
             disabled={loading}
           >

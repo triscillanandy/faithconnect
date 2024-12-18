@@ -24,7 +24,7 @@ const ForgotPassword = () => {
         />
         <button
           className="bg-[#FF6132] w-[423px] h-[60px] rounded-[5px] text-white text-center mt-7"
-          onClick={() => navigate("/reset-password")}
+          onClick={() => navigate("/email-popup")}
         >
           Send
         </button>

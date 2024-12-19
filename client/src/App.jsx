@@ -6,7 +6,7 @@ import GroupPlan from "./Sections/Component/GroupPlan";
 import Login from "./Sections/Component/Login";
 import ForgotPassword from "./Sections/Component/ForgotPassword";
 import ResetPassword from "./Sections/Component/ResetPassword";
-import LandingPage from "./Sections/LandingPage";
+// import LandingPage from "./Sections/LandingPage";
 import Validation from "./Sections/Component/Validation";
 import SucessfulVerification from "./Sections/Component/SucessfulVerification";
 import EmailInstruction from "./Sections/Component/EmailInstruction";

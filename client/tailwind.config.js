@@ -15,6 +15,9 @@ export default {
         landingPageScreenFourthBreakPoint: "403px",
         validationBreakPoint: "785px",
       },
+      fontFamily: {
+        inika: "inika",
+      },
     },
   },
   plugins: [],

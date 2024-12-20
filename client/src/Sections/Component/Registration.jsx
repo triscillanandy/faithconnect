@@ -98,12 +98,12 @@ function Registration({ text }) {
           <img src={Rect2} className="w-[100px] h-[60px] mt-14" alt="" />
         </div>
       </div>
-      <div className="bg-[#FF6132] w-[650px] max-planSmallScreen:h-[900px]">
+      <div className="bg-[#FF6132] w-[650px] max-planSmallScreen:bg-white max-planSmallScreen:h-[900px] ">
         <div className="flex justify-between mt-4 px-3 max-landingPageScreenFourthBreakPoint:hidden">
           <img src={Vector} alt="" />
           <img src={closeIcon} alt="" />
         </div>
-        <div className="w-[365.72px] h-[630px] mx-auto text-white mt-4">
+        <div className="w-[365.72px] h-[630px] mx-auto text-white mt-4 max-planSmallScreen:text-black">
           <div className="text-center">
             <p className="font-bold text-3xl mb-3 capitalize">{text}</p>
             <p>Fill in the information to continue.</p>
@@ -117,14 +117,14 @@ function Registration({ text }) {
             <input
               type="text"
               placeholder="First Name"
-              className="w-[165.39px] h-[48.59px] rounded-[11.85px] border-[0.85px] pt-[15.79px] pr-[15px] pb-[15.79px] pl-[15px] text-black"
+              className="w-[165.39px] border-[#FF6132] h-[48.59px] rounded-[11.85px] border-[0.85px] pt-[15.79px] pr-[15px] pb-[15.79px] pl-[15px] text-black"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
             />
             <input
               type="text"
               placeholder="Last Name"
-              className="w-[162.83px] h-[48.59px] rounded-[11.85px] border-[0.85px] pt-[15.79px] pr-[12px] pb-[15.79px] pl-[12px] text-black"
+              className="w-[162.83px] h-[48.59px] rounded-[11.85px] border-[0.85px] pt-[15.79px] pr-[12px] pb-[15.79px] pl-[12px] text-black border-[#FF6132]"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
             />
@@ -146,6 +146,7 @@ function Registration({ text }) {
                 paddingLeft: "11px",
                 color: "black",
                 marginLeft: "50px",
+                borderColor: "#FF6132",
               }}
             />
           </div>
@@ -153,7 +154,7 @@ function Registration({ text }) {
             <label className="mb-4">Username</label>
             <input
               type="text"
-              className="w-[360.11px] h-[48.17px] rounded-[11.85px] border-[0.85px] pt-[15.79px] pr-[15px] pb-[15.79px] pl-[15px] text-black"
+              className="w-[360.11px] h-[48.17px] rounded-[11.85px] border-[0.85px] pt-[15.79px] pr-[15px] pb-[15.79px] pl-[15px] text-black border-[#FF6132]"
               placeholder="Business or Host Name"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -181,12 +182,14 @@ function Registration({ text }) {
           </div>
           {error && <p className="text-red-600 mt-2">{error}</p>}
           <p className="text-sm mt-2">
-            By creating an account, you agree to our {" "}
-            <a className="text-blue-700 cursor-pointer">Terms and Conditions</a>
+            By creating an account, you agree to our{" "}
+            <a className="text-[#FF6132] cursor-pointer">
+              Terms and Conditions
+            </a>
           </p>
           <button
            
-            className="text-center w-[357.74px] h-[50.54px] rounded-[11.85px] pt-[15.79px] pr-[47.38px] pb-[15.79px] pl-[47.38px] text-[#ff6132] bg-white mt-6"
+            className="text-center w-[357.74px] h-[50.54px] rounded-[11.85px] pt-[15.79px] pr-[47.38px] pb-[15.79px] pl-[47.38px] text-black bg-white mt-6 border-[#FF6132] border-[0.79px]"
          //   onClick={() => navigate("/email-verification")}
           
          onClick={handleRegistration}
@@ -198,7 +201,7 @@ function Registration({ text }) {
             <p className="text-black font-bold">OR</p>
             <hr className="flex-grow border-t border-[black]" />
           </div>
-          <button className="text-black bg-white w-[354.65px] rounded-[13.43px] border-[0.79px] pt-[13.26px] pr-[66.29px] pb-[13.26px] pl-[66.29px] flex justify-center gap-2 mt-6">
+          <button className="text-black bg-white w-[354.65px] rounded-[13.43px] border-[0.79px] pt-[13.26px] pr-[66.29px] pb-[13.26px] pl-[66.29px] flex justify-center gap-2 mt-6 border-[#FF6132] ">
             <img src={googleImg} />
             Sign up with Google
           </button>
@@ -206,7 +209,7 @@ function Registration({ text }) {
             Already have an account? {" "}
             <a
               onClick={() => navigate("/Login")}
-              className="text-black cursor-pointer"
+              className="text-[#FF6132] cursor-pointer"
             >
               Sign In
             </a>

@@ -6,12 +6,16 @@ import GroupPlan from "./Sections/Component/GroupPlan";
 import Login from "./Sections/Component/Login";
 import ForgotPassword from "./Sections/Component/ForgotPassword";
 import ResetPassword from "./Sections/Component/ResetPassword";
-import LandingPage from "./Sections/LandingPage";
+// import LandingPage from "./Sections/LandingPage";
 import Validation from "./Sections/Component/Validation";
 import SucessfulVerification from "./Sections/Component/SucessfulVerification";
 import EmailInstruction from "./Sections/Component/EmailInstruction";
 import LoggedInUserScreen from "./Sections/Component/LoggedInUserScreen";
-
+import UserProfile from "./Sections/Component/UserProfile";
+import "./App.css";
+import Search from "./Sections/Component/Search";
+import Devotional from "./Sections/Component/Devotional";
+import LandingPage1 from "./Sections/LandingPage1";
 // import Plans from "../../Sections/Plans.jsx";
 // import Plans from "./Sections/Plans";
 // import './App.css'
@@ -22,7 +26,8 @@ function App() {
       {/* <Plans /> */}
       <Router>
         <Routes>
-          <Route path="/" element={<LandingPage></LandingPage>} />
+          {/* <Route path="/" element={<LandingPage></LandingPage>} /> */}
+          <Route path="/" element={<LandingPage1 />} />
           <Route path="/plans" element={<Plans></Plans>}></Route>
           <Route
             path="/individual-registration"
@@ -51,6 +56,9 @@ function App() {
             path="/email-popup"
             element={<EmailInstruction></EmailInstruction>}
           />
+          <Route path="/user-profile" element={<UserProfile></UserProfile>} />
+          <Route path="/search" element={<Search></Search>} />
+          <Route path="/devotional" element={<Devotional></Devotional>} />
         </Routes>
       </Router>
     </>

@@ -135,7 +135,7 @@ const LoggedInUserScreen = () => {
       </div>
       <div className="ml-6">
         <div className="flex gap-4 ">
-          <StoriesComponent imgSrc={main} />
+          <StoriesComponent navigateTo={"/user-profile"} imgSrc={main} />
           <StoriesComponent imgSrc={userImg1} personName="Wade Warren" />
           <StoriesComponent imgSrc={userImg2} personName="Jenny Wilson" />
           <StoriesComponent imgSrc={userImg3} personName={"Bessie Cooper"} />
@@ -193,10 +193,16 @@ const LoggedInUserScreen = () => {
 };
 export default LoggedInUserScreen;
 
-function StoriesComponent({ imgSrc, personName }) {
+function StoriesComponent({ imgSrc, personName, navigateTo }) {
+  const navigate = useNavigate();
   return (
     <div>
-      <img src={imgSrc} alt="" />
+      <img
+        src={imgSrc}
+        onClick={() => navigate(navigateTo)}
+        className="cursor-pointer"
+        alt=""
+      />
       <p className="text-[10px] font-[400]">{personName}</p>
     </div>
   );

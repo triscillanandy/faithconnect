@@ -45,7 +45,7 @@ export const register = async (req, res) => {
       lastName,
       password,
     
-      isVerified: false,
+      isVerified: true,
       verificationToken,
     });
 

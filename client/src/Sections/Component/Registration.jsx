@@ -63,7 +63,7 @@ function Registration({ text }) {
         console.log("Registration Successful:", data);
         toast.success("Registration successful Please check your email to verify.");
         setTimeout(() => {
-          navigate("/Login"); // Redirect after showing the message
+          navigate("/email-verification"); // Redirect after showing the message
         }, 1500); // Delay redirection for 1.5 seconds
       } else {
         toast.error(data.message || "Registration failed. Please try again.");

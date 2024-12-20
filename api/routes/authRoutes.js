@@ -9,7 +9,9 @@ import {followUser, unfollowUser,getFollowers, getFollowing,} from '../controlle
 const router = express.Router();
 
 router.post('/register', register);
-router.post('/verify-email', verifyEmail); // React should send token here
+// Use URL parameter for the token
+router.get('/verify-email/:token', verifyEmail); // Now it expects the token in the URL parameter
+
 router.post('/login', login);
 router.get('/protected', isAuthenticated, getProtectedData);
 router.get('/profile', isAuthenticated, getMyProfile); // Authenticated user's profile

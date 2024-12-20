@@ -36,6 +36,7 @@ import img9 from "./PeopleImages/9.png";
 import Logo from "./LoggedInScreenImages/Logo.png";
 import notify from "./LoggedInScreenImages/notify.png";
 import chat from "./LoggedInScreenImages/chat.png";
+import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 
 const LoggedInUserScreen = () => {

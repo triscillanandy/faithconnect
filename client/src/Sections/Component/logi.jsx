@@ -17,10 +17,7 @@ import userImg6 from "./LoggedInScreenImages/6.png";
 import main from "./LoggedInScreenImages/main.png";
 import like from "./LoggedInScreenImages/like.png";
 import comment from "./LoggedInScreenImages/comment.png";
-import person1 from "./LoggedInScreenImages/person1.png";
-import person2 from "./LoggedInScreenImages/person2.png";
-import postImg1 from "./LoggedInScreenImages/postImg1.png";
-import postImg2 from "./LoggedInScreenImages/postImg2.png";
+
 import save from "./LoggedInScreenImages/save.png";
 import union from "./LoggedInScreenImages/Union.png";
 import dots from "./LoggedInScreenImages/dots.png";
@@ -36,6 +33,9 @@ import img9 from "./PeopleImages/9.png";
 import Logo from "./LoggedInScreenImages/Logo.png";
 import notify from "./LoggedInScreenImages/notify.png";
 import chat from "./LoggedInScreenImages/chat.png";
+import Slider from "react-slick"; // Install using `npm install react-slick` and its dependencies
+import "slick-carousel/slick/slick.css"; 
+import "slick-carousel/slick/slick-theme.css";
 import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 
@@ -208,35 +208,47 @@ function StoriesComponent({ imgSrc, personName, navigateTo }) {
     </div>
   );
 }
-function PostsComponent({ userImg, userName, description, media }) {
+function PostsComponent({ userImg, userName, description, media}) {
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    arrows: false,
+    className: "w-full",
+  };
+
   return (
-    <div className="mt-8">
+    <div className="mt-8 border rounded-lg p-4 max-w-lg mx-auto bg-white shadow-sm">
       {/* Post Header */}
       <div className="flex items-center gap-4 mb-3">
         <img src={userImg} alt={`${userName}'s profile`} className="w-10 h-10 rounded-full" />
-        <p>{userName}</p>
+        <p className="font-semibold">{userName}</p>
         <div className="cursor-pointer ml-auto">
           <img src={dots} alt="Options" className="w-5 h-5" />
         </div>
       </div>
 
       {/* Post Description */}
-      <p className="mb-3">{description}</p>
+      <p className="mb-3 text-sm">{description}</p>
 
       {/* Post Media */}
-      <div className="flex gap-2 overflow-x-auto">
-        {media.map((item) => (
-          <img
-            key={item.id}
-            src={item.mediaUrl}
-            alt="Post media"
-            className="w-full h-auto max-h-[400px] object-cover rounded-lg"
-          />
-        ))}
+      <div className="aspect-square overflow-hidden rounded-lg">
+        <Slider {...settings}>
+          {media.map((item) => (
+            <img
+              key={item.id}
+              src={item.mediaUrl}
+              alt="Post media"
+              className="object-cover w-full h-full"
+            />
+          ))}
+        </Slider>
       </div>
 
       {/* Post Actions */}
-      <div className="flex mt-4 gap-2">
+      <div className="flex mt-4 gap-4 items-center">
         <img src={like} alt="Like" className="cursor-pointer w-6 h-6" />
         <img src={comment} alt="Comment" className="cursor-pointer w-6 h-6" />
         <img src={union} alt="Share" className="cursor-pointer w-6 h-6" />
@@ -245,6 +257,7 @@ function PostsComponent({ userImg, userName, description, media }) {
     </div>
   );
 }
+
 
 function SuggestedFollows({ imgSrc, userName }) {
   return (

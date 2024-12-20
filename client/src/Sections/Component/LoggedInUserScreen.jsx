@@ -40,30 +40,30 @@ import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 
 const LoggedInUserScreen = () => {
-
   const [posts, setPosts] = useState([]);
+  const [suggestedPeople, setSuggestedPeople] = useState([]);
+  const [groups, setPrayerGroups] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
 
+  // Fetch Posts
   const fetchPosts = async () => {
-    const token = localStorage.getItem("token"); // Retrieve token from local storage
-
-      if (!token) {
-        setErrorMessage("No token provided. Please log in.");
-        return;
-      }
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setErrorMessage("No token provided. Please log in.");
+      return;
+    }
     try {
       const response = await fetch("http://localhost:3001/api/auth/getposts", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
-          Accept: "application/json, text/plain, */*",
           "Content-Type": "application/json",
         },
       });
 
       if (response.ok) {
         const data = await response.json();
-        setPosts(data.posts); // Assuming the response contains a "posts" array
+        setPosts(data.posts);
       } else {
         const errorData = await response.json();
         setErrorMessage(errorData.message || "Failed to fetch posts.");
@@ -73,10 +73,68 @@ const LoggedInUserScreen = () => {
       setErrorMessage("An error occurred while fetching posts.");
     }
   };
+// Fetch Suggested People
+const fetchSuggestedPeople = async () => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    setErrorMessage("No token provided. Please log in.");
+    return;
+  }
+
+  try {
+    const response = await fetch("http://localhost:3001/api/auth/suggestedPeople", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`, // Add token here
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      setSuggestedPeople(data.people);
+    } else {
+      console.error("Failed to fetch suggested people.");
+    }
+  } catch (error) {
+    console.error("Error fetching suggested people:", error);
+  }
+};
+
+// Fetch Prayer Groups
+const fetchPrayerGroups = async () => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    setErrorMessage("No token provided. Please log in.");
+    return;
+  }
+
+  try {
+    const response = await fetch("http://localhost:3001/api/auth/groups", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`, // Add token here
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      setPrayerGroups(data.groups);
+    } else {
+      console.error("Failed to fetch prayer groups.");
+    }
+  } catch (error) {
+    console.error("Error fetching prayer groups:", error);
+  }
+};
+
 
   useEffect(() => {
     fetchPosts();
-  }, []); // Empty dependency array means it runs once when the component mounts.
+    fetchSuggestedPeople();
+    fetchPrayerGroups();
+  }, []);
 
   return (
     <div className="grid grid-cols-[115.02px_1fr_352px] max-[1023px]:grid-cols-[100.02px_1fr_300px] max-[836px]:grid-cols-1 relative">
@@ -185,9 +243,14 @@ const LoggedInUserScreen = () => {
           <h2 className="font-bold text-lg">Prayer Groups</h2>
           <p>See All</p>
         </div>
-        <SuggestedFollows imgSrc={img1} userName={"Wade Warren"} />
-        <SuggestedFollows imgSrc={img2} userName={"Esther Howard"} />
-        <SuggestedFollows imgSrc={img3} userName={"Brooklyn Simmons"} />
+        {groups.length > 0 ? (
+          groups.map((group, index) => (
+            <SuggestedGroups 
+               key={group.id} imgSrc={group.imgSrc} group_name={group.group_name} />
+          ))
+        ) : (
+          <p>No prayer groups available</p>
+        )}
       </div>
     </div>
   );
@@ -272,6 +335,18 @@ function SuggestedFollows({ imgSrc, userName }) {
       <button className="bg-[#ff6132] rounded-[4px] w-[68px] ml-2 mt-6 text-white ">
         Follow
       </button>
+    </div>
+  );
+  
+}
+function SuggestedGroups({ imgSrc, group_name}) {
+  return (
+    <div className="flex items-center mb-4">
+      <img src={imgSrc} alt="" />
+      <div className="ml-2">
+        <p>{group_name}</p>
+        <p className="text-[#A0A0A0] max-[1023px]:text-base">Kashaf House</p>
+      </div>
     </div>
   );
 }

@@ -31,7 +31,7 @@ const UserProfile = () => {
           return;
         }
 
-        const response = await fetch("http://localhost:3001/api/auth/profile", {
+        const response = await fetch("https://faithconnect.onrender.com/api/auth/profile", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`, // Include the token in the Authorization header
@@ -65,7 +65,7 @@ const UserProfile = () => {
       return;
     }
     try {
-      const response = await fetch("http://localhost:3001/api/auth/my-posts", {
+      const response = await fetch("https://faithconnect.onrender.com/api/auth/my-posts", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,

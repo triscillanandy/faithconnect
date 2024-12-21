@@ -53,7 +53,7 @@ const LoggedInUserScreen = () => {
       return;
     }
     try {
-      const response = await fetch("http://localhost:3001/api/auth/getposts", {
+      const response = await fetch("https://faithconnect.onrender.com/api/auth/getposts", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -82,7 +82,7 @@ const fetchSuggestedPeople = async () => {
   }
 
   try {
-    const response = await fetch("http://localhost:3001/api/auth/suggestedPeople", {
+    const response = await fetch("https://faithconnect.onrender.com/api/auth/suggestedPeople", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`, // Add token here
@@ -110,7 +110,7 @@ const fetchPrayerGroups = async () => {
   }
 
   try {
-    const response = await fetch("http://localhost:3001/api/auth/groups", {
+    const response = await fetch("https://faithconnect.onrender.com/api/auth/groups", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`, // Add token here

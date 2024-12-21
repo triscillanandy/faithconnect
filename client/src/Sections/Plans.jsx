@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import VisualImg from "./Component/VisualImg";
-import Group from "./Plans-Images/Group.png";
-import Individual from "./Plans-Images/Individual.png";
-import Pray from "./Plans-Images/Pray.png";
 
+import Pray from "./Plans-Images/Pray.png";
+import personalPlan from "./PlanImage/Personal.png";
+import groupPlan from "./PlanImage/Group.png";
 /* Rectangle 6 */
 
 // const imgStyle = {
@@ -35,15 +35,15 @@ const Plans = () => {
             className="border border-[#FF6132] w-[250px] planSmallScreen:w-[351px] max-planSmallerScreen:w-[100%]  h-[237px] rounded-md flex flex-col  items-center max-planSmallerScreen:px-4 cursor-pointer"
             onClick={() => navigate("/individual-registration")}
           >
-            <img src={Individual} className="mt-10" alt="Individual Image" />
-            <p className="font-bold text-[#FF6132]">Personal</p>
-            <p className="text-[#FF6132]">Individual Account</p>
+            <img src={personalPlan} className="mt-10" alt="Individual Image" />
+            <p className="font-bold text-black">Personal</p>
+            <p className="text-black font-bold">Individual Account</p>
           </div>
           <div
-            className="w-[250px] h-[237px] bg-[#FF6132] planSmallScreen:w-[370px] text-white rounded-md flex flex-col items-center max-planSmallerScreen:w-[100%] max-planSmallerScreen:px-4 cursor-pointer"
+            className="w-[250px] h-[237px] bg-[#FF6132] planSmallScreen:w-[370px] text-black  font-bold rounded-md flex flex-col items-center max-planSmallerScreen:w-[100%] max-planSmallerScreen:px-4 cursor-pointer"
             onClick={() => navigate("/group-registration")}
           >
-            <img src={Group} className="mt-10" alt="Group" />
+            <img src={groupPlan} className="mt-10 " alt="Group" />
             <p>Organisation</p>
             <p>Church Groups / Organisations</p>
           </div>
@@ -51,7 +51,12 @@ const Plans = () => {
       </div>
       <p className="text-[#FF6132] text-center mt-3">
         Already have an account?<span></span>{" "}
-        <a className="text-black cursor-pointer">Sign In</a>
+        <a
+          className="text-black cursor-pointer"
+          onClick={() => navigate("/Login")}
+        >
+          Sign In
+        </a>
       </p>
       <VisualImg />
     </div>

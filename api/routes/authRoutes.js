@@ -2,14 +2,16 @@
 import express from 'express';
 import { register, verifyEmail, login, getProtectedData ,getMyProfile,updateProfile,uploadProfileImage,updatePreferences, getPreferences} from '../controllers/authController.js';
 import { isAuthenticated } from '../middleware/authMiddleware.js';
-import { createPost,getPosts,getPostById,deletePost } from '../controllers/postController.js';
+import { createPost,getMyPosts,getPosts,getPostById,deletePost } from '../controllers/postController.js';
 import { upload } from '../middleware/uploadMiddleware.js';
 import {creategroups,joingroups,leavegroups,listGroups} from '../controllers/groupController.js';
 import {followUser, unfollowUser,getFollowers, getFollowing,} from '../controllers/followController.js'; // New controllers for follow functionality
 const router = express.Router();
 
 router.post('/register', register);
-router.post('/verify-email', verifyEmail); // React should send token here
+// Use URL parameter for the token
+router.get('/verify-email/:token', verifyEmail); // Now it expects the token in the URL parameter
+
 router.post('/login', login);
 router.get('/protected', isAuthenticated, getProtectedData);
 router.get('/profile', isAuthenticated, getMyProfile); // Authenticated user's profile
@@ -25,7 +27,7 @@ router.post('/posts', isAuthenticated, createPost);
 router.get('/getposts', isAuthenticated, getPosts);
 router.get('/posts/:id', isAuthenticated, getPostById); 
 router.delete('/posts/:id', isAuthenticated, deletePost);
-
+router.get('/my-posts', isAuthenticated, getMyPosts);
 
 
 //followers ,follow routes

@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Pray from "./Registration-Images/Pray-white.png";
 import Lock from "./Registration-Images/Lock.png";
 import Hide from "./Registration-Images/Hide.png";
-
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,8 +29,8 @@ const Login = () => {
         const data = await response.json();
         const token = data.token;
         localStorage.setItem("token", token); // Store token in local storage
-        alert("Login successful!");
-        navigate("/dashboard"); // Redirect to the dashboard
+        toast.success("Login successful!");
+        navigate("/LoggedIn"); // Redirect to the dashboard
       } else {
         const errorData = await response.json();
         setErrorMessage(errorData.message || "Invalid email or password.");
@@ -41,6 +42,18 @@ const Login = () => {
 
   return (
     <div className="flex p-16 gap-20 container mx-auto max-loginScreen1:flex-col-reverse">
+        <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+      
       <div className="bg-[#180F4B] w-[900px] h-[800px] rounded-[14px] flex flex-col items-center justify-center text-white loginScreen:w-full max-loginScreen1:w-[100%] max-loginScreen1:h-[400px]">
         <img src={Pray} alt="" />
         <h1 className="font-bold text-3xl">Faith Connect</h1>

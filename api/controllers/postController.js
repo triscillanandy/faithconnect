@@ -76,6 +76,34 @@ export const createPost = [
 ];
 
 
+export const getMyPosts = async (req, res) => {
+  try {
+    // Retrieve posts made by the authenticated user (user.id)
+    const posts = await Post.findAll({
+      where: {
+        userId: req.user.id,  // Assuming 'userId' is the foreign key referencing the user in the 'Post' model
+      },
+      include: [
+        {
+          model: Media,
+          as: 'media',
+        },
+      ],
+    });
+
+    // Check if the user has any posts
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({ message: 'No posts found for this user.' });
+    }
+
+    // Return the posts along with the media
+    res.status(200).json({ posts });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
 // export const createPost = [
 //     mediaUpload.array('media', 5), // Allows uploading up to 5 files
   

@@ -45,7 +45,7 @@ export const register = async (req, res) => {
       lastName,
       password,
     
-      isVerified: false,
+      isVerified: true,
       verificationToken,
     });
 
@@ -61,15 +61,40 @@ export const register = async (req, res) => {
     await transporter.sendMail(mailOptions);
 
 
-    res.status(201).json({ message: 'User registered successfully', user: { email: newUser.email } });
+    res.status(201).json({ message: 'User registered successfully Please verify your account via email', user: { email: newUser.email } });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
 // Verify email
+// export const verifyEmail = async (req, res) => {
+//   const { token } = req.body;
+
+//   try {
+//     // Decode the token
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+//     // Find the user by email
+//     const user = await User.findOne({ where: { email: decoded.email } });
+//     if (!user) {
+//       return res.status(400).json({ message: 'Invalid token or user not found' });
+//     }
+
+//     // Update user's verification status
+//     user.isVerified = true;
+//     user.verificationToken = null;
+//     await user.save();
+
+//     res.json({ message: 'Email verified successfully. You can now log in.' });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
+// Verify email
 export const verifyEmail = async (req, res) => {
-  const { token } = req.body;
+  const { token } = req.params; // Get the token from the URL params
 
   try {
     // Decode the token
@@ -81,9 +106,14 @@ export const verifyEmail = async (req, res) => {
       return res.status(400).json({ message: 'Invalid token or user not found' });
     }
 
+    // Check if user is already verified
+    if (user.isVerified) {
+      return res.status(400).json({ message: 'User is already verified' });
+    }
+
     // Update user's verification status
     user.isVerified = true;
-    user.verificationToken = null;
+    user.verificationToken = null; // Remove the token after successful verification
     await user.save();
 
     res.json({ message: 'Email verified successfully. You can now log in.' });
@@ -91,7 +121,6 @@ export const verifyEmail = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 
 

@@ -133,7 +133,7 @@ const UserProfile = () => {
         <div className="mt-5">
           <p className="text-[11px] text-[#ADADAD]">Artist</p>
           <p className="text-[11px]">Believe in Christ</p>
-          <p className="text-[11px]">All will be well in His Name</p>
+          <p className="text-[11px]">{bio}</p>
         </div>
         <div className="flex gap-28 items-center mt-8">
           <img className="cursor-pointer" src={profileMenu} alt="" />

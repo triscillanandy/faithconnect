@@ -105,7 +105,7 @@ function Registration({ text }) {
         </div>
         <div className="w-[365.72px] h-[630px] mx-auto text-white mt-4 max-planSmallScreen:text-black">
           <div className="text-center">
-            <p className="font-bold text-3xl mb-3 capitalize">{text}</p>
+            <p className="font-bold text-2xl mb-3 capitalize">{text}</p>
             <p>Fill in the information to continue.</p>
           </div>
 
@@ -183,7 +183,7 @@ function Registration({ text }) {
           {error && <p className="text-red-600 mt-2">{error}</p>}
           <p className="text-sm mt-2">
             By creating an account, you agree to our{" "}
-            <a className="text-[#FF6132] cursor-pointer">
+            <a className="text-black max-planSmallScreen:text-mainTheme cursor-pointer">
               Terms and Conditions
             </a>
           </p>
@@ -209,7 +209,7 @@ function Registration({ text }) {
             Already have an account? {" "}
             <a
               onClick={() => navigate("/Login")}
-              className="text-[#FF6132] cursor-pointer"
+              className="text-black cursor-pointer max-planSmallScreen:text-[#ff6132]"
             >
               Sign In
             </a>

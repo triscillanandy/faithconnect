@@ -8,15 +8,15 @@ const LandingPage1 = () => {
     "
     >
       <div>
-        <p className="font-bold text-4xl mb-8 text-center">
+        <p className=" text-4xl font-poppins font-[700]  mb-8 text-center">
           Faith<span className="text-[#FF6132]">Connect</span>
         </p>
-        <p className="text-center font-bold text-lg max-[316px]:px-2">
+        <p className="text-center font-[400] font-poppins text-lg max-[316px]:px-2">
           Connect with Christians worldwide, discover uplifting content and grow
           spiritually in a safe and welcoming space
         </p>
         <button
-          className="bg-[#FF6132] text-white rounded-[20px] w-[500px]  mt-52 h-[60px] max-[492px]:w-[300px]"
+          className="bg-[#FF6132] text-white rounded-[20px] font-poppins font-[600] w-[500px]  mt-52 h-[60px] max-[492px]:w-[300px]"
           onClick={() => navigate("/plans")}
         >
           Join the Faith Community Today!
@@ -24,7 +24,7 @@ const LandingPage1 = () => {
         <div className="flex flex-col items-center mt-48">
           <div className="flex items-center">
             <img className="w-[26px] h-[18px]" src={Pray} alt="" />
-            <p className="font-bold">
+            <p className="font-bold font-poppins">
               Faith<span className="text-[#FF6132]">Connect</span>
             </p>
           </div>

@@ -31,7 +31,7 @@ const UserProfile = () => {
           return;
         }
 
-        const response = await fetch("https://faithconnect.onrender.com/api/auth/profile", {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/profile`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`, // Include the token in the Authorization header
@@ -65,7 +65,7 @@ const UserProfile = () => {
       return;
     }
     try {
-      const response = await fetch("https://faithconnect.onrender.com/api/auth/my-posts", {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/my-posts`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -101,7 +101,10 @@ const UserProfile = () => {
       <div className="mt-10">
         <div className="flex gap-6">
           <p>{userProfile.username}</p>
-          <button className="w-[170px] rounded-[6px] h-[30px] bg-[#EFEFEF]">
+          <button
+            className="w-[170px] rounded-[6px] h-[30px] bg-[#EFEFEF]"
+            onClick={() => navigate("/edit-profile")}
+          >
             Edit Profile
           </button>
           <button className="w-[170px] rounded-[6px] h-[30px] bg-[#EFEFEF]">
@@ -133,7 +136,7 @@ const UserProfile = () => {
         <div className="mt-5">
           <p className="text-[11px] text-[#ADADAD]">Artist</p>
           <p className="text-[11px]">Believe in Christ</p>
-          <p className="text-[11px]">All will be well in His Name</p>
+          <p className="text-[11px]">{bio}</p>
         </div>
         <div className="flex gap-28 items-center mt-8">
           <img className="cursor-pointer" src={profileMenu} alt="" />

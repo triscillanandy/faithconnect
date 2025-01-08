@@ -82,7 +82,7 @@ const fetchSuggestedPeople = async () => {
   }
 
   try {
-    const response = await fetch("https://faithconnect.onrender.com/api/auth/suggestedPeople", {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/suggestedPeople`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`, // Add token here
@@ -110,7 +110,7 @@ const fetchPrayerGroups = async () => {
   }
 
   try {
-    const response = await fetch("https://faithconnect.onrender.com/api/auth/groups", {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/groups`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`, // Add token here

@@ -7,7 +7,9 @@ const Search = () => {
 
   return (
     <div className="flex gap-6 max-[833px]:flex-col-reverse">
-      <LoggedInSideBar />
+      <div className="w-[130px] max-[833px]:w-full mt-3 max-[833px]:mt-0">
+        <LoggedInSideBar />
+      </div>
       <div className="hidden max-[833px]:flex max-[833px]:justify-between h-[500px] px-3">
         <p>Recent</p>
         <p>See all</p>

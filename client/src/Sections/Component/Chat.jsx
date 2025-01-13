@@ -26,58 +26,108 @@ import chat from "./chat-images/chat.png";
 import groups from "./chat-images/groups.png";
 import no from "./chat-images/no.png";
 import blocked from "./chat-images/blocked.png";
-// import {useContext}
 
+// import {useContext}
+// import UserProfileComponent from "./Userprofile";
+import UserProfileComponent from "./UserProfileComponent";
+// import { useNavigate } from "react-router-dom";
 const messages = [
   {
     imgSrc: image1,
     userName: "Josh Jones",
     userMessage: "Hey this is Josh Jones from bible study",
+    posts: 200,
+    followers: 300,
+    following: 1200,
+    profession: "Singer",
+    profileMessage: "I can do things through God",
   },
   {
     imgSrc: image2,
     userName: "John Doe",
-    userMessage: "Wil do, super, thank you",
+    userMessage: "Will do, super, thank you",
+    posts: 87,
+    followers: 445,
+    following: 1721,
+    profession: "Vlogger",
+    profileMessage: "God has A Plan for me",
   },
   {
     imgSrc: image3,
     userName: "Yvonne Light",
     userMessage: "Uploaded file",
+    posts: 900,
+    followers: 3000,
+    following: 123,
+    profession: "Programmer",
+    profileMessage: "With Faith all things are impossible",
   },
   {
     imgSrc: image4,
     userName: "Fajek",
     userMessage: "Here's a tutorial, if you...",
+    posts: 4012,
+    followers: 1042,
+    following: 120,
+    profession: "Creative Writer",
+    profileMessage: "God has given me a fearless heart",
   },
   {
     imgSrc: image5,
     userName: "Joanna Shully",
     userMessage: "😅",
+    posts: 2000,
+    followers: 300,
+    following: 900,
+    profession: "Pastor",
+    profileMessage: "Worry Less, Pray it Up",
   },
   {
     imgSrc: image6,
     userName: "MC Bastek",
     userMessage: "Fasting begins soon!",
+    posts: 200,
+    followers: 300,
+    following: 1200,
+    profession: "Realtor",
+    profileMessage: "Father, mentor, husband, son and teacher",
   },
   {
     imgSrc: image7,
     userName: "Mary Ceaser",
     userMessage: "Could you share the bible plan",
+    posts: 800,
+    followers: 4300,
+    following: 1200,
+    profession: "Nurse",
+    profileMessage: "Mother, care giver, and wife",
   },
   {
     imgSrc: image8,
     userName: "Marilyn Jones",
     userMessage: "I need to get a new bible",
+    posts: 608,
+    followers: 10000,
+    following: 1200,
+    profession: "Psychologist",
+    profileMessage: "God has given me all i need to succeed and be a success",
   },
   {
     imgSrc: image9,
     userName: "Christopher Campbell",
     userMessage: "Service is live now!",
+    profession: "Soldier",
+    profileMessage: "I burn with the flames of the lord",
   },
   {
     imgSrc: image10,
     userName: "Gabriella Josephine",
     userMessage: "When does a new plan start?",
+    posts: 208,
+    followers: 300,
+    following: 120,
+    profession: "Product Designer",
+    profileMessage: "Getting things done with God 🔥",
   },
 ];
 
@@ -107,6 +157,13 @@ const Chats = () => {
   const [selectedChat, setSelectedChat] = useState(null);
   const [show, setShow] = useState(true);
   const [showFilter, setShowFilter] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showHome, setShowHome] = useState(true);
+  const handleCollapse = function (chat) {
+    setSelectedChat(null);
+    setShowHome(false);
+    setSelectedUser(chat);
+  };
   return (
     <div className="flex gap-60 max-[833px]:flex-col-reverse">
       {show && (
@@ -118,16 +175,30 @@ const Chats = () => {
       <div className="w-full">
         {/* Conditional Rendering */}
 
+        {selectedUser && (
+          <Userprofile
+            chat={selectedUser}
+            setSelectedChat={setSelectedChat}
+            setShow={setShow}
+            setSelectedUser={setSelectedUser}
+            setShowHome={setShowHome}
+          />
+        )}
+
         {selectedChat ? (
           <ChatDetails
             chat={selectedChat}
+            setSelectedUser={setSelectedUser}
+            handleCollapse={handleCollapse}
+            setShowHome={setShowHome}
             goBack={() => {
               setSelectedChat(null);
               setShow(true);
             }} // Go back to chat list
           />
         ) : (
-          <div>
+          // {}
+          <div style={{ display: showHome ? "block" : "none" }}>
             <div className="flex items-center justify-between max-[613px]:px-4 px-20 mt-3">
               <h1 className="font-bold text-2xl">Chats</h1>
               <img src={people} alt="people icon" />
@@ -177,7 +248,6 @@ const Chats = () => {
     </div>
   );
 };
-``;
 export default Chats;
 
 function Chat({ imgSrc, userName, userMessage, onClick }) {
@@ -195,7 +265,13 @@ function Chat({ imgSrc, userName, userMessage, onClick }) {
   );
 }
 
-function ChatDetails({ chat, goBack }) {
+function ChatDetails({
+  chat,
+  goBack,
+  // setSelectedUser,
+  handleCollapse,
+  // setShowHome,
+}) {
   const [message, setMessage] = useState("");
 
   const [messages, setMessages] = useState([
@@ -225,7 +301,14 @@ function ChatDetails({ chat, goBack }) {
       <div className="flex justify-between items-center mt-5">
         <div className="flex items-center gap-4 px-5">
           <img onClick={goBack} className="cursor-pointer" src={arrow} alt="" />
-          <img src={chat.imgSrc} alt="" />
+          <img
+            className="cursor-pointer"
+            onClick={() => {
+              handleCollapse(chat);
+            }}
+            src={chat.imgSrc}
+            alt=""
+          />
           <div>
             <p className="font-bold">{chat.userName}</p>
             <p>Active 1min ago</p>
@@ -273,6 +356,53 @@ function ChatDetails({ chat, goBack }) {
           <img src={camera} alt="" />
           <img src={sound} alt="" />
         </form>
+      </div>
+    </div>
+  );
+}
+
+function Userprofile({
+  chat,
+  setSelectedChat,
+  setShow,
+  setSelectedUser,
+  setShowHome,
+}) {
+  // const navigate = useNavigate();
+  const goBack = () => {
+    setSelectedChat(false);
+    setSelectedUser(false);
+    setShow(true);
+    setShowHome(true);
+  };
+  return (
+    <div>
+      <div className="flex gap-4 items-center px-6 mx-auto">
+        <img src={arrow} onClick={goBack} />
+        <div>
+          <img src={chat.imgSrc} />
+
+          <p>{chat.userName}</p>
+        </div>
+        <div>
+          <p>{chat.posts}</p>
+          <p>Posts</p>
+        </div>
+        <div>
+          <p>{chat.followers}</p>
+          <p>Followers</p>
+        </div>
+        <div className="">
+          <p>{chat.following}</p>
+          <p>Following</p>
+        </div>
+      </div>
+      <div className="px-2 mt-3 mb-3">
+        <p>{chat.profession}</p>
+        <p>{chat.profileMessage}</p>
+      </div>
+      <div className="px-4">
+        <UserProfileComponent />
       </div>
     </div>
   );

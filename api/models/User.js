@@ -39,7 +39,6 @@ User.init(
       allowNull: true,
       field: 'lastName',
     },
- 
     password: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -59,6 +58,15 @@ User.init(
     },
     verificationToken: {
       type: DataTypes.STRING,
+      allowNull: true,
+    },
+    verificationCode: {
+      type: DataTypes.INTEGER,
+      allowNull: true, // Allow null initially until the code is generated
+    },
+    verificationCodeExpires: {
+      type: DataTypes.DATE,
+      allowNull: true, // Allow null initially until the expiration is set
     },
     profileImage: {
       type: DataTypes.STRING,
@@ -71,10 +79,10 @@ User.init(
     },
   },
   {
-    sequelize,  // Pass the sequelize instance
+    sequelize, // Pass the sequelize instance
     modelName: 'User',
-    tableName: 'users',  // Define the table name
-    timestamps: true,    // Automatically manage `createdAt` and `updatedAt`
+    tableName: 'users', // Define the table name
+    timestamps: true, // Automatically manage `createdAt` and `updatedAt`
   }
 );
 

@@ -70,9 +70,7 @@ function Registration({ text }) {
       }
     } catch (err) {
       toast.error("An error occurred. Please try again later.");
-    } finally {
-      setIsLoading(false); // Stop loading
-    }
+    } 
   };
 
   return (

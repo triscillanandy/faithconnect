@@ -106,7 +106,7 @@ const EmailSide = () => {
             />
           ))}
         </div>
-        {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+        
         <button
           className="text-[#ff6132] bg-white w-[453px] rounded-[12.11px] pt-[16.15px] pr-[48.44px] pb-[16.15px] pl-[48.44px] mb-4 max-[500px]:w-[250px]"
           onClick={handleVerify}

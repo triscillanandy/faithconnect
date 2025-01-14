@@ -17,7 +17,7 @@ const EmailSide = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:3001/api/auth/verify-email", {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/verify-email`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

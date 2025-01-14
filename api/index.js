@@ -12,8 +12,11 @@ import { v2 as cloudinary } from 'cloudinary';
 dotenv.config(); // Load environment variables
 
 // Middleware
+// var corsOptions = {
+//   origin: 'https://faithconnect-1-3yv0.onrender.com',
+// };
 var corsOptions = {
-  origin: 'https://faithconnect-1-3yv0.onrender.com',
+  origin: ' http://localhost:5173/',
 };
 const app = express();
 app.use(express.json());

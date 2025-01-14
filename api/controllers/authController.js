@@ -12,98 +12,84 @@ dotenv.config();
 
 // Configure Nodemailer
 const transporter = nodemailer.createTransport({
-  service: 'Gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false, // true for 465, false for other ports
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
 });
 
+import crypto from 'crypto';
+
 // Register a new user
 export const register = async (req, res) => {
-  const { username, email, phone, firstName, lastName,password,  } = req.body;
+  const { username, email, phone, firstName, lastName, password } = req.body;
 
   try {
-    // Check if user already exists
+    // Check if the user already exists
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-   
-    // Generate a verification token
-    const verificationToken = jwt.sign({ email }, process.env.JWT_SECRET, {
-      expiresIn: '1d',
-    });
+    // Generate a 6-digit verification code
+    const verificationCode = Math.floor(100000 + Math.random() * 900000);
+
+    // Optionally, set an expiration time for the code (e.g., 15 minutes from now)
+    const verificationCodeExpires = Date.now() + 15 * 60 * 1000;
 
     // Create a new user
     const newUser = await User.create({
       username,
       email,
       phone,
-      firstName, 
+      firstName,
       lastName,
-      password,
-    
-      isVerified: true,
-      verificationToken,
+      password, // Ensure you hash the password before saving
+      isVerified: false,
+      verificationCode,
+      verificationCodeExpires,
     });
 
-    // Send verification email
-    const verificationUrl = `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
+    // Send the verification email with the 6-digit code
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
       subject: 'Email Verification',
-      html: `<p>Click <a href="${verificationUrl}">here</a> to verify your email.</p>`,
+      html: `<p>Your verification code is <strong>${verificationCode}</strong>.</p> 
+             <p>Please enter this code on the verification page to activate your account.</p>`,
     };
 
     await transporter.sendMail(mailOptions);
 
-
-    res.status(201).json({ message: 'User registered successfully Please verify your account via email', user: { email: newUser.email } });
+    res.status(201).json({ message: 'User registered successfully. Please verify your account using the code sent to your email.', user: { email: newUser.email } });
   } catch (error) {
+    console.error('Error during registration:', error);
     res.status(500).json({ error: error.message });
   }
 };
 
-// Verify email
-// export const verifyEmail = async (req, res) => {
-//   const { token } = req.body;
-
-//   try {
-//     // Decode the token
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-//     // Find the user by email
-//     const user = await User.findOne({ where: { email: decoded.email } });
-//     if (!user) {
-//       return res.status(400).json({ message: 'Invalid token or user not found' });
-//     }
-
-//     // Update user's verification status
-//     user.isVerified = true;
-//     user.verificationToken = null;
-//     await user.save();
-
-//     res.json({ message: 'Email verified successfully. You can now log in.' });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-
-// Verify email
 export const verifyEmail = async (req, res) => {
-  const { token } = req.params; // Get the token from the URL params
+  const { verificationCode } = req.body; // Get the verification code from the request body
+
+  if (!verificationCode) {
+    return res.status(400).json({ message: 'Verification code is required' });
+  }
 
   try {
-    // Decode the token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Find the user by the verification code
+    const user = await User.findOne({ where: { verificationCode: verificationCode } });
 
-    // Find the user by email
-    const user = await User.findOne({ where: { email: decoded.email } });
     if (!user) {
-      return res.status(400).json({ message: 'Invalid token or user not found' });
+      return res.status(400).json({ message: 'Invalid code or user not found' });
+    }
+
+    // Check if the code has expired
+    const currentTime = new Date();
+    if (currentTime > new Date(user.verificationCodeExpires)) {
+      return res.status(400).json({ message: 'Verification code has expired' });
     }
 
     // Check if user is already verified
@@ -113,14 +99,17 @@ export const verifyEmail = async (req, res) => {
 
     // Update user's verification status
     user.isVerified = true;
-    user.verificationToken = null; // Remove the token after successful verification
+    user.verificationCode = null; // Remove the code after successful verification
+    user.verificationCodeExpires = null; // Remove the expiration time
     await user.save();
 
     res.json({ message: 'Email verified successfully. You can now log in.' });
+    console.log('Email verified successfully. You can now log in.');
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 
 

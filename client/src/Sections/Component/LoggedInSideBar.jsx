@@ -16,11 +16,13 @@ const LoggedInSideBar = ({ showSideBar = true }) => {
     <>
       {showSideBar && (
         <div
-          style={{
-            display: showSideBar ? "flex" : "none",
-            height: showSideBar ? "100%" : "",
-          }}
-          className=" h-[823px] bg-[#180F4B] flex flex-col  justify-between max-[833px]:flex-row max-[833px]:h-[45px] max-[833px]:items-center max-[833px]:w-390px relative max-[833px]:bottom-0 max-[833px]:px-3 max-[833px]:py-2"
+          style={
+            {
+              // display: showSideBar ? "flex" : "none",
+              // height: showSideBar ? "100%" : "",
+            }
+          }
+          className=" h-[825px] bg-[#180F4B] flex flex-col  justify-between max-[833px]:flex-row max-[833px]:h-[45px] max-[833px]:items-center max-[833px]:w-390px relative max-[833px]:bottom-0 max-[833px]:px-3 max-[833px]:py-2"
         >
           <img
             src={HomePage}

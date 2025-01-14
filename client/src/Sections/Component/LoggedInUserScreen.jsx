@@ -142,7 +142,12 @@ const fetchPrayerGroups = async () => {
         <img className="w-[40px] cursor-pointer" src={Logo} alt="" />
         <div className="flex">
           <img className="w-[35px] cursor-pointer" src={notify} alt="" />
-          <img className="w-[31px] cursor-pointer" src={chat} alt="" />
+          <img
+            className="w-[31px] cursor-pointer"
+            src={chat}
+            onClick={() => navigate("/chats")}
+            alt=""
+          />
         </div>
       </div>
       <div className="bg-[#180f48] flex flex-col justify-between h-[823px] max-[836px]:flex-row max-[836px]:h-[45px] max-[836px]:absolute max-[836px]:bottom-0 max-[836px]:mt-8 max-[836px]:bg-[#ff6132] max-[836px]:items-center max-[836px]:w-[100%]">

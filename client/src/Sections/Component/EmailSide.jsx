@@ -1,18 +1,20 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Input from "./Inputs";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; // Import toast styles
 import verify from "./Registration-Images/verify.png";
 
 const EmailSide = () => {
   const [verificationCode, setVerificationCode] = useState(["", "", "", "", "", ""]);
-  const [errorMessage, setErrorMessage] = useState("");
+
   const navigate = useNavigate();
 
   const handleVerify = async () => {
     const code = verificationCode.join(""); // Combine the input fields into a single code
 
     if (code.length !== 6 || verificationCode.includes("")) {
-      setErrorMessage("Please enter a valid 6-digit verification code.");
+      
+      toast.error("Please enter a valid 6-digit verification code."); // Show error message with toast
       return;
     }
 
@@ -28,12 +30,15 @@ const EmailSide = () => {
       const result = await response.json();
 
       if (response.ok) {
+        toast.success("Verification successful! Redirecting..."); // Success message
         navigate("/verified"); // Redirect to the verified page
       } else {
-        setErrorMessage(result.message || "Verification failed. Please try again.");
+        
+        toast.error(result.message || "Verification failed. Please try again."); // Error message
       }
     } catch (error) {
-      setErrorMessage("Something went wrong. Please try again.");
+     
+      toast.error("Something went wrong. Please try again."); // Error message
     }
   };
 
@@ -53,6 +58,18 @@ const EmailSide = () => {
 
   return (
     <div className="bg-[#ff6132] w-[600px] h-[900px] flex flex-col text-center items-center text-white justify-center max-validationBreakPoint:justify-normal validationBreakPoint:-mt-10 validationBreakPoint:w-full">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+
       <div className="p-8 max-validationBreakPoint:p-0">
         <img
           src={verify}

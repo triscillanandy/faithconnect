@@ -1,22 +1,23 @@
-// import Validation from "./Validation";
+import { useNavigate } from "react-router-dom";
 import icon from "./Registration-Images/icon.png";
 import vector from "./Registration-Images/Vector.png";
 import ValidationSide from "./ValidationSide";
 import VerifyImg from "./Registration-Images/verify.png";
 
 const SucessfulVerification = () => {
+  const navigate = useNavigate(); // Initialize navigate
+
   return (
     <div className="flex gap-12 px-8 overflow-hidden max-validationBreakPoint:w-full">
-      {/* <Validation />
-       */}
+      {/* <Validation /> */}
       <ValidationSide />
-      <OtherSide />
+      <OtherSide navigate={navigate} /> {/* Pass navigate as a prop */}
     </div>
   );
 };
 export default SucessfulVerification;
 
-function OtherSide() {
+function OtherSide({ navigate }) {
   return (
     <div className="bg-[#FF6132] w-[526px] h-[825px] max-validationBreakPoint:h-[100vh]">
       <div className="flex justify-between px-3 mt-3 max-validationBreakPoint:hidden">
@@ -38,9 +39,13 @@ function OtherSide() {
           </h2>
         </div>
 
-        <button className="text-[#ff6132] w-[425px] h-[60px] rounded-[5px] bg-white mt-32 max-[501px]:w-3/4">
-          Create Password
+        <button
+          className="text-[#ff6132] bg-white w-[453px] rounded-[12.11px] pt-[16.15px] pr-[48.44px] pb-[16.15px] pl-[48.44px] mb-4 max-[500px]:w-[250px]"
+          onClick={() => navigate("/Login")} // Use the passed navigate function
+        >
+          Login
         </button>
+        
       </div>
     </div>
   );

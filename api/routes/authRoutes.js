@@ -10,7 +10,8 @@ const router = express.Router();
 
 router.post('/register', register);
 // Use URL parameter for the token
-router.get('/verify-email/:token', verifyEmail); // Now it expects the token in the URL parameter
+router.post('/verify-email', verifyEmail);
+ 
 
 router.post('/login', login);
 router.get('/protected', isAuthenticated, getProtectedData);

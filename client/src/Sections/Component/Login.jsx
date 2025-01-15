@@ -13,7 +13,7 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch("https://faithconnect-6f3o.onrender.com/api/auth/login", {
+      const response = await fetch(`${import.meta.env.REACT_APP_API_URL}/api/auth/login`, {
         method: "POST",
         headers: {
           Accept: "application/json, text/plain, */*",

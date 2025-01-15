@@ -41,7 +41,7 @@ function Registration({ text }) {
 
     try {
       // Example API endpoint
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/register`, {
+      const response = await fetch(`${import.meta.env.REACT_APP_API_URL}/api/auth/register`, {
         method: "POST",
         headers: {
           Accept: "application/json, text/plain, */*",
@@ -56,9 +56,9 @@ function Registration({ text }) {
           password,
         }),
       });
-
+      console.log("Raw Response:", response); 
       const data = await response.json();
-
+      console.log("Parsed Data:", data); 
      
       if (response.ok) {
         console.log("Registration Successful:", data);
@@ -70,6 +70,7 @@ function Registration({ text }) {
         toast.error(data.message || "Registration failed. Please try again.");
       }
     } catch (err) {
+      console.error("Fetch Error:", err);
       toast.error("An error occurred. Please try again later.");
     } 
   };

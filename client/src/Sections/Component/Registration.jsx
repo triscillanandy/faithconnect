@@ -56,11 +56,13 @@ function Registration({ text }) {
         }),
       });
 
-      const data = await response.json();
-
+      
+      // console.log("Raw Response:", response); 
+      // const rawText = await response.text();
+      // console.log("Raw Text Response:", rawText) 
      
       if (response.ok) {
-        console.log("Registration Successful:", data);
+    
         toast.success("Registration successful Please check your email to verify.");
         setTimeout(() => {
           navigate("/email-verification"); // Redirect after showing the message
@@ -69,6 +71,7 @@ function Registration({ text }) {
         toast.error(data.message || "Registration failed. Please try again.");
       }
     } catch (err) {
+      console.log("Registration Successful:", err);
       toast.error("An error occurred. Please try again later.");
     } 
   };

@@ -31,7 +31,7 @@ const UserProfile = () => {
           return;
         }
 
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/profile`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`, // Include the token in the Authorization header
@@ -65,7 +65,7 @@ const UserProfile = () => {
       return;
     }
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/my-posts`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/my-posts`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,

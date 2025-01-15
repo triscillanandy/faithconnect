@@ -23,6 +23,7 @@ function Registration({ text }) {
   const navigate = useNavigate();
 
   const handleRegistration = async () => {
+   // console.log(import.meta.env.VITE_API_URL) // "123"
     // Basic validation
     if (!firstName || !lastName || !email || !phone || !username || !password) {
       toast.error("All fields are required!");
@@ -41,7 +42,8 @@ function Registration({ text }) {
 
     try {
       // Example API endpoint
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/register`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
+        
         method: "POST",
         headers: {
           Accept: "application/json, text/plain, */*",
@@ -60,6 +62,8 @@ function Registration({ text }) {
       // const rawText = await response.text();
       // console.log("Raw Text Response:", rawText) 
      
+
+     
       if (response.ok) {
   
         toast.success("Registration successful Please check your email to verify.");
@@ -67,9 +71,12 @@ function Registration({ text }) {
           navigate("/email-verification"); // Redirect after showing the message
         }, 1500); // Delayredirection for 1.5 seconds
       } else {
+        const data = await response.json();
         toast.error(data.message || "Registration failed. Please try again.");
       }
     } catch (err) {
+      console.log( err);
+   
       console.error("Fetch Error:", err);
       toast.error("An error occurred. Please try again later.");
     } 

@@ -14,7 +14,7 @@ dotenv.config(); // Load environment variables
 
 // Middleware
 var corsOptions = {
-  origin: 'http://localhost:5173/',  // Adjust your frontend URL if needed
+  origin: 'http://localhost:5173',  // Adjust your frontend URL if needed
 };
 const app = express();
 app.use(express.json());

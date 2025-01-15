@@ -8,17 +8,82 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import dotenv from 'dotenv';
 import { v2 as cloudinary } from 'cloudinary';
+import { Server as socketIo } from 'socket.io';  // Correct way to import socket.io
 
 dotenv.config(); // Load environment variables
 
 // Middleware
 var corsOptions = {
-  origin: 'https://faithconnect-1-3yv0.onrender.com',
+  origin: 'http://localhost:5173/',  // Adjust your frontend URL if needed
 };
 const app = express();
 app.use(express.json());
-// app.use(cors());
 app.use(cors(corsOptions));
+
+// Connect to PostgreSQL using Sequelize
+const connectDB = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('PostgreSQL connected with Sequelize');
+    await sequelize.sync({ alter: true });
+  } catch (error) {
+    console.error('Database connection error:', error);
+    process.exit(1);
+  }
+};
+
+// Start the HTTP server
+const server = app.listen(process.env.PORT || 3001, () => {
+  console.log(`Server running on http://localhost:${process.env.PORT || 3001}`);
+});
+
+// Initialize Socket.IO with the server instance
+const io = new socketIo(server, {
+  cors: corsOptions,  // Use the same CORS options for Socket.IO
+});
+
+// Socket.io logic
+let users = [];
+
+const addUser = (userId, socketId) => {
+  !users.some((user) => user.userId === userId) && users.push({ userId, socketId });
+};
+
+const removeUser = (socketId) => {
+  users = users.filter((user) => user.socketId !== socketId);
+};
+
+const getUser = (userId) => {
+  return users.find((user) => user.userId === userId);
+};
+
+io.on("connection", (socket) => {
+  console.log("A user connected.");
+
+  // When a user connects, register their userId and socketId
+  socket.on("addUser", (userId) => {
+    addUser(userId, socket.id);
+    io.emit("getUsers", users);
+  });
+
+  // Send and receive messages
+  socket.on("sendMessage", ({ senderId, receiverId, text }) => {
+    const user = getUser(receiverId);
+    if (user) {
+      io.to(user.socketId).emit("getMessage", {
+        senderId,
+        text,
+      });
+    }
+  });
+
+  // When a user disconnects, remove them from the user list
+  socket.on("disconnect", () => {
+    console.log("A user disconnected!");
+    removeUser(socket.id);
+    io.emit("getUsers", users);
+  });
+});
 
 app.use(passport.initialize());
 
@@ -69,22 +134,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use('/uploads/profile-images', express.static(path.join(__dirname, 'uploads/profile-images')));
 
-// Connect to PostgreSQL using Sequelize
-const connectDB = async () => {
-  try {
-    await sequelize.authenticate();
-    console.log('PostgreSQL connected with Sequelize');
-    await sequelize.sync({ alter: true });
-  } catch (error) {
-    console.error('Database connection error:', error);
-    process.exit(1);
-  }
-};
-
-// Start the server
-const PORT = process.env.PORT || 3001;
 connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
+  // The server has already started, no need to start it again
 });

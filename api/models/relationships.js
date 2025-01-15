@@ -4,6 +4,8 @@ import Post from './Post.js';
 import Comment from './Comment.js';
 import Favorite from './Favorite.js';
 import Follower from './Follower.js';
+import Message from './Message.js';
+import Conversation from './Conversation.js';
 
 // Define relationships
 User.hasMany(Post, { foreignKey: 'userId', as: 'posts' });
@@ -11,7 +13,8 @@ User.hasMany(Comment, { foreignKey: 'userId', as: 'comments' });
 User.hasMany(Favorite, { foreignKey: 'userId', as: 'favorites' });
 User.hasMany(Follower, { foreignKey: 'followerId', as: 'followers' });
 User.hasMany(Follower, { foreignKey: 'followingId', as: 'followings' });
-
+Message.belongsTo(Conversation, { foreignKey: 'conversationId', as: 'conversation' });
+Conversation.hasMany(Message, { foreignKey: 'conversationId', as: 'messages' });
 Post.hasMany(Comment, { foreignKey: 'postId', as: 'comments' });
 Post.hasMany(Favorite, { foreignKey: 'postId', as: 'favorites' });
 

@@ -24,6 +24,20 @@ const transporter = nodemailer.createTransport({
 import crypto from 'crypto';
 
 // Register a new user
+/**
+ * Registers a new user.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} req.body - The request body.
+ * @param {string} req.body.username - The username of the new user.
+ * @param {string} req.body.email - The email of the new user.
+ * @param {string} req.body.phone - The phone number of the new user.
+ * @param {string} req.body.firstName - The first name of the new user.
+ * @param {string} req.body.lastName - The last name of the new user.
+ * @param {string} req.body.password - The password of the new user.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>} - A promise that resolves when the user is registered.
+ */
 export const register = async (req, res) => {
   const { username, email, phone, firstName, lastName, password } = req.body;
 

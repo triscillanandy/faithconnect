@@ -5,6 +5,8 @@ import { isAuthenticated } from '../middleware/authMiddleware.js';
 import { createPost,getMyPosts,getPosts,getPostById,deletePost } from '../controllers/postController.js';
 import { upload } from '../middleware/uploadMiddleware.js';
 import {creategroups,joingroups,leavegroups,listGroups} from '../controllers/groupController.js';
+
+import { createConversation, getConversations, getConversationByUsers,sendMessage,getMessages } from '../controllers/conversationController.js';
 import {followUser, unfollowUser,getFollowers, getFollowing,} from '../controllers/followController.js'; // New controllers for follow functionality
 const router = express.Router();
 
@@ -42,6 +44,15 @@ router.post('/creategroups', isAuthenticated,  creategroups);
 router.post('/groups/:groupId/join', isAuthenticated, joingroups); 
 router.get('/groups',isAuthenticated, listGroups);
 router.post('/groups/:groupId/leave', isAuthenticated, leavegroups);
+
+
+
+// Conversation Routes and chats
+router.post('/conversations', isAuthenticated, createConversation);  // Create a new conversation
+router.get('/conversations/:userId', isAuthenticated, getConversations);  // Get all conversations of a user
+router.get('/conversations/find/:firstUserId/:secondUserId', isAuthenticated, getConversationByUsers);  // Get conversation between two users
+router.post('/messages', isAuthenticated, sendMessage);  // Send a message
+router.get('/messages/:conversationId', isAuthenticated, getMessages);  // Get all messages in a specific conversation
 
 export default router;
 

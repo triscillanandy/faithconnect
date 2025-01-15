@@ -31,7 +31,7 @@ const UserProfile = () => {
           return;
         }
 
-        const response = await fetch("http://localhost:3001/api/auth/profile", {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/profile`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`, // Include the token in the Authorization header
@@ -65,7 +65,7 @@ const UserProfile = () => {
       return;
     }
     try {
-      const response = await fetch("http://localhost:3001/api/auth/my-posts", {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/my-posts`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -101,7 +101,10 @@ const UserProfile = () => {
       <div className="mt-10">
         <div className="flex gap-6">
           <p>{userProfile.username}</p>
-          <button className="w-[170px] rounded-[6px] h-[30px] bg-[#EFEFEF]">
+          <button
+            className="w-[170px] rounded-[6px] h-[30px] bg-[#EFEFEF]"
+            onClick={() => navigate("/edit-profile")}
+          >
             Edit Profile
           </button>
           <button className="w-[170px] rounded-[6px] h-[30px] bg-[#EFEFEF]">

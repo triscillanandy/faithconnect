@@ -40,7 +40,8 @@ function Registration({ text }) {
     }
 
     try {
-      const response = await fetch("http://localhost:3001/api/auth/register", {
+      // Example API endpoint
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/register`, {
         method: "POST",
         headers: {
           Accept: "application/json, text/plain, */*",
@@ -55,14 +56,12 @@ function Registration({ text }) {
           password,
         }),
       });
-
-      
       // console.log("Raw Response:", response); 
       // const rawText = await response.text();
       // console.log("Raw Text Response:", rawText) 
      
       if (response.ok) {
-    
+  
         toast.success("Registration successful Please check your email to verify.");
         setTimeout(() => {
           navigate("/email-verification"); // Redirect after showing the message
@@ -71,7 +70,7 @@ function Registration({ text }) {
         toast.error(data.message || "Registration failed. Please try again.");
       }
     } catch (err) {
-      console.log("Registration Successful:", err);
+      console.error("Fetch Error:", err);
       toast.error("An error occurred. Please try again later.");
     } 
   };
@@ -206,8 +205,8 @@ function Registration({ text }) {
             <img src={googleImg} />
             Sign up with Google
           </button>
-          <p className="text-center mt-3">
-            Already have an account? {" "}
+          <p className="text-center mt-2">
+            Already have an account?{" "}
             <a
               onClick={() => navigate("/Login")}
               className="text-black cursor-pointer max-planSmallScreen:text-[#ff6132]"

@@ -41,7 +41,7 @@ function Registration({ text }) {
 
     try {
       // Example API endpoint
-      const response = await fetch(`${import.meta.env.REACT_APP_API_URL}/api/auth/register`, {
+      const response = await fetch("https://faithconnect-1-3yv0.onrender.com/api/auth/register", {
         method: "POST",
         headers: {
           Accept: "application/json, text/plain, */*",

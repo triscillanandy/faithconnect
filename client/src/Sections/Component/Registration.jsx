@@ -57,8 +57,8 @@ function Registration({ text }) {
         }),
       });
       console.log("Raw Response:", response); 
-      const data = await response.json();
-      console.log("Parsed Data:", data); 
+      const rawText = await response.text();
+      console.log("Raw Text Response:", rawText) 
      
       if (response.ok) {
         console.log("Registration Successful:", data);

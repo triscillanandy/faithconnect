@@ -20,7 +20,7 @@ import LandingPage1 from "./Sections/LandingPage1";
 // import Posts from "./Sections/Component/Posts";
 import EditProfile from "./Sections/Component/EditProfile";
 // import Denomination from "./Sections/Component/Denomination";
-// import Chat from "./Sections/Component/Chat";
+import Chat from "./Sections/Component/Chat";
 // import { MyProvider } from "./GlobalVariables";
 // import Plans from "../../Sections/Plans.jsx";
 // import Plans from "./Sections/Plans";
@@ -72,7 +72,7 @@ function App() {
           {/* <Route path="/denomination" element={<Denomination></Denomination>} /> */}
           {/* <Route path = "/devotional" element = {} /> */}
           {/* <Route path /> */}
-          {/* <Route path="/chats" element={<Chat></Chat>} /> */}
+          <Route path="/chats" element={<Chat></Chat>} />
         </Routes>
       </Router>
     </>

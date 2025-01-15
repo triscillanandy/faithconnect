@@ -53,7 +53,7 @@ const LoggedInUserScreen = () => {
       return;
     }
     try {
-      const response = await fetch("https://faithconnect.onrender.com/api/auth/getposts", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/getposts`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,

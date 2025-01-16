@@ -30,7 +30,7 @@ const Login = () => {
         const token = data.token;
         localStorage.setItem("token", token); // Store token in local storage
         toast.success("Login successful!");
-        navigate("/LoggedIn"); // Redirect to the dashboard
+        navigate("/home"); // Redirect to the dashboard
       } else {
         const errorData = await response.json();
         setErrorMessage(errorData.message || "Invalid email or password.");

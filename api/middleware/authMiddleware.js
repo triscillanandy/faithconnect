@@ -12,7 +12,7 @@ export const isAuthenticated = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET );
     req.user = decoded; // Attach user data to the request object
     next();
   } catch (error) {

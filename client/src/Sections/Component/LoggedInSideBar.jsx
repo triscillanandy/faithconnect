@@ -26,7 +26,7 @@ const LoggedInSideBar = ({ showSideBar = true }) => {
                <FaSearch className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Search" />
                <FaPrayingHands className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Pray" />
                <FaFilm className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Reels" />
-               <FaEnvelope className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="DM" />
+               <FaEnvelope className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="DM" onClick={() => navigate("/chats")} />
                <FaEnvelope className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="DM" />
                <FaBell className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Notification" />
                <FaUser className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Account" onClick={() => navigate("/user-profile")} />

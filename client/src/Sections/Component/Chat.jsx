@@ -74,10 +74,10 @@ const Chats = () => {
   };
 
   return (
-    <div className="flex gap-4 max-[833px]:flex-col-reverse">
-      <div className="w-[130px] max-[833px]:w-full mt-3 max-[833px]:mt-0">
-        <LoggedInSideBar showSideBar={true} />
-      </div>
+    <div className="flex gap-24 max-[833px]:flex-col-reverse">
+     
+        <LoggedInSideBar/>
+  
 
       <div className="w-full flex">
         <div className="w-1/3">

@@ -89,7 +89,7 @@ const UserProfile = () => {
       <LoggedInSideBar />
       <div className="mt-10">
         <div className="flex gap-6">
-          <p>{userProfile.username}</p>
+          <p>@{userProfile.username}</p>
           <button
             className="w-[170px] rounded-[6px] h-[30px] bg-[#EFEFEF]"
             onClick={() => navigate("/edit-profile")}
@@ -123,7 +123,7 @@ const UserProfile = () => {
           </div>
         </div>
         <div className="mt-5">
-          <p className="text-[11px] text-[#ADADAD]">Artist</p>
+          <p className="text-[11px] text-[#ADADAD]"></p>
           <p className="text-[11px]">Believe in Christ</p>
           
         </div>

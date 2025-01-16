@@ -17,6 +17,11 @@ Message.belongsTo(Conversation, { foreignKey: 'conversationId', as: 'conversatio
 Conversation.hasMany(Message, { foreignKey: 'conversationId', as: 'messages' });
 Post.hasMany(Comment, { foreignKey: 'postId', as: 'comments' });
 Post.hasMany(Favorite, { foreignKey: 'postId', as: 'favorites' });
+// Post model
+Post.belongsTo(User, { as: "user", foreignKey: "userId" });
+
+// User model
+User.hasMany(Post, { as: "posts", foreignKey: "userId" });
 
 // Export all models as named exports for better modularity
 export { User, Post, Comment, Favorite, Follower };

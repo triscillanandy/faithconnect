@@ -38,7 +38,7 @@ const LoggedInUserScreen = () => {
       return;
     }
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/getposts`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/getOtherPosts`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -153,8 +153,8 @@ const LoggedInUserScreen = () => {
                 posts.map((post) => (
             <PostsComponent
               key={post.id}
-              userImg={post.userId}
-              userName={`User ${post.userId}`}
+              userImg={post.user?.profileImage}
+              userName={post.user?.username}
               description={post.description}
               media={post.media}
             />

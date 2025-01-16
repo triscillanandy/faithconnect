@@ -2,7 +2,7 @@
 import express from 'express';
 import { register, verifyEmail, login, getProtectedData ,getMyProfile,updateProfile,uploadProfileImage,updatePreferences, getPreferences} from '../controllers/authController.js';
 import { isAuthenticated } from '../middleware/authMiddleware.js';
-import { createPost,getMyPosts,getPosts,getPostById,deletePost } from '../controllers/postController.js';
+import { createPost,getMyPosts,getPosts,getPostById,deletePost,getOtherPosts } from '../controllers/postController.js';
 import { upload } from '../middleware/uploadMiddleware.js';
 import {creategroups,joingroups,leavegroups,listGroups} from '../controllers/groupController.js';
 
@@ -28,6 +28,8 @@ router.get('/preferences', isAuthenticated, getPreferences);   // Fetch preferen
 //posts
 router.post('/posts', isAuthenticated, createPost);
 router.get('/getposts', isAuthenticated, getPosts);
+router.get('/getOtherPosts', isAuthenticated, getOtherPosts);
+ 
 router.get('/posts/:id', isAuthenticated, getPostById); 
 router.delete('/posts/:id', isAuthenticated, deletePost);
 router.get('/my-posts', isAuthenticated, getMyPosts);

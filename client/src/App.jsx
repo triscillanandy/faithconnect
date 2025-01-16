@@ -17,7 +17,7 @@ import Search from "./Sections/Component/Search";
 import Devotional from "./Sections/Component/Devotional";
 import LandingPage1 from "./Sections/LandingPage1";
 //import Reels from "./Sections/Component/Reels";
-// import Posts from "./Sections/Component/Posts";
+import Posts from "./Sections/Component/Posts";
 import EditProfile from "./Sections/Component/EditProfile";
 // import Denomination from "./Sections/Component/Denomination";
 import Chat from "./Sections/Component/Chat";
@@ -67,7 +67,7 @@ function App() {
           <Route path="/search" element={<Search></Search>} />
           <Route path="/devotional" element={<Devotional></Devotional>} />
           {/* <Route path="/reels" element={<Reels></Reels>} /> */}
-          {/* <Route path="/post" element={<Posts></Posts>} /> */}
+          <Route path="/post" element={<Posts></Posts>} />
           <Route path="/edit-profile" element={<EditProfile />} />
           {/* <Route path="/denomination" element={<Denomination></Denomination>} /> */}
           {/* <Route path = "/devotional" element = {} /> */}

@@ -1,10 +1,10 @@
 import Post from '../models/Post.js';
 import Media from '../models/Media.js';
-
+import User from '../models/User.js';
 import fs from 'fs';
 import { mediaUpload } from '../middleware/mediaUploadMiddleware.js';  // Import your media upload middleware
 import { v2 as cloudinary } from 'cloudinary';
-
+import { Op } from 'sequelize';
 
 
 
@@ -201,6 +201,35 @@ export const getPosts = async (req, res) => {
         {
           model: Media,
           as: 'media',
+        },
+      ],
+    });
+
+    res.status(200).json({ posts });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+export const getOtherPosts = async (req, res) => {
+  try {
+    const posts = await Post.findAll({
+      where: {
+        userId: {
+          [Op.ne]: req.user.id, // Exclude posts created by the authenticated user
+        },
+      },
+      include: [
+        {
+          model: Media,
+          as: 'media',
+        },
+        {
+          model: User,
+          as: 'user',
+          attributes: ['username','profileImage'], // Include the username of the post owner
         },
       ],
     });

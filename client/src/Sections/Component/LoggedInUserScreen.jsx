@@ -24,6 +24,7 @@ const LoggedInUserScreen = () => {
   const [suggestedPeople, setSuggestedPeople] = useState([]);
   const [groups, setPrayerGroups] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
+  // const [isGroupMember, setIsGroupMember] = useState(isMember);
 
   useEffect(() => {
     fetchPosts();
@@ -105,6 +106,7 @@ const LoggedInUserScreen = () => {
       if (response.ok) {
         const data = await response.json();
         setPrayerGroups(data.groups);
+        
       } else {
         console.error("Failed to fetch prayer groups.");
       }
@@ -167,6 +169,58 @@ const LoggedInUserScreen = () => {
     }
   };
 
+  const joinGroup = async (groupId) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setErrorMessage("No token provided. Please log in.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/groups/${groupId}/join`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        fetchPrayerGroups(); // Refresh the prayer groups list
+      } else {
+        console.error("Failed to join group.");
+      }
+    } catch (error) {
+      console.error("Error joining group:", error);
+    }
+  };
+
+  const leaveGroup = async (groupId) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setErrorMessage("No token provided. Please log in.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/groups/${groupId}/leave`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        fetchPrayerGroups(); // Refresh the prayer groups list
+      } else {
+        console.error("Failed to leave group.");
+      }
+    } catch (error) {
+      console.error("Error leaving group:", error);
+    }
+  };
+
   return (
     <div className="flex min-h-screen">
       {/* Navigation Bar */}
@@ -223,7 +277,15 @@ const LoggedInUserScreen = () => {
           </div>
           {groups.length > 0 ? (
             groups.slice(0, 4).map((group) => (
-              <SuggestedGroups key={group.id} imgSrc={group.imgSrc} group_name={group.group_name} />
+              <SuggestedGroups
+                key={group.id}
+                imgSrc={group.imgSrc}
+                group_name={group.group_name}
+                groupId={group.id}
+                isMember={group.is_member}
+                joinGroup={joinGroup}
+                leaveGroup={leaveGroup}
+              />
             ))
           ) : (
             <p>No prayer groups available</p>
@@ -323,14 +385,30 @@ function SuggestedFollows({ imgSrc, userName, userId, followUser, unfollowUser }
   );
 }
 
-function SuggestedGroups({ imgSrc, group_name }) {
+function SuggestedGroups({ imgSrc, group_name, groupId, isMember, joinGroup, leaveGroup }) {
+  const [isGroupMember, setIsGroupMember] = useState(isMember);
+  const handleJoinLeave = async () => {
+    if (isGroupMember) {
+      await leaveGroup(groupId);
+    } else {
+      await joinGroup(groupId);
+    }
+    setIsGroupMember(!isGroupMember);
+  };
+
   return (
     <div className="flex items-center mb-4">
       <img src={imgSrc} alt="" className="w-10 h-10 rounded-full" />
-      <div className="ml-2">
+      <div className="ml-2 flex-1">
         <p className="font-semibold">{group_name}</p>
         <p className="text-[#A0A0A0] text-sm">Kashaf House</p>
       </div>
+      <button
+        className={`rounded-[4px] px-4 py-1 text-white ${isGroupMember ? "bg-gray-500" : "bg-[#ff6132]"}`}
+        onClick={handleJoinLeave}
+      >
+            {isGroupMember ? "Leave" : "Join"}
+      </button>
     </div>
   );
 }

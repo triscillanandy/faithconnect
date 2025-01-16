@@ -61,8 +61,9 @@ const Chats = () => {
   useEffect(() => {
     messageRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+  
 
-  const fetchMessages = async (conversationId) => {
+  const fetchMessages = async (conversationId,) => {
     const token = localStorage.getItem("token");
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/messages/${conversationId}`, {
       method: "GET",
@@ -92,7 +93,7 @@ const Chats = () => {
     await fetch(`${import.meta.env.VITE_API_URL}/api/auth/messages`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/json, text/plain, */*",
         "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify(newMessage),
@@ -104,6 +105,7 @@ const Chats = () => {
 
   const handleSelectChat = (chat) => {
     setSelectedChat(chat);
+    setSelectedUser(chat.user); // Assuming each chat has a `user` object
     fetchMessages(chat.id);
   };
 
@@ -208,7 +210,7 @@ function Chat({ imgSrc, userName, userMessage, onClick }) {
     <div className="flex items-center mb-8 gap-4 cursor-pointer" onClick={onClick}>
       <img className="w-[70.13px] h-[75.91px]" src={imgSrc} alt="" />
       <div>
-        <p className="font-bold">sss{userName}</p>
+        <p className="font-bold">{userName}</p>
         <p>{userMessage}</p>
       </div>
     </div>

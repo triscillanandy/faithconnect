@@ -1,7 +1,8 @@
 import Conversation from '../models/Conversation.js'; 
 import Message from '../models/Message.js'; 
 import { Sequelize } from 'sequelize';
-    
+import User from "../models/User.js"; // Adjust path based on your project structure
+
 // Create a new conversation
 export const createConversation = async (req, res) => {
   const { senderId, receiverId } = req.body;
@@ -36,6 +37,52 @@ export const getConversations = async (req, res) => {
   }
 };
 
+
+// export const getConversations = async (req, res) => {
+//   const { userId } = req.params;
+
+//   try {
+//     // Fetch conversations involving the user
+//     const conversations = await Conversation.findAll({
+//       where: {
+//         userIds: { [Sequelize.Op.contains]: [userId] }, // PostgreSQL array operator for array containment
+//       },
+//     });
+
+//     // Fetch receiver information for each conversation
+//     const conversationUserData = await Promise.all(
+//       conversations.map(async (conversation) => {
+//         const receiverId = conversation.userIds.find((id) => id !== userId);
+
+//         if (!receiverId) {
+//           return {
+//             user: null,
+//             conversationId: conversation.id,
+//           };
+//         }
+
+//         const receiver = await User.findByPk(receiverId); // Using primary key lookup
+//         return {
+//           user: receiver
+//             ? {
+//                 receiverId: receiver.id,
+//                 email: receiver.email,
+//                 fullName: receiver.username,
+//               }
+//             : null,
+//           conversationId: conversation.id,
+//         };
+//       })
+//     );
+
+//     // Send the response
+//     res.status(200).json(conversationUserData);
+//   } catch (error) {
+//     console.error("Error fetching conversations:", error);
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
 // Get conversation between two users
 export const getConversationByUsers = async (req, res) => {
   const { firstUserId, secondUserId } = req.params;
@@ -57,6 +104,61 @@ export const getConversationByUsers = async (req, res) => {
     return res.status(500).json({ error: 'Error fetching conversation.' });
   }
 };
+
+// import { Sequelize } from 'sequelize';
+// import Conversation from '../models/Conversation.js';
+// import User from '../models/User.js';
+
+// // Get conversation between two users with profile data
+// export const getConversationByUsers = async (req, res) => {
+//   const { firstUserId, secondUserId } = req.params;
+
+//   try {
+//     // Find the conversation between the two users
+//     const conversation = await Conversation.findOne({
+//       where: {
+//         userIds: { [Sequelize.Op.contains]: [firstUserId, secondUserId] }, // PostgreSQL array operator
+//       },
+//     });
+
+//     if (!conversation) {
+//       return res.status(404).json({ error: 'Conversation not found.' });
+//     }
+
+//     // Fetch user details for both users
+//     const users = await User.findAll({
+//       where: {
+//         id: { [Sequelize.Op.in]: [firstUserId, secondUserId] },
+//       },
+//       attributes: ['id', 'userName', 'imgSrc'], // Fetch only necessary fields
+//     });
+
+//     // Map users to their respective IDs
+//     const userMap = users.reduce((map, user) => {
+//       map[user.id] = {
+//         id: user.id,
+//         userName: user.userName,
+//         imgSrc: user.imgSrc,
+//       };
+//       return map;
+//     }, {});
+
+//     // Enrich the conversation data with user details
+//     const enrichedConversation = {
+//       ...conversation.toJSON(),
+//       participants: {
+//         firstUser: userMap[firstUserId],
+//         secondUser: userMap[secondUserId],
+//       },
+//     };
+
+//     return res.status(200).json(enrichedConversation);
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({ error: 'Error fetching conversation.' });
+//   }
+// };
+
 
 // Send a message in a conversation
 export const sendMessage = async (req, res) => {

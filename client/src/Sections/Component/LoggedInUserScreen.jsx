@@ -197,6 +197,8 @@ const LoggedInUserScreen = () => {
 
   const leaveGroup = async (groupId) => {
     const token = localStorage.getItem("token");
+    const userDetail = localStorage.getItem("user:detail");
+  const user = userDetail ? JSON.parse(userDetail) : null;
     if (!token) {
       setErrorMessage("No token provided. Please log in.");
       return;
@@ -209,6 +211,7 @@ const LoggedInUserScreen = () => {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({ user_id: user.id }),
       });
 
       if (response.ok) {

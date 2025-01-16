@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-
 import { useNavigate } from "react-router-dom";
 import LoggedInSideBar from "./LoggedInSideBar";
 import Slider from "react-slick";
@@ -78,7 +77,6 @@ const LoggedInUserScreen = () => {
 
       if (response.ok) {
         const data = await response.json();
-       // console.log(data);
         setSuggestedPeople(data.suggestedUsers);
       } else {
         console.error("Failed to fetch suggested people.");
@@ -115,55 +113,116 @@ const LoggedInUserScreen = () => {
     }
   };
 
+  const followUser = async (userId) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setErrorMessage("No token provided. Please log in.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/follow`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ followId: userId }),
+      });
+
+      if (response.ok) {
+        //fetchSuggestedPeople(); // Refresh the suggested people list
+      } else {
+        console.error("Failed to follow user.");
+      }
+    } catch (error) {
+      console.error("Error following user:", error);
+    }
+  };
+
+  const unfollowUser = async (userId) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setErrorMessage("No token provided. Please log in.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/unfollow`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ unfollowId: userId }),
+      });
+
+      if (response.ok) {
+        fetchSuggestedPeople(); // Refresh the suggested people list
+      } else {
+        console.error("Failed to unfollow user.");
+      }
+    } catch (error) {
+      console.error("Error unfollowing user:", error);
+    }
+  };
+
   return (
     <div className="flex min-h-screen">
       {/* Navigation Bar */}
       <LoggedInSideBar />
 
       <div className="flex flex-1 ml-20">
-      {  /* Main Content */}
-          <div className="flex-1 p-4 overflow-y-auto h-screen scrollbar-hide">
-            <div className="flex gap-4 mb-4">
-              <StoriesComponent navigateTo={"/user-profile"} imgSrc={main} />
-              <StoriesComponent imgSrc={userImg1} personName="Wade Warren" />
-              <StoriesComponent imgSrc={userImg2} personName="Jenny Wilson" />
-              <StoriesComponent imgSrc={userImg3} personName={"Bessie Cooper"} />
-              <StoriesComponent imgSrc={userImg4} personName={"Darlene Robertson"} />
-              <StoriesComponent imgSrc={userImg5} personName={"Devon Lane"} />
-              <StoriesComponent imgSrc={userImg6} personName={"P & G"} />
-            </div>
-            <div>
-              {errorMessage ? (
-                <p className="text-red-500">{errorMessage}</p>
-              ) : (
-                posts.map((post) => (
-            <PostsComponent
-              key={post.id}
-              userImg={post.user?.profileImage}
-              userName={post.user?.username}
-              description={post.description}
-              media={post.media}
-            />
-                ))
-              )}
-            </div>
+        {/* Main Content */}
+        <div className="flex-1 p-4 overflow-y-auto h-screen scrollbar-hide">
+          <div className="flex gap-4 mb-4">
+            <StoriesComponent navigateTo={"/user-profile"} imgSrc={main} />
+            <StoriesComponent imgSrc={userImg1} personName="Wade Warren" />
+            <StoriesComponent imgSrc={userImg2} personName="Jenny Wilson" />
+            <StoriesComponent imgSrc={userImg3} personName={"Bessie Cooper"} />
+            <StoriesComponent imgSrc={userImg4} personName={"Darlene Robertson"} />
+            <StoriesComponent imgSrc={userImg5} personName={"Devon Lane"} />
+            <StoriesComponent imgSrc={userImg6} personName={"P & G"} />
           </div>
+          <div>
+            {errorMessage ? (
+              <p className="text-red-500">{errorMessage}</p>
+            ) : (
+              posts.map((post) => (
+                <PostsComponent
+                  key={post.id}
+                  userImg={post.user?.profileImage}
+                  userName={post.user?.username}
+                  description={post.description}
+                  media={post.media}
+                />
+              ))
+            )}
+          </div>
+        </div>
 
-          {/* Sidebar */}
+        {/* Sidebar */}
         <div className="w-[352px] p-4 hidden lg:block">
           <div className="flex justify-between items-center mb-4">
             <h1 className="font-bold text-lg">Suggested For You</h1>
             <p className="text-blue-500 cursor-pointer">See All</p>
           </div>
-          {suggestedPeople.map((people) => (
-            <SuggestedFollows key={people.id} userName={people.username} imgSrc={people.profile_image} />
+          {suggestedPeople.slice(0, 6).map((people) => (
+            <SuggestedFollows
+              key={people.id}
+              userId={people.id}
+              userName={people.username}
+              imgSrc={people.profile_image}
+              followUser={followUser}
+              unfollowUser={unfollowUser}
+            />
           ))}
           <div className="flex justify-between items-center mt-6 mb-2">
             <h2 className="font-bold text-lg">Prayer Groups</h2>
             <p className="text-blue-500 cursor-pointer">See All</p>
           </div>
           {groups.length > 0 ? (
-            groups.map((group) => (
+            groups.slice(0, 4).map((group) => (
               <SuggestedGroups key={group.id} imgSrc={group.imgSrc} group_name={group.group_name} />
             ))
           ) : (
@@ -235,7 +294,18 @@ function PostsComponent({ userImg, userName, description, media }) {
   );
 }
 
-function SuggestedFollows({ imgSrc, userName }) {
+function SuggestedFollows({ imgSrc, userName, userId, followUser, unfollowUser }) {
+  const [isFollowing, setIsFollowing] = useState(false);
+
+  const handleFollow = async () => {
+    if (isFollowing) {
+      await unfollowUser(userId);
+    } else {
+      await followUser(userId);
+    }
+    setIsFollowing(!isFollowing);
+  };
+
   return (
     <div className="flex items-center mb-4">
       <img src={imgSrc} alt="" className="w-10 h-10 rounded-full" />
@@ -243,7 +313,12 @@ function SuggestedFollows({ imgSrc, userName }) {
         <p className="font-semibold">{userName}</p>
         <p className="text-[#A0A0A0] text-sm">Followed By</p>
       </div>
-      <button className="bg-[#ff6132] rounded-[4px] px-4 py-1 text-white">Follow</button>
+      <button
+        className={`rounded-[4px] px-4 py-1 text-white ${isFollowing ? "bg-gray-500" : "bg-[#ff6132]"}`}
+        onClick={handleFollow}
+      >
+        {isFollowing ? "Following" : "Follow"}
+      </button>
     </div>
   );
 }

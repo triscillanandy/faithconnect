@@ -1,5 +1,6 @@
 import Follower from '../models/Follower.js';
 import User from '../models/User.js';
+import { Op } from 'sequelize';
 
 
 export const followUser = async (req, res) => {
@@ -73,6 +74,7 @@ export const getFollowers = async (req, res) => {
   }
 };
 
+
 // Get following list of a user
 export const getFollowing = async (req, res) => {
   const { userId } = req.params;
@@ -87,5 +89,32 @@ export const getFollowing = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'An error occurred.' });
+  }
+};
+export const getSuggestedUsers = async (req, res) => {
+  const userId = req.user.id; // The authenticated user's ID
+
+  try {
+    // Get a list of user IDs that the authenticated user is already following
+    const followingIds = await Follower.findAll({
+      where: { followerId: userId },
+      attributes: ['followingId'],
+    }).then((records) => records.map((record) => record.followingId));
+
+    // Include the user's ID in the exclusion list
+    followingIds.push(userId);
+
+    // Fetch users not in the exclusion list
+    const suggestedUsers = await User.findAll({
+      where: {
+        id: { [Op.notIn]: followingIds },
+      },
+      attributes: ['id', 'username', 'email','profile_image'], // Adjust attributes as needed
+    });
+
+    res.status(200).json({ suggestedUsers });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'An error occurred while fetching suggested users.' });
   }
 };

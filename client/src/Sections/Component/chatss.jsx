@@ -1,4 +1,3 @@
-import React, { useEffect, useState, useRef } from "react";
 import filter from "./chat-images/filter.png";
 import image1 from "./chat-images/Image.png";
 import image2 from "./chat-images/Image-2.png";
@@ -10,108 +9,76 @@ import Search from "./chat-images/Search.png";
 import camera from "./chat-images/camera.png";
 import sound from "./chat-images/sound.png";
 import files from "./chat-images/files.png";
-import { io } from "socket.io-client";
+import { useEffect, useState } from "react";
+import LoggedInSideBar from "./LoggedInSideBar";
 import following from "./chat-images/following.png";
 import chat from "./chat-images/chat.png";
 import groups from "./chat-images/groups.png";
 import no from "./chat-images/no.png";
 import blocked from "./chat-images/blocked.png";
-import LoggedInSideBar from "./LoggedInSideBar";
 import UserProfileComponent from "./UserProfileComponent";
+
+const messages = [
+  {
+    imgSrc: image1,
+    userName: "Josh Jones",
+    userMessage: "Hey this is Josh Jones from bible study",
+    posts: 200,
+    followers: 300,
+    following: 1200,
+    profession: "Singer",
+    profileMessage: "I can do things through God",
+  },
+  {
+    imgSrc: image2,
+    userName: "John Doe",
+    userMessage: "Will do, super, thank you",
+    posts: 87,
+    followers: 445,
+    following: 1721,
+    profession: "Vlogger",
+    profileMessage: "God has A Plan for me",
+  },
+];
+
+function ShowFilter() {
+  return (
+    <div>
+      <h1 className="mb-1">Filter chats by</h1>
+      <FilterTags imgSrc={chat} filterMessage={"Unread"} />
+      <FilterTags imgSrc={groups} filterMessage={"groups"} />
+      <FilterTags imgSrc={following} filterMessage={"following"} />
+      <FilterTags imgSrc={no} filterMessage={"not following"} />
+      <FilterTags imgSrc={blocked} filterMessage={"blocked users"} />
+    </div>
+  );
+}
+
+function FilterTags({ imgSrc, filterMessage }) {
+  return (
+    <div className="flex gap-2 mb-2 items-center cursor-pointer">
+      <img src={imgSrc} className="w-[15px] h-[15.65px]" alt="" />
+      <p className="capitalize">{filterMessage}</p>
+    </div>
+  );
+}
 
 const Chats = () => {
   const [selectedChat, setSelectedChat] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [message, setMessage] = useState("");
-  const [conversations, setConversations] = useState([]);
-  const [socket, setSocket] = useState(null);
-  const messageRef = useRef(null);
 
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user:detail"));
-    const token = localStorage.getItem("token");
-    setSocket(io(`${import.meta.env.VITE_API_URL}`));
-
-    const fetchConversations = async () => {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/conversations/${user.id}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-      });
-      const data = await res.json();
-      setConversations(Array.isArray(data) ? data : []);
-    };
-
-    fetchConversations();
-  }, []);
-
-  useEffect(() => {
-    if (socket) {
-      socket.emit("addUser", JSON.parse(localStorage.getItem("user:detail")).id);
-      socket.on("getMessage", (data) => {
-        setMessages((prev) => [...prev, { text: data.message, sender: data.senderId }]);
-      });
-    }
-  }, [socket]);
-
-  useEffect(() => {
-    messageRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-  
-
-  const fetchMessages = async (conversationId,) => {
-    const token = localStorage.getItem("token");
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/messages/${conversationId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-    });
-    const data = await res.json();
-    setMessages(data);
-  };
-
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
-    if (!message.trim()) return;
-
-    const user = JSON.parse(localStorage.getItem("user:detail"));
-    const token = localStorage.getItem("token");
-    const newMessage = {
-      conversationId: selectedChat.id,
-      senderId: user.id,
-      message,
-    };
-
-    socket.emit("sendMessage", newMessage);
-
-    await fetch(`${import.meta.env.VITE_API_URL}/api/auth/messages`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json, text/plain, */*",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify(newMessage),
-    });
-
-    setMessages((prev) => [...prev, { text: message, sender: user.id }]);
-    setMessage("");
-  };
-
-  const handleSelectChat = (chat) => {
-    setSelectedChat(chat);
-    setSelectedUser(chat.user); // Assuming each chat has a `user` object
-    fetchMessages(chat.id);
+  const handleCollapse = (chat) => {
+    setSelectedChat(null);
+    setSelectedUser(chat);
   };
 
   return (
-    <div className="flex gap-24 max-[833px]:flex-col-reverse">
-      <LoggedInSideBar />
+    <div className="flex gap-4 max-[833px]:flex-col-reverse">
+      <div className="w-[130px] max-[833px]:w-full mt-3 max-[833px]:mt-0">
+        <LoggedInSideBar showSideBar={true} />
+      </div>
+
       <div className="w-full flex">
         <div className="w-1/3">
           <div>
@@ -144,11 +111,13 @@ const Chats = () => {
               {showFilter && <ShowFilter />}
             </div>
             <div className="mt-4">
-              {conversations.map((conversation) => (
+              {messages.map((message) => (
                 <Chat
-                  key={conversation.id}
-                  {...conversation}
-                  onClick={() => handleSelectChat(conversation)}
+                  key={message.userName}
+                  {...message}
+                  onClick={() => {
+                    setSelectedChat(message);
+                  }}
                 />
               ))}
             </div>
@@ -167,12 +136,11 @@ const Chats = () => {
           {selectedChat && (
             <ChatDetails
               chat={selectedChat}
-              messages={messages}
-              message={message}
-              setMessage={setMessage}
-              handleSendMessage={handleSendMessage}
-              goBack={() => setSelectedChat(null)}
-              messageRef={messageRef}
+              setSelectedUser={setSelectedUser}
+              handleCollapse={handleCollapse}
+              goBack={() => {
+                setSelectedChat(null);
+              }}
             />
           )}
         </div>
@@ -180,34 +148,14 @@ const Chats = () => {
     </div>
   );
 };
-
 export default Chats;
-
-function ShowFilter() {
-  return (
-    <div>
-      <h1 className="mb-1">Filter chats by</h1>
-      <FilterTags imgSrc={chat} filterMessage={"Unread"} />
-      <FilterTags imgSrc={groups} filterMessage={"groups"} />
-      <FilterTags imgSrc={following} filterMessage={"following"} />
-      <FilterTags imgSrc={no} filterMessage={"not following"} />
-      <FilterTags imgSrc={blocked} filterMessage={"blocked users"} />
-    </div>
-  );
-}
-
-function FilterTags({ imgSrc, filterMessage }) {
-  return (
-    <div className="flex gap-2 mb-2 items-center cursor-pointer">
-      <img src={imgSrc} className="w-[15px] h-[15.65px]" alt="" />
-      <p className="capitalize">{filterMessage}</p>
-    </div>
-  );
-}
 
 function Chat({ imgSrc, userName, userMessage, onClick }) {
   return (
-    <div className="flex items-center mb-8 gap-4 cursor-pointer" onClick={onClick}>
+    <div
+      className="flex items-center mb-8 gap-4 cursor-pointer"
+      onClick={onClick}
+    >
       <img className="w-[70.13px] h-[75.91px]" src={imgSrc} alt="" />
       <div>
         <p className="font-bold">{userName}</p>
@@ -219,13 +167,19 @@ function Chat({ imgSrc, userName, userMessage, onClick }) {
 
 function ChatDetails({
   chat,
-  messages,
-  message,
-  setMessage,
-  handleSendMessage,
   goBack,
-  messageRef,
+  handleCollapse,
 }) {
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([
+    { text: chat.userMessage, sender: "other" },
+  ]);
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (!message.trim()) return;
+    setMessages([...messages, { text: message, sender: "user" }]);
+    setMessage("");
+  };
   const [deviceHeight, setDeviceHeight] = useState(window.innerHeight);
 
   useEffect(() => {
@@ -243,7 +197,14 @@ function ChatDetails({
       <div className="flex justify-between items-center mt-5">
         <div className="flex items-center gap-4 px-5">
           <img onClick={goBack} className="cursor-pointer" src={arrow} alt="" />
-          <img className="cursor-pointer" src={chat.imgSrc} alt="" />
+          <img
+            className="cursor-pointer"
+            onClick={() => {
+              handleCollapse(chat);
+            }}
+            src={chat.imgSrc}
+            alt=""
+          />
           <div>
             <p className="font-bold">{chat.userName}</p>
             <p>Active 1min ago</p>
@@ -256,17 +217,20 @@ function ChatDetails({
       </div>
       <hr className="h-2 bg-mainTheme mt-4 mb-3" />
       <div className="flex flex-col gap-2 p-4 overflow-y-auto h-[550px]">
-        {messages.map((msg, index) => (
-          <p
-            key={index}
-            className={`max-w-[60%] px-3 py-2 text-white rounded-[20px] ${
-              msg.sender === "user" ? "bg-mainTheme self-end" : "bg-[#373E4E] self-start"
-            }`}
-          >
-            {msg.text}
-          </p>
-        ))}
-        <div ref={messageRef}></div>
+        {messages.map((msg, index) => {
+          return (
+            <p
+              key={index}
+              className={`max-w-[60%] px-3 py-2 text-white rounded-[20px] ${
+                msg.sender === "user"
+                  ? "bg-mainTheme self-end"
+                  : "bg-[#373E4E] self-start"
+              }`}
+            >
+              {msg.text}
+            </p>
+          );
+        })}
       </div>
       <div className="absolute bottom-0 w-full flex justify-center">
         <form className="flex items-center gap-5" onSubmit={handleSendMessage}>
@@ -278,7 +242,9 @@ function ChatDetails({
             value={message}
             onChange={(e) => setMessage(e.target.value)}
           />
-          <button className="bg-mainTheme text-white px-4 py-1 rounded-lg">Send</button>
+          <button className="bg-mainTheme text-white px-4 py-1 rounded-lg">
+            Send
+          </button>
           <img src={camera} alt="" />
           <img src={sound} alt="" />
         </form>
@@ -287,7 +253,11 @@ function ChatDetails({
   );
 }
 
-function UserProfile({ chat, setSelectedChat, setSelectedUser }) {
+function UserProfile({
+  chat,
+  setSelectedChat,
+  setSelectedUser,
+}) {
   const goBack = () => {
     setSelectedChat(false);
     setSelectedUser(false);

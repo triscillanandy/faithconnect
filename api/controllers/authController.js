@@ -164,7 +164,7 @@ export const login = async (req, res) => {
       expiresIn: '2d', // 2 days
     });
 
-    res.json({ token, message: 'Login successful', user: { email: user.email } });
+    res.json({ token, message: 'Login successful', user: { id : user.id,email: user.email , username : user.username} });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -42,48 +42,48 @@ const io = new socketIo(server, {
   cors: corsOptions,  // Use the same CORS options for Socket.IO
 });
 
-// Socket.io logic
-let users = [];
+// // Socket.io logic
+// let users = [];
 
-const addUser = (userId, socketId) => {
-  !users.some((user) => user.userId === userId) && users.push({ userId, socketId });
-};
+// const addUser = (userId, socketId) => {
+//   !users.some((user) => user.userId === userId) && users.push({ userId, socketId });
+// };
 
-const removeUser = (socketId) => {
-  users = users.filter((user) => user.socketId !== socketId);
-};
+// const removeUser = (socketId) => {
+//   users = users.filter((user) => user.socketId !== socketId);
+// };
 
-const getUser = (userId) => {
-  return users.find((user) => user.userId === userId);
-};
+// const getUser = (userId) => {
+//   return users.find((user) => user.userId === userId);
+// };
 
-io.on("connection", (socket) => {
-  console.log("A user connected.");
+// io.on("connection", (socket) => {
+//   console.log("A user connected.");
 
-  // When a user connects, register their userId and socketId
-  socket.on("addUser", (userId) => {
-    addUser(userId, socket.id);
-    io.emit("getUsers", users);
-  });
+//   // When a user connects, register their userId and socketId
+//   socket.on("addUser", (userId) => {
+//     addUser(userId, socket.id);
+//     io.emit("getUsers", users);
+//   });
 
-  // Send and receive messages
-  socket.on("sendMessage", ({ senderId, receiverId, text }) => {
-    const user = getUser(receiverId);
-    if (user) {
-      io.to(user.socketId).emit("getMessage", {
-        senderId,
-        text,
-      });
-    }
-  });
+//   // Send and receive messages
+//   socket.on("sendMessage", ({ senderId, receiverId, text }) => {
+//     const user = getUser(receiverId);
+//     if (user) {
+//       io.to(user.socketId).emit("getMessage", {
+//         senderId,
+//         text,
+//       });
+//     }
+//   });
 
-  // When a user disconnects, remove them from the user list
-  socket.on("disconnect", () => {
-    console.log("A user disconnected!");
-    removeUser(socket.id);
-    io.emit("getUsers", users);
-  });
-});
+//   // When a user disconnects, remove them from the user list
+//   socket.on("disconnect", () => {
+//     console.log("A user disconnected!");
+//     removeUser(socket.id);
+//     io.emit("getUsers", users);
+//   });
+// });
 
 app.use(passport.initialize());
 
@@ -136,4 +136,41 @@ app.use('/uploads/profile-images', express.static(path.join(__dirname, 'uploads/
 
 connectDB().then(() => {
   // The server has already started, no need to start it again
+});
+
+
+//socket.io
+
+let activeUsers = [];
+
+io.on("connection", (socket) => {
+  // add new User
+  socket.on("new-user-add", (newUserId) => {
+    // if user is not added previously
+    if (!activeUsers.some((user) => user.userId === newUserId)) {
+      activeUsers.push({ userId: newUserId, socketId: socket.id });
+      console.log("New User Connected", activeUsers);
+    }
+    // send all active users to new user
+    io.emit("get-users", activeUsers);
+  });
+
+  socket.on("disconnect", () => {
+    // remove user from active users
+    activeUsers = activeUsers.filter((user) => user.socketId !== socket.id);
+    console.log("User Disconnected", activeUsers);
+    // send all active users to all users
+    io.emit("get-users", activeUsers);
+  });
+
+  // send message to a specific user
+  socket.on("send-message", (data) => {
+    const { receiverId } = data;
+    const user = activeUsers.find((user) => user.userId === receiverId);
+    console.log("Sending from socket to :", receiverId)
+    console.log("Data: ", data)
+    if (user) {
+      io.to(user.socketId).emit("recieve-message", data);
+    }
+  });
 });

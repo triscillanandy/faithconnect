@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { FaHome, FaSearch, FaPrayingHands, FaFilm, FaEnvelope, FaBell, FaUser } from "react-icons/fa";
+
 import { useNavigate } from "react-router-dom";
+import LoggedInSideBar from "./LoggedInSideBar";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import Logo from "./LoggedInScreenImages/Logo.png";
+
 import main from "./LoggedInScreenImages/main.png";
 import userImg1 from "./LoggedInScreenImages/1.png";
 import userImg2 from "./LoggedInScreenImages/2.png";
@@ -117,22 +118,7 @@ const LoggedInUserScreen = () => {
   return (
     <div className="flex min-h-screen">
       {/* Navigation Bar */}
-      <nav className="bg-white shadow-md py-8 px-4 flex flex-col items-center w-20 fixed h-full">
-        <div className="mb-12">
-          <img className="w-[40px] cursor-pointer" src={Logo} alt="Logo" />
-        </div>
-        <div className="flex flex-col items-center gap-12">
-          <FaHome className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Home" />
-          <FaSearch className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Search" />
-          <FaPrayingHands className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Pray" />
-          <FaFilm className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Reels" />
-          <FaEnvelope className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="DM" />
-          <FaEnvelope className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="DM" />
-          <FaBell className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Notification" />
-          <FaUser className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Account" onClick={() => navigate("/user-profile")} />
-       
-        </div>
-      </nav>
+      <LoggedInSideBar />
 
       <div className="flex flex-1 ml-20">
       {  /* Main Content */}

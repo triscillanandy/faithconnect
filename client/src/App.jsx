@@ -58,12 +58,12 @@ function App() {
             path="/verified"
             element={<SucessfulVerification></SucessfulVerification>}
           ></Route>
-          <Route path="/LoggedIn" element={<LoggedInUserScreen />} />
+          <Route path="/home" element={<LoggedInUserScreen />} />
           <Route
             path="/email-popup"
             element={<EmailInstruction></EmailInstruction>}
           />
-          <Route path="/user-profile" element={<UserProfile></UserProfile>} />
+          <Route path="/user-profile" element={<UserProfile/>} />
           <Route path="/search" element={<Search></Search>} />
           <Route path="/devotional" element={<Devotional></Devotional>} />
           {/* <Route path="/reels" element={<Reels></Reels>} /> */}

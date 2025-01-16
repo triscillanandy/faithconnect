@@ -1,16 +1,5 @@
 import React, { useState, useEffect } from "react";
-import frame1 from "./Profile-Images/Frame1.png";
-import frame2 from "./Profile-Images/Frame2.png";
-import frame3 from "./Profile-Images/Frame3.png";
-import frame4 from "./Profile-Images/Frame4.png";
-import frame5 from "./Profile-Images/Frame5.png";
-import frame6 from "./Profile-Images/Frame6.png";
-import frame7 from "./Profile-Images/Frame7.png";
-import frame8 from "./Profile-Images/Frame8.png";
-import frame9 from "./Profile-Images/Frame9.png";
-import frame10 from "./Profile-Images/Frame10.png";
-import frame11 from "./Profile-Images/Frame11.png";
-import frame12 from "./Profile-Images/Frame12.png";
+
 import profileMenu from "./Profile-Images/menu.png";
 import reels from "./Profile-Images/reels.png";
 import tag from "./Profile-Images/tags.png";
@@ -136,7 +125,7 @@ const UserProfile = () => {
         <div className="mt-5">
           <p className="text-[11px] text-[#ADADAD]">Artist</p>
           <p className="text-[11px]">Believe in Christ</p>
-          <p className="text-[11px]">{bio}</p>
+          
         </div>
         <div className="flex gap-28 items-center mt-8">
           <img className="cursor-pointer" src={profileMenu} alt="" />

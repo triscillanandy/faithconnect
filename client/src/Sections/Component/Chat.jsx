@@ -53,7 +53,7 @@ const Chats = () => {
         console.log("Active users:", activeUsers); // Optional: Show active users
       });
       socket.on("receive-message", (data) => {
-        setMessages((prev) => [...prev, { message: data.message, senderId: data.senderId }]);
+        setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
       });
     }
   }, [socket]);
@@ -107,7 +107,7 @@ const Chats = () => {
     console.log(newMessage);
     //console.log("Message sent:", body);
 
-    setMessages((prev) => [...prev, { text: message, sender: user.id }]);
+    setMessages((prev) => [...prev, { text: message, senderId: user.id }]);
     setMessage("");
   };
 
@@ -272,7 +272,7 @@ function ChatDetails({
           <p
             key={index}
             className={`max-w-[60%] px-3 py-2 text-white rounded-[20px] ${
-              msg.sender === "user" ? "bg-mainTheme self-end" : "bg-[#373E4E] self-start"
+              msg.sender === "sender" ? "bg-mainTheme self-end" : "bg-[#373E4E] self-start"
             }`}
           >
             {msg.text}

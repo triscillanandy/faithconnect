@@ -46,17 +46,46 @@ const Chats = () => {
     fetchConversations();
   }, []);
 
+  // useEffect(() => {
+  //   if (socket) {
+  //     socket.emit("joinRoom", JSON.parse(localStorage.getItem("user:detail")).id);
+  //     socket.on("get-users", (activeUsers) => {
+  //       console.log("Active users:", activeUsers); // Optional: Show active users
+  //     });
+  //     socket.on("receive-message", (data) => {
+  //       setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
+  //     });
+  //   }
+  // }, [socket]);
+
   useEffect(() => {
     if (socket) {
       socket.emit("joinRoom", JSON.parse(localStorage.getItem("user:detail")).id);
+  console.log("Joining room:", JSON.parse(localStorage.getItem("user:detail")).id);
       socket.on("get-users", (activeUsers) => {
-        console.log("Active users:", activeUsers); // Optional: Show active users
+        console.log("Active users:", activeUsers);
       });
+  
+      // socket.on("receive-message", (data) => {
+      //   if (!data.groupId) {
+      //     setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
+      //   }
+      // });
+  
       socket.on("receive-message", (data) => {
-        setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
+        //if (!data.groupId) {
+          setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
+      //  }
+      });
+  
+      socket.on("receive-group-message", (data) => {
+        if (data.groupId === selectedChat?.groupId) {
+          setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
+        }
       });
     }
-  }, [socket]);
+  }, [socket, selectedChat]);
+  
 
   useEffect(() => {
     messageRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -77,49 +106,108 @@ const Chats = () => {
     setMessages(data);
   };
 
+  // const handleSendMessage = async (e) => {
+  //   e.preventDefault();
+  //   if (!message.trim()) return;
+
+  //   const user = JSON.parse(localStorage.getItem("user:detail"));
+  //   const token = localStorage.getItem("token");
+  //   const newMessage = {
+  //     conversationId: selectedChat.conversationId,
+  //     senderId: user.id, // Sender's userId
+  //     receiverId: selectedUser.id, // Receiver's userId
+  //     message,
+     
+  //   };
+  
+  //   // Send the message through the socket
+  //   socket.emit("sendMessage", newMessage);
+  //   console.log(newMessage);
+  //   // socket.emit("sendMessage", newMessage);
+
+  //   await fetch(`${import.meta.env.VITE_API_URL}/api/auth/messages`, {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //       "Authorization": `Bearer ${token}`
+  //     },
+  //     body: JSON.stringify(newMessage),
+  //   });
+  //   console.log(newMessage);
+  //   //console.log("Message sent:", body);
+
+  //   setMessages((prev) => [...prev, { text: message, senderId: user.id }]);
+  //   setMessage("");
+  // };
+
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!message.trim()) return;
-
+  
     const user = JSON.parse(localStorage.getItem("user:detail"));
     const token = localStorage.getItem("token");
-    const newMessage = {
-      conversationId: selectedChat.conversationId,
-      senderId: user.id, // Sender's userId
-      receiverId: selectedUser.id, // Receiver's userId
-      message,
-     
-    };
+    const newMessage = selectedChat.isGroup
+      ? {
+          groupId: selectedChat.groupId,
+          senderId: user.id,
+          message,
+        }
+      : {
+          conversationId: selectedChat.conversationId,
+          senderId: user.id,
+          receiverId: selectedUser.id,
+          message,
+        };
   
-    // Send the message through the socket
-    socket.emit("sendMessage", newMessage);
-    console.log(newMessage);
-    // socket.emit("sendMessage", newMessage);
-
-    await fetch(`${import.meta.env.VITE_API_URL}/api/auth/messages`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify(newMessage),
-    });
-    console.log(newMessage);
-    //console.log("Message sent:", body);
-
+    socket.emit(selectedChat.isGroup ? "sendGroupMessage" : "sendMessage", newMessage);
+  console.log(newMessage);
+    await fetch(
+      `${import.meta.env.VITE_API_URL}/api/auth/${selectedChat.isGroup ? "group-messages" : "messages"}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(newMessage),
+      }
+    );
+  
     setMessages((prev) => [...prev, { text: message, senderId: user.id }]);
     setMessage("");
   };
+  
+  const fetchGroupMessages = async (groupId) => {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/group-messages/${groupId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+    const data = await res.json();
+    setMessages(data);
+  };
+  
 
+  // const handleSelectChat = (conversation) => {
+  //   setSelectedChat(conversation);
+  // setSelectedUser(conversation.receiver);
+  // fetchMessages(conversation.conversationId);
   const handleSelectChat = (conversation) => {
     setSelectedChat(conversation);
-  setSelectedUser(conversation.receiver);
-  fetchMessages(conversation.conversationId);
-  // if (socket) {
-  //   socket.emit("joinRoom", conversation.conversationId); // Join the conversation room
-  //   console.log(`Joined room: ${conversation.conversationId}`);
-  // }
+    if (conversation.isGroup) {
+      fetchGroupMessages(conversation.groupId);
+    } else {
+      setSelectedUser(conversation.receiver);
+      fetchMessages(conversation.conversationId);
+    }
   };
+  
+  
+  
 
   return (
     <div className="flex gap-24 max-[833px]:flex-col-reverse">
@@ -157,13 +245,25 @@ const Chats = () => {
             </div>
             <div className="mt-4">
               {conversations.map((conversation) => (
+                // <Chat
+                // key={conversation.conversationId}
+                // imgSrc={conversation.receiver?.profilePicture || "default.png"}
+                // userName={conversation.receiver?.username || "Unknown"}
+                // userMessage="Last message here" // Update with last message logic if needed
+                //   onClick={() => handleSelectChat(conversation)}
+                // />
                 <Chat
-                key={conversation.conversationId}
-                imgSrc={conversation.receiver?.profilePicture || "default.png"}
-                userName={conversation.receiver?.username || "Unknown"}
-                userMessage="Last message here" // Update with last message logic if needed
-                  onClick={() => handleSelectChat(conversation)}
-                />
+  key={conversation.conversationId || conversation.groupId}
+  imgSrc={
+    conversation.isGroup
+      ? "group-icon.png" // Add a default group icon
+      : conversation.receiver?.profilePicture || "default.png"
+  }
+  userName={conversation.isGroup ? conversation.group_name : conversation.receiver?.username || "Unknown"}
+  userMessage="Last message here"
+  onClick={() => handleSelectChat(conversation)}
+/>
+
               ))}
             </div>
           </div>
@@ -174,7 +274,7 @@ const Chats = () => {
 
           {selectedChat && (
             <ChatDetails
-              chat={selectedChat}
+              selectedChat={selectedChat}
               messages={messages}
               message={message}
               setMessage={setMessage}
@@ -226,7 +326,7 @@ function Chat({ imgSrc, userName, userMessage, onClick }) {
 }
 
 function ChatDetails({
-  chat,
+  selectedChat,
   messages,
   message,
   setMessage,
@@ -252,12 +352,12 @@ function ChatDetails({
         <div className="flex items-center gap-4 px-5">
           <img onClick={goBack} className="cursor-pointer" src={arrow} alt="" />
           <img
-              className="w-20 h-20 rounded-full"
-              src={chat.receiver?.profilePicture || "default.png"}
-              alt="Receiver"
-            />
+            className="w-20 h-20 rounded-full"
+            src={selectedChat.isGroup ? "group-icon.png" : selectedChat.receiver?.profilePicture || "default.png"}
+            alt={selectedChat.isGroup ? "Group" : "Receiver"}
+          />
           <div>
-          <p className="font-bold">{chat.receiver?.username || "Unknown"}</p>
+            <p className="font-bold">{selectedChat.isGroup ? selectedChat.group_name : selectedChat.receiver?.username || "Unknown"}</p>
             <p>Active 1min ago</p>
           </div>
         </div>

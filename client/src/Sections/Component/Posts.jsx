@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import LoggedInSideBar from "./LoggedInSideBar";
 
 const Posts = () => {
@@ -11,6 +13,15 @@ const Posts = () => {
 
   const handleFileChange = (event) => {
     const files = Array.from(event.target.files);
+    const maxSize = 4 * 1024 * 1024; // 4MB in bytes
+
+    for (const file of files) {
+      if (file.type.startsWith("video") && file.size > maxSize) {
+        toast.error("File is too big. Please select a video less than 4MB.");
+        return;
+      }
+    }
+
     setSelectedFiles(files);
   };
 
@@ -21,8 +32,14 @@ const Posts = () => {
   const token = localStorage.getItem("token");
 
   const handleUpload = async () => {
-    if (selectedFiles.length === 0) return alert("Please select files to upload!");
-    if (!description) return alert("Please enter a description!");
+    if (selectedFiles.length === 0) {
+      toast.error("Please select files to upload!");
+      return;
+    }
+    if (!description) {
+      toast.error("Please enter a description!");
+      return;
+    }
 
     const formData = new FormData();
     formData.append("description", description);
@@ -40,11 +57,12 @@ const Posts = () => {
       });
 
       if (!response.ok) {
-        throw new Error("File upload failed!");
+        const data = await response.json();
+        throw new Error(data.message || "File upload failed!");
       }
 
       const responseData = await response.json();
-      alert("Post created successfully!");
+      toast.success("Post created successfully!");
       console.log("Upload Response:", responseData);
 
       setUploadProgress(0);
@@ -52,17 +70,16 @@ const Posts = () => {
       setDescription("");
     } catch (error) {
       console.error("Error uploading files:", error);
-      alert("Error uploading files.");
+      toast.error(error.message || "An error occurred. Please try again later.");
     } finally {
       setUploading(false);
     }
   };
 
-  const handleProgress = (event) => {
-    if (event.lengthComputable) {
-      const progress = Math.round((event.loaded / event.total) * 100);
-      setUploadProgress(progress);
-    }
+  const getProgressBarColor = () => {
+    if (uploadProgress < 33) return "bg-red-500";
+    if (uploadProgress < 66) return "bg-yellow-500";
+    return "bg-green-500";
   };
 
   return (
@@ -110,9 +127,24 @@ const Posts = () => {
 
         {selectedFiles.length > 0 && (
           <div className="flex flex-col items-center mt-8 w-3/4">
-            <ul>
+            <ul className="flex flex-wrap gap-4">
               {selectedFiles.map((file, index) => (
-                <li key={index}>{file.name}</li>
+                <li key={index} className="w-24 h-24 relative">
+                  {file.type.startsWith("image") && (
+                    <img
+                      src={URL.createObjectURL(file)}
+                      alt="Preview"
+                      className="w-full h-full object-cover rounded-md"
+                    />
+                  )}
+                  {file.type.startsWith("video") && (
+                    <video
+                      src={URL.createObjectURL(file)}
+                      className="w-full h-full object-cover rounded-md"
+                      controls
+                    />
+                  )}
+                </li>
               ))}
             </ul>
             <button
@@ -122,7 +154,7 @@ const Posts = () => {
                 uploading ? "bg-gray-300" : "border-mainTheme"
               } px-8 py-1 rounded-2xl text-[24px] mt-4`}
             >
-              {uploading ? "Uploading..." : "Upload"}
+              {uploading ? "Uploading..." : "Post"}
             </button>
           </div>
         )}
@@ -131,7 +163,7 @@ const Posts = () => {
           <div className="flex flex-col items-center mt-4 w-3/4">
             <div className="w-full bg-gray-200 rounded-full h-4">
               <div
-                className="bg-mainTheme h-4 rounded-full"
+                className={`${getProgressBarColor()} h-4 rounded-full`}
                 style={{ width: `${uploadProgress}%` }}
               ></div>
             </div>
@@ -139,6 +171,19 @@ const Posts = () => {
           </div>
         )}
       </div>
+
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 };

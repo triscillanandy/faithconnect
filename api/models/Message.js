@@ -15,6 +15,14 @@ Message.init(
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+    groupId: {
+      type: DataTypes.INTEGER,
+      allowNull: true, // Used for group messages
+      references: {
+        model: 'groups',
+        key: 'id',
+      },
+    },
     text: {
       type: DataTypes.TEXT, 
       allowNull: true,

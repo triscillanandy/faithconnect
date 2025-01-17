@@ -34,75 +34,8 @@ export const createConversation = async (req, res) => {
 };
 
 
-// export const getConversations = async (req, res) => {
-//   const { userId } = req.params;
-
-//   try {
-//     const conversations = await Conversation.findAll({
-//       where: {
-//         userIds: { [Op.contains]: [userId] }, // PostgreSQL array operator
-//       },
-//       include: [
-//         {
-//           model: User, // Assuming a User model is associated with Conversation
-//           attributes: ["id", "username" ], // Only include necessary fields
-//           through: { attributes: [] }, // Prevents including join table data
-//         },
-//       ],
-//     });
-
-//     return res.status(200).json(conversations);
-//   } catch (err) {
-//     console.error(err);
-//     return res.status(500).json({ error: err.message });
-//   }
-// };
 
 
-// export const getConversations = async (req, res) => {
-//   const { userId } = req.params;
-
-//   try {
-//     // Fetch conversations involving the user
-//     const conversations = await Conversation.findAll({
-//       where: {
-//         userIds: { [Sequelize.Op.contains]: [userId] }, // PostgreSQL array operator for array containment
-//       },
-//     });
-
-//     // Fetch receiver information for each conversation
-//     const conversationUserData = await Promise.all(
-//       conversations.map(async (conversation) => {
-//         const receiverId = conversation.userIds.find((id) => id !== userId);
-
-//         if (!receiverId) {
-//           return {
-//             user: null,
-//             conversationId: conversation.id,
-//           };
-//         }
-
-//         const receiver = await User.findByPk(receiverId); // Using primary key lookup
-//         return {
-//           user: receiver
-//             ? {
-//                 receiverId: receiver.id,
-//                 email: receiver.email,
-//                 fullName: receiver.username,
-//               }
-//             : null,
-//           conversationId: conversation.id,
-//         };
-//       })
-//     );
-
-//     // Send the response
-//     res.status(200).json(conversationUserData);
-//   } catch (error) {
-//     console.error("Error fetching conversations:", error);
-//     res.status(500).json({ error: error.message });
-//   }
-// };
 
 
 export const getConversations = async (req, res) => {
@@ -170,60 +103,6 @@ export const getConversationByUsers = async (req, res) => {
   }
 };
 
-// import { Sequelize } from 'sequelize';
-// import Conversation from '../models/Conversation.js';
-// import User from '../models/User.js';
-
-// // Get conversation between two users with profile data
-// export const getConversationByUsers = async (req, res) => {
-//   const { firstUserId, secondUserId } = req.params;
-
-//   try {
-//     // Find the conversation between the two users
-//     const conversation = await Conversation.findOne({
-//       where: {
-//         userIds: { [Sequelize.Op.contains]: [firstUserId, secondUserId] }, // PostgreSQL array operator
-//       },
-//     });
-
-//     if (!conversation) {
-//       return res.status(404).json({ error: 'Conversation not found.' });
-//     }
-
-//     // Fetch user details for both users
-//     const users = await User.findAll({
-//       where: {
-//         id: { [Sequelize.Op.in]: [firstUserId, secondUserId] },
-//       },
-//       attributes: ['id', 'userName', 'imgSrc'], // Fetch only necessary fields
-//     });
-
-//     // Map users to their respective IDs
-//     const userMap = users.reduce((map, user) => {
-//       map[user.id] = {
-//         id: user.id,
-//         userName: user.userName,
-//         imgSrc: user.imgSrc,
-//       };
-//       return map;
-//     }, {});
-
-//     // Enrich the conversation data with user details
-//     const enrichedConversation = {
-//       ...conversation.toJSON(),
-//       participants: {
-//         firstUser: userMap[firstUserId],
-//         secondUser: userMap[secondUserId],
-//       },
-//     };
-
-//     return res.status(200).json(enrichedConversation);
-//   } catch (err) {
-//     console.error(err);
-//     return res.status(500).json({ error: 'Error fetching conversation.' });
-//   }
-// };
-
 
 export const sendMessage = async (req, res) => {
   const { conversationId, senderId, message } = req.body;
@@ -264,3 +143,82 @@ export const getMessages = async (req, res) => {
     return res.status(500).json({ error: 'Error fetching messages.' });
   }
 };
+export const sendGroupMessage = async (req, res) => {
+  const { groupId, senderId, message } = req.body;
+
+  try {
+    if (!groupId || !senderId || !message) {
+      return res.status(400).json({ error: 'Invalid request: Missing required fields.' });
+    }
+
+    // Verify if the user is a member of the group
+    const isMember = await GroupMember.findOne({
+      where: { group_id: groupId, user_id: senderId },
+    });
+
+    if (!isMember) {
+      return res.status(403).json({ error: 'You are not a member of this group.' });
+    }
+
+    // Create a new group message
+    const newMessage = await Message.create({
+      groupId,
+      sender: senderId,
+      text: message,
+    });
+
+    return res.status(201).json(newMessage);
+  } catch (err) {
+    console.error('Error sending group message:', err);
+    return res.status(500).json({ error: 'Error sending group message.' });
+  }
+};
+
+
+
+export const getGroupMessages = async (req, res) => {
+  const { groupId } = req.params;
+
+  try {
+    const messages = await Message.findAll({
+      where: { groupId },
+      include: {
+        model: User,
+        as: 'user',
+        attributes: ['id', 'username', 'profileImage'],
+      },
+    });
+
+    return res.status(200).json(messages);
+  } catch (err) {
+    console.error('Error fetching group messages:', err);
+    return res.status(500).json({ error: 'Error fetching messages.' });
+  }
+};
+// export const getConversations = async (req, res) => {
+//   const { userId } = req.params;
+
+//   try {
+//     // Fetch all direct and group conversations
+//     const conversations = await Conversation.findAll({
+//       where: {
+//         [Sequelize.Op.or]: [
+//           { userIds: { [Sequelize.Op.contains]: [userId] } },
+//           { type: 'group' },
+//         ],
+//       },
+//       include: [
+//         {
+//           model: Group,
+//           as: 'group',
+//           attributes: ['id', 'group_name', 'description', 'visibility'],
+//         },
+//       ],
+//     });
+
+//     res.status(200).json(conversations);
+//   } catch (err) {
+//     console.error('Error fetching conversations:', err);
+//     res.status(500).json({ error: 'Error fetching conversations.' });
+//   }
+// };

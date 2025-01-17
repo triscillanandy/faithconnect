@@ -6,7 +6,7 @@ import { createPost,getMyPosts,getPosts,getPostById,deletePost,getOtherPosts } f
 import { upload } from '../middleware/uploadMiddleware.js';
 import {creategroups,joingroups,leavegroups,listGroups} from '../controllers/groupController.js';
 
-import { createConversation, getConversations, getConversationByUsers,sendMessage,getMessages } from '../controllers/conversationController.js';
+import { createConversation, getConversations, getConversationByUsers,sendMessage,getMessages ,sendGroupMessage,getGroupMessages} from '../controllers/conversationController.js';
 import {followUser, unfollowUser,getFollowers, getFollowing,getSuggestedUsers} from '../controllers/followController.js'; // New controllers for follow functionality
 const router = express.Router();
 
@@ -56,6 +56,8 @@ router.get('/conversations/:userId', isAuthenticated, getConversations);  // Get
 router.get('/conversations/find/:firstUserId/:secondUserId', isAuthenticated, getConversationByUsers);  // Get conversation between two users
 router.post('/messages', isAuthenticated, sendMessage);  // Send a message
 router.get('/messages/:conversationId', isAuthenticated, getMessages);  // Get all messages in a specific conversation
+router.post('/messages/group', isAuthenticated, sendGroupMessage);  // Send a message to a group
+router.get('/group-messages/:groupId', isAuthenticated, getGroupMessages);  // Get all messages of a specific group
 
 export default router;
 

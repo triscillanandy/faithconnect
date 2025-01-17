@@ -340,12 +340,14 @@ function PostsComponent({ userImg, userName, description, media }) {
       <div className="aspect-square overflow-hidden rounded-lg">
         <Slider {...settings}>
           {media.map((item) => (
-            <img
-              key={item.id}
-              src={item.mediaUrl}
-              alt="Post media"
-              className="object-cover w-full h-full"
-            />
+            item.mediaType.startsWith('video') ? (
+              <video key={item.id} controls className="object-cover w-full h-full">
+                <source src={item.mediaUrl} type={item.mediaType} />
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <img key={item.id} src={item.mediaUrl} alt="Post media" className="object-cover w-full h-full" />
+            )
           ))}
         </Slider>
       </div>
@@ -358,6 +360,50 @@ function PostsComponent({ userImg, userName, description, media }) {
     </div>
   );
 }
+
+
+// function PostsComponent({ userImg, userName, description, media }) {
+//   const settings = {
+//     dots: true,
+//     infinite: true,
+//     speed: 500,
+//     slidesToShow: 1,
+//     slidesToScroll: 1,
+//     arrows: false,
+//     className: "w-full",
+//   };
+
+//   return (
+//     <div className="mt-8 border rounded-lg p-4 max-w-lg mx-auto bg-white shadow-sm">
+//       <div className="flex items-center gap-4 mb-3">
+//         <img src={userImg} alt={`${userName}'s profile`} className="w-10 h-10 rounded-full" />
+//         <p className="font-semibold">{userName}</p>
+//         <div className="cursor-pointer ml-auto">
+//           <img src={dots} alt="Options" className="w-5 h-5" />
+//         </div>
+//       </div>
+//       <p className="mb-3 text-sm">{description}</p>
+//       <div className="aspect-square overflow-hidden rounded-lg">
+//         <Slider {...settings}>
+//           {media.map((item) => (
+//             <img
+//               key={item.id}
+//               src={item.mediaUrl}
+//               alt="Post media"
+//               className="object-cover w-full h-full"
+//             />
+//           ))}
+//         </Slider>
+//       </div>
+//       <div className="flex mt-4 gap-4 items-center">
+//         <img src={like} alt="Like" className="cursor-pointer w-6 h-6" />
+//         <img src={comment} alt="Comment" className="cursor-pointer w-6 h-6" />
+//         <img src={union} alt="Share" className="cursor-pointer w-6 h-6" />
+//         <img src={save} alt="Save" className="ml-auto cursor-pointer w-6 h-6" />
+//       </div>
+//     </div>
+//   );
+// }
 
 function SuggestedFollows({ imgSrc, userName, userId, followUser, unfollowUser }) {
   const [isFollowing, setIsFollowing] = useState(false);

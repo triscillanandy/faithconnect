@@ -39,7 +39,7 @@ import crypto from 'crypto';
  * @returns {Promise<void>} - A promise that resolves when the user is registered.
  */
 export const register = async (req, res) => {
-  const { username, email, phone, firstName, lastName, password } = req.body;
+  const { username, email, phone, firstName, lastName, password, userType } = req.body;
 
   try {
     // Check if the user already exists
@@ -65,6 +65,7 @@ export const register = async (req, res) => {
       isVerified: false,
       verificationCode,
       verificationCodeExpires,
+      userType, // Add userType to the new user
     });
 
     // Send the verification email with the 6-digit code

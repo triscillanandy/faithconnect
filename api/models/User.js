@@ -77,6 +77,11 @@ User.init(
       type: DataTypes.JSON,
       allowNull: true,
     },
+    userType: {
+      type: DataTypes.ENUM('personal', 'organization_church'),
+      allowNull: true,
+      field: 'user_type',
+    },
   },
   {
     sequelize, // Pass the sequelize instance

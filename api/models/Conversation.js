@@ -3,14 +3,25 @@ import { sequelize } from '../config/database.js'; // adjust the path to your Se
 import Message from './Message.js'; // Import Message model to avoid circular dependency
 
 class Conversation extends Model {}
-
 Conversation.init(
   {
     userIds: {
-      type: DataTypes.ARRAY(DataTypes.STRING), // Assuming userIds is an array of user IDs
+      type: DataTypes.ARRAY(DataTypes.STRING), // For direct conversations
       allowNull: true,
     },
-    // Add any other fields for conversation if necessary
+    type: {
+      type: DataTypes.ENUM('direct', 'group'),
+      defaultValue: 'direct',
+      allowNull: false,
+    },
+    groupId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'groups', // The Group table
+        key: 'id',
+      },
+    },
   },
   {
     sequelize,

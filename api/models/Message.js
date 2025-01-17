@@ -16,7 +16,7 @@ Message.init(
       allowNull: true,
     },
     text: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT, 
       allowNull: true,
     },
   },

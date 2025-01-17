@@ -2,40 +2,60 @@ import Conversation from '../models/Conversation.js';
 import Message from '../models/Message.js'; 
 import { Sequelize } from 'sequelize';
 import User from "../models/User.js"; // Adjust path based on your project structure
-
+import Op from 'sequelize';
 // Create a new conversation
 export const createConversation = async (req, res) => {
   const { senderId, receiverId } = req.body;
 
   try {
-    const newConversation = await Conversation.create({
-      userIds: [senderId, receiverId],
+    // Ensure user IDs are sorted to maintain consistency
+    const userIds = [senderId, receiverId].sort();
+
+    // Check if a conversation already exists
+    const existingConversation = await Conversation.findOne({
+      where: { userIds: { [Sequelize.Op.contains]: userIds } }, // PostgreSQL array operator
     });
 
-    return res.status(200).json(newConversation);
+    if (existingConversation) {
+      return res.status(200).json(existingConversation); // Return the existing conversation
+    }
+
+    // Create a new conversation if none exists
+    const newConversation = await Conversation.create({
+      userIds,
+    });
+
+    return res.status(201).json(newConversation);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Error creating conversation.' });
   }
 };
 
-// Get all conversations for a user
-export const getConversations = async (req, res) => {
-  const { userId } = req.params;
 
-  try {
-    const conversations = await Conversation.findAll({
-      where: {
-        userIds: { [Sequelize.Op.contains]: [userId] }, // PostgreSQL array operator
-      },
-    });
+// export const getConversations = async (req, res) => {
+//   const { userId } = req.params;
 
-    return res.status(200).json(conversations);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({error: err.message  });
-  }
-};
+//   try {
+//     const conversations = await Conversation.findAll({
+//       where: {
+//         userIds: { [Op.contains]: [userId] }, // PostgreSQL array operator
+//       },
+//       include: [
+//         {
+//           model: User, // Assuming a User model is associated with Conversation
+//           attributes: ["id", "username" ], // Only include necessary fields
+//           through: { attributes: [] }, // Prevents including join table data
+//         },
+//       ],
+//     });
+
+//     return res.status(200).json(conversations);
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({ error: err.message });
+//   }
+// };
 
 
 // export const getConversations = async (req, res) => {
@@ -82,6 +102,50 @@ export const getConversations = async (req, res) => {
 //     res.status(500).json({ error: error.message });
 //   }
 // };
+
+
+export const getConversations = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    // Fetch conversations involving the user
+    const conversations = await Conversation.findAll({
+      where: {
+        userIds: { [Sequelize.Op.contains]: [userId] }, // PostgreSQL array operator
+      },
+    });
+
+    // Fetch receiver details for each conversation
+    const conversationUserData = await Promise.all(
+      conversations.map(async (conversation) => {
+        const receiverId = conversation.userIds.find((id) => id !== userId);
+
+        const receiver = receiverId
+          ? await User.findByPk(receiverId, {
+              attributes: ["id", "username", "email", "profileImage"],
+            })
+          : null;
+
+        return {
+          conversationId: conversation.id,
+          receiver: receiver
+            ? {
+                id: receiver.id,
+                username: receiver.username,
+                email: receiver.email,
+                profilePicture: receiver.profileImage || "default.png",
+              }
+            : null,
+        };
+      })
+    );
+
+    res.status(200).json(conversationUserData);
+  } catch (error) {
+    console.error("Error fetching conversations:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
 
 // Get conversation between two users
 export const getConversationByUsers = async (req, res) => {
@@ -160,23 +224,35 @@ export const getConversationByUsers = async (req, res) => {
 // };
 
 
-// Send a message in a conversation
 export const sendMessage = async (req, res) => {
   const { conversationId, sender, text } = req.body;
 
+  // Input Validation
+  if (!conversationId || !sender || !text) {
+    return res.status(400).json({ error: 'Missing required fields.' });
+  }
+
   try {
+    // Create new message
     const newMessage = await Message.create({
       conversationId,
       sender,
       text,
     });
 
+    // // Update lastMessage in Conversation (if applicable)
+    // await Conversation.update(
+    //   { lastMessage: text }, // Fields to update
+    //   { where: { id: conversationId } } // Condition to match
+    // );
+
     return res.status(200).json(newMessage);
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: 'Error creating message.' });
+    console.error('Error creating message:', err);
+    return res.status(500).json({ error: err.message });
   }
 };
+
 
 // Get all messages for a specific conversation
 export const getMessages = async (req, res) => {

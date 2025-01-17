@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import filter from "./chat-images/filter.png";
-import image1 from "./chat-images/Image.png";
-import image2 from "./chat-images/Image-2.png";
+
 import people from "./chat-images/people.png";
 import Call from "./chat-images/Call.png";
 import Group from "./chat-images/Group.png";
@@ -17,8 +16,6 @@ import groups from "./chat-images/groups.png";
 import no from "./chat-images/no.png";
 import blocked from "./chat-images/blocked.png";
 import LoggedInSideBar from "./LoggedInSideBar";
-import UserProfileComponent from "./UserProfileComponent";
-
 const Chats = () => {
   const [selectedChat, setSelectedChat] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
@@ -103,10 +100,10 @@ const Chats = () => {
     setMessage("");
   };
 
-  const handleSelectChat = (chat) => {
-    setSelectedChat(chat);
-    setSelectedUser(chat.user); // Assuming each chat has a `user` object
-    fetchMessages(chat.id);
+  const handleSelectChat = (conversation) => {
+    setSelectedChat(conversation);
+  setSelectedUser(conversation.receiver);
+  fetchMessages(conversation.conversationId);
   };
 
   return (
@@ -146,8 +143,10 @@ const Chats = () => {
             <div className="mt-4">
               {conversations.map((conversation) => (
                 <Chat
-                  key={conversation.id}
-                  {...conversation}
+                key={conversation.conversationId}
+                imgSrc={conversation.receiver?.profilePicture || "default.png"}
+                userName={conversation.receiver?.username || "Unknown"}
+                userMessage="Last message here" // Update with last message logic if needed
                   onClick={() => handleSelectChat(conversation)}
                 />
               ))}
@@ -156,13 +155,7 @@ const Chats = () => {
         </div>
 
         <div className="w-2/3">
-          {selectedUser && (
-            <UserProfile
-              chat={selectedUser}
-              setSelectedChat={setSelectedChat}
-              setSelectedUser={setSelectedUser}
-            />
-          )}
+         
 
           {selectedChat && (
             <ChatDetails
@@ -208,7 +201,7 @@ function FilterTags({ imgSrc, filterMessage }) {
 function Chat({ imgSrc, userName, userMessage, onClick }) {
   return (
     <div className="flex items-center mb-8 gap-4 cursor-pointer" onClick={onClick}>
-      <img className="w-[70.13px] h-[75.91px]" src={imgSrc} alt="" />
+      <img className="w-20 h-20 rounded-full" src={imgSrc} alt="" />
       <div>
         <p className="font-bold">{userName}</p>
         <p>{userMessage}</p>
@@ -243,9 +236,13 @@ function ChatDetails({
       <div className="flex justify-between items-center mt-5">
         <div className="flex items-center gap-4 px-5">
           <img onClick={goBack} className="cursor-pointer" src={arrow} alt="" />
-          <img className="cursor-pointer" src={chat.imgSrc} alt="" />
+          <img
+              className="w-20 h-20 rounded-full"
+              src={chat.receiver?.profilePicture || "default.png"}
+              alt="Receiver"
+            />
           <div>
-            <p className="font-bold">{chat.userName}</p>
+          <p className="font-bold">{chat.receiver?.username || "Unknown"}</p>
             <p>Active 1min ago</p>
           </div>
         </div>
@@ -282,43 +279,6 @@ function ChatDetails({
           <img src={camera} alt="" />
           <img src={sound} alt="" />
         </form>
-      </div>
-    </div>
-  );
-}
-
-function UserProfile({ chat, setSelectedChat, setSelectedUser }) {
-  const goBack = () => {
-    setSelectedChat(false);
-    setSelectedUser(false);
-  };
-  return (
-    <div>
-      <div className="flex gap-4 items-center px-6 mx-auto">
-        <img src={arrow} onClick={goBack} />
-        <div>
-          <img src={chat.imgSrc} />
-          <p>{chat.userName}</p>
-        </div>
-        <div>
-          <p>{chat.posts}</p>
-          <p>Posts</p>
-        </div>
-        <div>
-          <p>{chat.followers}</p>
-          <p>Followers</p>
-        </div>
-        <div className="">
-          <p>{chat.following}</p>
-          <p>Following</p>
-        </div>
-      </div>
-      <div className="px-2 mt-3 mb-3">
-        <p>{chat.profession}</p>
-        <p>{chat.profileMessage}</p>
-      </div>
-      <div className="px-4">
-        <UserProfileComponent />
       </div>
     </div>
   );

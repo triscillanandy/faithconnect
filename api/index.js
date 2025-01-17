@@ -139,38 +139,61 @@ connectDB().then(() => {
 });
 
 
-//socket.io
 
+// Active users array
 let activeUsers = [];
 
-io.on("connection", (socket) => {
-  // add new User
-  socket.on("new-user-add", (newUserId) => {
-    // if user is not added previously
-    if (!activeUsers.some((user) => user.userId === newUserId)) {
-      activeUsers.push({ userId: newUserId, socketId: socket.id });
-      console.log("New User Connected", activeUsers);
+// Socket.IO integration
+io.on('connection', (socket) => {
+//  console.log('A user connected');
+
+  // Add a new user
+  socket.on('joinRoom', (userId) => {
+    if (!activeUsers.some((user) => user.userId === userId)) {
+      activeUsers.push({ userId, socketId: socket.id });
+      console.log('New user added:', activeUsers);
     }
-    // send all active users to new user
-    io.emit("get-users", activeUsers);
+    io.emit('get-users', activeUsers);
   });
 
-  socket.on("disconnect", () => {
-    // remove user from active users
+  // Handle disconnection
+  socket.on('disconnect', () => {
     activeUsers = activeUsers.filter((user) => user.socketId !== socket.id);
-    console.log("User Disconnected", activeUsers);
-    // send all active users to all users
-    io.emit("get-users", activeUsers);
+    console.log('User disconnected:', activeUsers);
+    io.emit('get-users', activeUsers);
   });
 
-  // send message to a specific user
-  socket.on("send-message", (data) => {
-    const { receiverId } = data;
-    const user = activeUsers.find((user) => user.userId === receiverId);
-    console.log("Sending from socket to :", receiverId)
-    console.log("Data: ", data)
-    if (user) {
-      io.to(user.socketId).emit("recieve-message", data);
+  socket.on("sendMessage", async ({senderId, receiverId, message, conversationId }) => {
+    const receiver = activeUsers.find(user => user.userId === receiverId);
+    const sender = activeUsers.find(user => user.userId === senderId);
+    //const user = await Users.findById(senderId); // Assuming 'Users' is your model.
+
+    if (receiver) {
+        // Emit to both the sender and receiver.
+        io.to(receiver.socketId).emit("receive-message", {
+            senderId,
+            message,
+            conversationId,
+            receiverId,
+         
+        });
+        console.log("Received message:", { senderId, receiverId, message, conversationId });
+
+    } else {
+        // Emit only to the sender if receiver is not online.
+        io.to(sender.socketId).emit("receive-message", {
+            senderId,
+            message,
+            conversationId,
+            receiverId,
+           
+        });
+        console.log("Received message:", { senderId, receiverId, message, conversationId });
     }
+
+
   });
 });
+
+// Pass `io` to the chat controller
+app.set('io', io);

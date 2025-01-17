@@ -48,9 +48,12 @@ const Chats = () => {
 
   useEffect(() => {
     if (socket) {
-      socket.emit("addUser", JSON.parse(localStorage.getItem("user:detail")).id);
-      socket.on("getMessage", (data) => {
-        setMessages((prev) => [...prev, { text: data.message, sender: data.senderId }]);
+      socket.emit("joinRoom", JSON.parse(localStorage.getItem("user:detail")).id);
+      socket.on("get-users", (activeUsers) => {
+        console.log("Active users:", activeUsers); // Optional: Show active users
+      });
+      socket.on("receive-message", (data) => {
+        setMessages((prev) => [...prev, { message: data.message, senderId: data.senderId }]);
       });
     }
   }, [socket]);
@@ -69,6 +72,7 @@ const Chats = () => {
         "Authorization": `Bearer ${token}`
       },
     });
+    console.log(res);
     const data = await res.json();
     setMessages(data);
   };
@@ -80,21 +84,28 @@ const Chats = () => {
     const user = JSON.parse(localStorage.getItem("user:detail"));
     const token = localStorage.getItem("token");
     const newMessage = {
-      conversationId: selectedChat.id,
-      senderId: user.id,
+      conversationId: selectedChat.conversationId,
+      senderId: user.id, // Sender's userId
+      receiverId: selectedUser.id, // Receiver's userId
       message,
+     
     };
-
+  
+    // Send the message through the socket
     socket.emit("sendMessage", newMessage);
+    console.log(newMessage);
+    // socket.emit("sendMessage", newMessage);
 
     await fetch(`${import.meta.env.VITE_API_URL}/api/auth/messages`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json, text/plain, */*",
+        "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify(newMessage),
     });
+    console.log(newMessage);
+    //console.log("Message sent:", body);
 
     setMessages((prev) => [...prev, { text: message, sender: user.id }]);
     setMessage("");
@@ -104,6 +115,10 @@ const Chats = () => {
     setSelectedChat(conversation);
   setSelectedUser(conversation.receiver);
   fetchMessages(conversation.conversationId);
+  // if (socket) {
+  //   socket.emit("joinRoom", conversation.conversationId); // Join the conversation room
+  //   console.log(`Joined room: ${conversation.conversationId}`);
+  // }
   };
 
   return (

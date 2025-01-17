@@ -1,6 +1,7 @@
 import Conversation from '../models/Conversation.js'; 
 import Message from '../models/Message.js'; 
 import { Sequelize } from 'sequelize';
+import { Server as SocketIo } from 'socket.io'; // Correct way to import socket.io
 import User from "../models/User.js"; // Adjust path based on your project structure
 import Op from 'sequelize';
 // Create a new conversation
@@ -225,27 +226,19 @@ export const getConversationByUsers = async (req, res) => {
 
 
 export const sendMessage = async (req, res) => {
-  const { conversationId, sender, text } = req.body;
-
-  // Input Validation
-  if (!conversationId || !sender || !text) {
-    return res.status(400).json({ error: 'Missing required fields.' });
-  }
+  const { conversationId, senderId, message } = req.body;
+  
+  //console.log('Request body:', req.body);
 
   try {
     // Create new message
     const newMessage = await Message.create({
       conversationId,
-      sender,
-      text,
+      sender: senderId,
+      text: message,
     });
-
-    // // Update lastMessage in Conversation (if applicable)
-    // await Conversation.update(
-    //   { lastMessage: text }, // Fields to update
-    //   { where: { id: conversationId } } // Condition to match
-    // );
-
+    console.log('Message created:', newMessage);
+   
     return res.status(200).json(newMessage);
   } catch (err) {
     console.error('Error creating message:', err);

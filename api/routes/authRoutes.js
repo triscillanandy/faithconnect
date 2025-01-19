@@ -4,7 +4,7 @@ import { register, verifyEmail, forgotPassword,resetPassword, login, getProtecte
 import { isAuthenticated } from '../middleware/authMiddleware.js';
 import { createPost,getMyPosts,getPosts,getPostById,deletePost,getOtherPosts,addComment,getCommentsByPostId,toggleLike, getLikesByPostId, } from '../controllers/postController.js';
 import { upload } from '../middleware/uploadMiddleware.js';
-import {creategroups,joingroups,leavegroups,listGroups} from '../controllers/groupController.js';
+import {creategroups,joingroups,leavegroups,listGroups,getGroupDetails} from '../controllers/groupController.js';
 
 import { createConversation, getConversations, getConversationByUsers,sendMessage,getMessages ,sendGroupMessage,getGroupMessages} from '../controllers/conversationController.js';
 import {followUser, unfollowUser,getFollowers, getFollowing,getSuggestedUsers} from '../controllers/followController.js'; // New controllers for follow functionality
@@ -37,12 +37,12 @@ router.delete('/posts/:id', isAuthenticated, deletePost);
 router.get('/my-posts', isAuthenticated, getMyPosts);
 
 // Comments
-router.post('/comments', addComment); // Add a comment
-router.get('/posts/:postId/comments', getCommentsByPostId); // Fetch comments for a post
+router.post('/comments',isAuthenticated, addComment); // Add a comment
+router.get('/posts/:postId/comments',isAuthenticated, getCommentsByPostId); // Fetch comments for a post
 
 // Likes
-router.post('/likes', toggleLike); // Like/unlike a post
-router.get('/posts/:postId/likes', getLikesByPostId); // Fetch likes for a post
+router.post('/likes',isAuthenticated, toggleLike); // Like/unlike a post
+router.get('/posts/:postId/likes',isAuthenticated, getLikesByPostId); // Fetch likes for a post
 
 
 //followers ,follow routes
@@ -58,7 +58,7 @@ router.post('/groups/:groupId/join', isAuthenticated, joingroups);
 router.get('/groups',isAuthenticated, listGroups);
 router.post('/groups/:groupId/leave', isAuthenticated, leavegroups);
 
-
+router.get('/groups/:groupId', isAuthenticated, getGroupDetails);
 
 // Conversation Routes and chats
 router.post('/conversations', isAuthenticated, createConversation);  // Create a new conversation

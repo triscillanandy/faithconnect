@@ -4,9 +4,7 @@ import LoggedInSideBar from "./LoggedInSideBar";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-
-import { FaRegHeart,FaHeart} from "react-icons/fa"; // Import the heart icon from React Icons
-
+import { FaRegHeart, FaHeart } from "react-icons/fa"; // Import the heart icon from React Icons
 import like from "./LoggedInScreenImages/like.png";
 import comment from "./LoggedInScreenImages/comment.png";
 import save from "./LoggedInScreenImages/save.png";
@@ -18,8 +16,9 @@ const LoggedInUserScreen = () => {
   const [posts, setPosts] = useState([]);
   const [suggestedPeople, setSuggestedPeople] = useState([]);
   const [groups, setPrayerGroups] = useState([]);
-   const [errorMessage, setErrorMessage] = useState("");
-
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showAllGroupsModal, setShowAllGroupsModal] = useState(false); // State for modal visibility
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
   useEffect(() => {
     fetchPosts();
@@ -136,6 +135,11 @@ const LoggedInUserScreen = () => {
     }
   };
 
+  // Filter groups based on search query
+  const filteredGroups = groups.filter((group) =>
+    group.group_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="flex min-h-screen">
       {/* Navigation Bar */}
@@ -169,12 +173,22 @@ const LoggedInUserScreen = () => {
         <div className="w-[352px] p-4 hidden lg:block">
           <div className="flex justify-between items-center mb-4">
             <h1 className="font-bold text-lg">Suggested For You</h1>
-            <p className="text-blue-500 cursor-pointer">See All</p>
+            <p
+              className="text-blue-500 cursor-pointer"
+              onClick={() => setShowAllGroupsModal(true)}
+            >
+              See All
+            </p>
           </div>
 
           <div className="flex justify-between items-center mt-6 mb-2">
             <h2 className="font-bold text-lg">Prayer Groups</h2>
-            <p className="text-blue-500 cursor-pointer">See All</p>
+            <p
+              className="text-blue-500 cursor-pointer"
+              onClick={() => setShowAllGroupsModal(true)}
+            >
+              See All
+            </p>
           </div>
           {groups.length > 0 ? (
             groups.slice(0, 4).map((group) => (
@@ -193,12 +207,50 @@ const LoggedInUserScreen = () => {
           )}
         </div>
       </div>
+
+      {/* Modal for "See All" Groups */}
+      {showAllGroupsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg w-11/12 max-w-4xl max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">All Groups</h2>
+              <button
+                onClick={() => setShowAllGroupsModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                &times;
+              </button>
+            </div>
+            <input
+              type="text"
+              placeholder="Search groups..."
+              className="w-full px-4 py-2 border rounded-lg mb-4"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {filteredGroups.length > 0 ? (
+                filteredGroups.map((group) => (
+                  <SuggestedGroups
+                    key={group.id}
+                    imgSrc={group.imgSrc}
+                    group_name={group.group_name}
+                    groupId={group.id}
+                    isMember={group.is_member}
+                    joinGroup={joinGroup}
+                    leaveGroup={leaveGroup}
+                  />
+                ))
+              ) : (
+                <p>No groups found</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
-
-
-
 
 export default LoggedInUserScreen;
 

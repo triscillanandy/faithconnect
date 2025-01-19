@@ -346,56 +346,54 @@ export const deletePost = async (req, res) => {
   };
 
   
-  export const toggleLike = async (req, res) => {
-    try {
-      const { postId } = req.body;
-  
-      // Check if the post exists
-      const post = await Post.findByPk(postId);
-      if (!post) {
-        return res.status(404).json({ message: 'Post not found.' });
-      }
-  
-      // Check if the user already liked the post
-      const existingLike = await Like.findOne({
-        where: { postId, userId: req.user.id },
-      });
-  
-      if (existingLike) {
-        // Unlike the post
-        await existingLike.destroy();
-        return res.status(200).json({ message: 'Post unliked.' });
-      }
-  
-      // Like the post
-      const like = await Like.create({
-        postId,
-        userId: req.user.id,
-      });
-  
-      res.status(201).json({ message: 'Post liked.', like });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
-  
+export const toggleLike = async (req, res) => {
+  try {
+    const { postId, userId } = req.body;
 
-  export const getLikesByPostId = async (req, res) => {
-    try {
-      const likes = await Like.findAll({
-        where: { postId: req.params.postId },
-        include: [
-          {
-            model: User,
-            as: 'user',
-            attributes: ['username', 'profileImage'],
-          },
-        ],
-      });
-  
-      res.status(200).json({ likes });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+    // Check if the post exists
+    const post = await Post.findByPk(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found." });
     }
-  };
-  
+
+    // Check if the user already liked the post
+    const existingLike = await Like.findOne({
+      where: { postId, userId },
+    });
+
+    if (existingLike) {
+      // Unlike the post
+      await existingLike.destroy();
+      return res.status(200).json({ message: "Post unliked.", liked: false });
+    }
+
+    // Like the post
+    const like = await Like.create({
+      postId,
+      userId,
+    });
+
+    res.status(201).json({ message: "Post liked.", liked: true, like });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getLikesByPostId = async (req, res) => {
+  try {
+    const likes = await Like.findAll({
+      where: { postId: req.params.postId },
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["id", "username", "profileImage"],
+        },
+      ],
+    });
+
+    res.status(200).json({ likes });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

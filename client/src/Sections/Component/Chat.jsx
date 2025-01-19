@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
 import filter from "./chat-images/filter.png";
-
 import people from "./chat-images/people.png";
 import Call from "./chat-images/Call.png";
 import Group from "./chat-images/Group.png";
@@ -16,6 +15,7 @@ import groups from "./chat-images/groups.png";
 import no from "./chat-images/no.png";
 import blocked from "./chat-images/blocked.png";
 import LoggedInSideBar from "./LoggedInSideBar";
+
 const Chats = () => {
   const [selectedChat, setSelectedChat] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
@@ -23,7 +23,10 @@ const Chats = () => {
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
   const [conversations, setConversations] = useState([]);
+  const [groupsList, setGroupsList] = useState([]);
   const [socket, setSocket] = useState(null);
+  const [showNewGroupPopup, setShowNewGroupPopup] = useState(false);
+  const [showNewCommunityPopup, setShowNewCommunityPopup] = useState(false);
   const messageRef = useRef(null);
 
   useEffect(() => {
@@ -43,41 +46,34 @@ const Chats = () => {
       setConversations(Array.isArray(data) ? data : []);
     };
 
-    fetchConversations();
-  }, []);
+    const fetchGroups = async () => {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/groups`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+      });
+      const data = await res.json();
+      setGroupsList(data.groups || []);
+    };
 
-  // useEffect(() => {
-  //   if (socket) {
-  //     socket.emit("joinRoom", JSON.parse(localStorage.getItem("user:detail")).id);
-  //     socket.on("get-users", (activeUsers) => {
-  //       console.log("Active users:", activeUsers); // Optional: Show active users
-  //     });
-  //     socket.on("receive-message", (data) => {
-  //       setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
-  //     });
-  //   }
-  // }, [socket]);
+    fetchConversations();
+    fetchGroups();
+  }, []);
 
   useEffect(() => {
     if (socket) {
       socket.emit("joinRoom", JSON.parse(localStorage.getItem("user:detail")).id);
-  console.log("Joining room:", JSON.parse(localStorage.getItem("user:detail")).id);
+      console.log("Joining room:", JSON.parse(localStorage.getItem("user:detail")).id);
       socket.on("get-users", (activeUsers) => {
         console.log("Active users:", activeUsers);
       });
-  
-      // socket.on("receive-message", (data) => {
-      //   if (!data.groupId) {
-      //     setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
-      //   }
-      // });
-  
+
       socket.on("receive-message", (data) => {
-        //if (!data.groupId) {
-          setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
-      //  }
+        setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
       });
-  
+
       socket.on("receive-group-message", (data) => {
         if (data.groupId === selectedChat?.groupId) {
           setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
@@ -85,14 +81,12 @@ const Chats = () => {
       });
     }
   }, [socket, selectedChat]);
-  
 
   useEffect(() => {
     messageRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-  
 
-  const fetchMessages = async (conversationId,) => {
+  const fetchMessages = async (conversationId) => {
     const token = localStorage.getItem("token");
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/messages/${conversationId}`, {
       method: "GET",
@@ -101,50 +95,14 @@ const Chats = () => {
         "Authorization": `Bearer ${token}`
       },
     });
-    console.log(res);
     const data = await res.json();
     setMessages(data);
   };
 
-  // const handleSendMessage = async (e) => {
-  //   e.preventDefault();
-  //   if (!message.trim()) return;
-
-  //   const user = JSON.parse(localStorage.getItem("user:detail"));
-  //   const token = localStorage.getItem("token");
-  //   const newMessage = {
-  //     conversationId: selectedChat.conversationId,
-  //     senderId: user.id, // Sender's userId
-  //     receiverId: selectedUser.id, // Receiver's userId
-  //     message,
-     
-  //   };
-  
-  //   // Send the message through the socket
-  //   socket.emit("sendMessage", newMessage);
-  //   console.log(newMessage);
-  //   // socket.emit("sendMessage", newMessage);
-
-  //   await fetch(`${import.meta.env.VITE_API_URL}/api/auth/messages`, {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       "Authorization": `Bearer ${token}`
-  //     },
-  //     body: JSON.stringify(newMessage),
-  //   });
-  //   console.log(newMessage);
-  //   //console.log("Message sent:", body);
-
-  //   setMessages((prev) => [...prev, { text: message, senderId: user.id }]);
-  //   setMessage("");
-  // };
-
-
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!message.trim()) return;
-  
+
     const user = JSON.parse(localStorage.getItem("user:detail"));
     const token = localStorage.getItem("token");
     const newMessage = selectedChat.isGroup
@@ -159,9 +117,8 @@ const Chats = () => {
           receiverId: selectedUser.id,
           message,
         };
-  
+
     socket.emit(selectedChat.isGroup ? "sendGroupMessage" : "sendMessage", newMessage);
-  console.log(newMessage);
     await fetch(
       `${import.meta.env.VITE_API_URL}/api/auth/${selectedChat.isGroup ? "group-messages" : "messages"}`,
       {
@@ -173,11 +130,11 @@ const Chats = () => {
         body: JSON.stringify(newMessage),
       }
     );
-  
+
     setMessages((prev) => [...prev, { text: message, senderId: user.id }]);
     setMessage("");
   };
-  
+
   const fetchGroupMessages = async (groupId) => {
     const token = localStorage.getItem("token");
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/group-messages/${groupId}`, {
@@ -190,12 +147,7 @@ const Chats = () => {
     const data = await res.json();
     setMessages(data);
   };
-  
 
-  // const handleSelectChat = (conversation) => {
-  //   setSelectedChat(conversation);
-  // setSelectedUser(conversation.receiver);
-  // fetchMessages(conversation.conversationId);
   const handleSelectChat = (conversation) => {
     setSelectedChat(conversation);
     if (conversation.isGroup) {
@@ -205,9 +157,6 @@ const Chats = () => {
       fetchMessages(conversation.conversationId);
     }
   };
-  
-  
-  
 
   return (
     <div className="flex gap-24 max-[833px]:flex-col-reverse">
@@ -243,35 +192,38 @@ const Chats = () => {
               />
               {showFilter && <ShowFilter />}
             </div>
+            <div className="flex justify-between px-8 mb-5 items-center mt-3">
+              <button onClick={() => setShowNewGroupPopup(true)} className="font-semibold text-blue-500">New Group</button>
+              <button onClick={() => setShowNewCommunityPopup(true)} className="font-semibold text-blue-500">New Community</button>
+            </div>
             <div className="mt-4">
               {conversations.map((conversation) => (
-                // <Chat
-                // key={conversation.conversationId}
-                // imgSrc={conversation.receiver?.profilePicture || "default.png"}
-                // userName={conversation.receiver?.username || "Unknown"}
-                // userMessage="Last message here" // Update with last message logic if needed
-                //   onClick={() => handleSelectChat(conversation)}
-                // />
                 <Chat
-  key={conversation.conversationId || conversation.groupId}
-  imgSrc={
-    conversation.isGroup
-      ? "group-icon.png" // Add a default group icon
-      : conversation.receiver?.profilePicture || "default.png"
-  }
-  userName={conversation.isGroup ? conversation.group_name : conversation.receiver?.username || "Unknown"}
-  userMessage="Last message here"
-  onClick={() => handleSelectChat(conversation)}
-/>
-
+                  key={conversation.conversationId || conversation.groupId}
+                  imgSrc={
+                    conversation.isGroup
+                      ? "group-icon.png"
+                      : conversation.receiver?.profilePicture || "default.png"
+                  }
+                  userName={conversation.isGroup ? conversation.group_name : conversation.receiver?.username || "Unknown"}
+                  userMessage="Last message here"
+                  onClick={() => handleSelectChat(conversation)}
+                />
+              ))}
+              {groupsList.map((group) => (
+                <Chat
+                  key={group.id}
+                  imgSrc="group-icon.png"
+                  userName={group.group_name}
+                  userMessage={group.is_member ? (group.role === 'admin' ? 'You are an admin' : 'You are a member') : 'Not a member'}
+                  onClick={() => handleSelectChat({ isGroup: true, groupId: group.id, group_name: group.group_name })}
+                />
               ))}
             </div>
           </div>
         </div>
 
         <div className="w-2/3">
-         
-
           {selectedChat && (
             <ChatDetails
               selectedChat={selectedChat}
@@ -285,6 +237,9 @@ const Chats = () => {
           )}
         </div>
       </div>
+
+      {showNewGroupPopup && <NewGroupPopup onClose={() => setShowNewGroupPopup(false)} />}
+      {showNewCommunityPopup && <NewCommunityPopup onClose={() => setShowNewCommunityPopup(false)} />}
     </div>
   );
 };
@@ -394,6 +349,122 @@ function ChatDetails({
           <img src={camera} alt="" />
           <img src={sound} alt="" />
         </form>
+      </div>
+    </div>
+  );
+}
+
+function NewGroupPopup({ onClose }) {
+  const [groupName, setGroupName] = useState("");
+  const [description, setDescription] = useState("");
+  const [visibility, setVisibility] = useState("public"); // Default visibility
+  const [error, setError] = useState("");
+
+  const handleCreateGroup = async (e) => {
+    e.preventDefault();
+
+    if (!groupName.trim()) {
+      setError("Group name is required");
+      return;
+    }
+
+    const user = JSON.parse(localStorage.getItem("user:detail"));
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/creategroups`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          group_name: groupName,
+          description,
+          visibility,
+          created_by: user.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create group");
+      }
+
+      const data = await response.json();
+      console.log("Group created successfully:", data);
+      onClose(); // Close the popup after successful creation
+      window.location.reload(); // Refresh the page to reflect the new group
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+      <div className="bg-white p-5 rounded-lg w-96">
+        <h2 className="text-xl font-bold mb-4">Create New Group</h2>
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+        <form onSubmit={handleCreateGroup}>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Group Name</label>
+            <input
+              type="text"
+              placeholder="Enter group name"
+              className="w-full px-3 py-2 border rounded-lg"
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Description</label>
+            <textarea
+              placeholder="Enter group description"
+              className="w-full px-3 py-2 border rounded-lg"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Visibility</label>
+            <select
+              className="w-full px-3 py-2 border rounded-lg"
+              value={visibility}
+              onChange={(e) => setVisibility(e.target.value)}
+            >
+              <option value="public">Public</option>
+              <option value="private">Private</option>
+            </select>
+          </div>
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+            >
+              Create
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function NewCommunityPopup({ onClose }) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+      <div className="bg-white p-5 rounded-lg">
+        <h2 className="text-xl font-bold mb-4">Create New Community</h2>
+        {/* Add form fields for creating a new community */}
+        <button onClick={onClose} className="mt-4 bg-red-500 text-white px-4 py-2 rounded-lg">Close</button>
       </div>
     </div>
   );

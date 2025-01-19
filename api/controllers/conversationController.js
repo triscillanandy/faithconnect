@@ -5,20 +5,20 @@ import { Server as SocketIo } from 'socket.io'; // Correct way to import socket.
 import User from "../models/User.js"; // Adjust path based on your project structure
 import Op from 'sequelize';
 // Create a new conversation
+
 export const createConversation = async (req, res) => {
-  const { senderId, receiverId } = req.body;
+  const { userIds } = req.body;
 
   try {
-    // Ensure user IDs are sorted to maintain consistency
-    const userIds = [senderId, receiverId].sort();
-
-    // Check if a conversation already exists
+    // Check if a conversation already exists between the users
     const existingConversation = await Conversation.findOne({
-      where: { userIds: { [Sequelize.Op.contains]: userIds } }, // PostgreSQL array operator
+      where: {
+        userIds: { [Sequelize.Op.contains]: userIds },
+      },
     });
 
     if (existingConversation) {
-      return res.status(200).json(existingConversation); // Return the existing conversation
+      return res.status(200).json(existingConversation);
     }
 
     // Create a new conversation if none exists
@@ -32,11 +32,129 @@ export const createConversation = async (req, res) => {
     return res.status(500).json({ error: 'Error creating conversation.' });
   }
 };
+// export const createConversation = async (req, res) => {
+//   const { senderId, receiverId } = req.body;
+
+//   try {
+//     // Ensure user IDs are sorted to maintain consistency
+//     const userIds = [senderId, receiverId].sort();
+
+//     // Check if a conversation already exists
+//     const existingConversation = await Conversation.findOne({
+//       where: { userIds: { [Sequelize.Op.contains]: userIds } }, // PostgreSQL array operator
+//     });
+
+//     if (existingConversation) {
+//       return res.status(200).json(existingConversation); // Return the existing conversation
+//     }
+
+//     // Create a new conversation if none exists
+//     const newConversation = await Conversation.create({
+//       userIds,
+//     });
+
+//     return res.status(201).json(newConversation);
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({ error: 'Error creating conversation.' });
+//   }
+// };
 
 
 
+// export const getMessages = async (req, res) => {
+//   const { conversationId } = req.params;
+
+//   try {
+//     const messages = await Message.findAll({
+//       where: { conversationId },
+//       include: [
+//         {
+//           model: User,
+//           as: "sender",
+//           attributes: ["id", "username", "profileImage"],
+//         },
+//       ],
+//     });
+
+//     const formattedMessages = messages.map((message) => ({
+//       id: message.id,
+//       text: message.text,
+//       senderId: message.senderId,
+//       sender: {
+//         id: message.sender.id,
+//         username: message.sender.username,
+//         profileImage: message.sender.profileImage || "default.png",
+//       },
+//       createdAt: message.createdAt,
+//     }));
+
+//     res.status(200).json(formattedMessages); // Always returns an array
+//   } catch (error) {
+//     console.error("Error fetching messages:", error.message);
+// console.log(error.message)
+//    // res.status(500).json([]); // Fallback to an empty array on error
+//   }
+// };
 
 
+export const getMessages = async (req, res) => {
+  const { conversationId } = req.params;
+
+  try {
+    const messages = await Message.findAll({
+      where: { conversationId },
+      include: [
+        {
+          model: User,
+          as: 'user', // Use the correct alias defined in the association
+          attributes: ['id', 'username', 'profileImage'],
+        },
+      ],
+    });
+
+    const formattedMessages = messages.map((message) => ({
+      id: message.id,
+      text: message.text,
+      senderId: message.sender, // Use the correct foreign key
+      sender: {
+        id: message.user.id, // Access the user using the correct alias
+ 
+        username: message.user.username,
+        profileImage: message.user.profileImage || 'default.png',
+      },
+      createdAt: message.createdAt,
+    }));
+
+    res.status(200).json(formattedMessages); // Always returns an array
+  } catch (error) {
+    console.error('Error fetching messages:', error.message);
+    res.status(500).json([]); // Fallback to an empty array on error
+  }
+};
+
+// export const sendMessage = async (req, res) => {
+//   const { conversationId, senderId, message } = req.body;
+  
+//   //console.log('Request body:', req.body);
+
+//   try {
+//     // Create new message
+
+
+//     const newMessage = await Message.create({
+//       conversationId,
+//       sender: senderId,
+//       text: message,
+//     });
+//     console.log('Message created:', newMessage);
+   
+//     return res.status(200).json(newMessage);
+//   } catch (err) {
+//     console.error('Error creating message:', err);
+//     return res.status(500).json({ error: err.message });
+//   }
+// };
 
 export const getConversations = async (req, res) => {
   const { userId } = req.params;
@@ -80,7 +198,6 @@ export const getConversations = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 // Get conversation between two users
 export const getConversationByUsers = async (req, res) => {
   const { firstUserId, secondUserId } = req.params;
@@ -127,22 +244,22 @@ export const sendMessage = async (req, res) => {
 
 
 // Get all messages for a specific conversation
-export const getMessages = async (req, res) => {
-  const { conversationId } = req.params;
+// export const getMessages = async (req, res) => {
+//   const { conversationId } = req.params;
 
-  try {
-    const messages = await Message.findAll({
-      where: {
-        conversationId,
-      },
-    });
+//   try {
+//     const messages = await Message.findAll({
+//       where: {
+//         conversationId,
+//       },
+//     });
 
-    return res.status(200).json(messages);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: 'Error fetching messages.' });
-  }
-};
+//     return res.status(200).json(messages);
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({ error: 'Error fetching messages.' });
+//   }
+// };
 export const sendGroupMessage = async (req, res) => {
   const { groupId, senderId, message } = req.body;
 

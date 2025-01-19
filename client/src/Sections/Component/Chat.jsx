@@ -88,15 +88,21 @@ const Chats = () => {
 
   const fetchMessages = async (conversationId) => {
     const token = localStorage.getItem("token");
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/messages/${conversationId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-    });
-    const data = await res.json();
-    setMessages(data);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/messages/${conversationId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      console.log("Fetched messages:", data); // Debugging
+      setMessages(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      setMessages([]);
+    }
   };
 
   const handleSendMessage = async (e) => {
@@ -282,8 +288,87 @@ function Chat({ imgSrc, userName, userMessage, onClick }) {
       </div>
     </div>
   );
-}
+ }
+// function ChatDetails({
+//   selectedChat,
+//   messages,
+//   message,
+//   setMessage,
+//   handleSendMessage,
+//   goBack,
+//   messageRef,
+// }) {
+//   const [deviceHeight, setDeviceHeight] = useState(window.innerHeight);
+//   const loggedInUserId = JSON.parse(localStorage.getItem("user:detail")).id;
 
+//   useEffect(() => {
+//     const handleResize = () => {
+//       setDeviceHeight(window.innerHeight);
+//     };
+//     window.addEventListener("resize", handleResize);
+//     return () => {
+//       window.removeEventListener("resize", handleResize);
+//     };
+//   }, []);
+
+//   return (
+//     <div className="relative" style={{ height: `${deviceHeight}px` }}>
+//       <div className="flex justify-between items-center mt-5">
+//         <div className="flex items-center gap-4 px-5">
+//           <img onClick={goBack} className="cursor-pointer" src={arrow} alt="" />
+//           <img
+//             className="w-20 h-20 rounded-full"
+//             src={selectedChat.isGroup ? "group-icon.png" : selectedChat.receiver?.profilePicture || "default.png"}
+//             alt={selectedChat.isGroup ? "Group" : "Receiver"}
+//           />
+//           <div>
+//             <p className="font-bold">{selectedChat.isGroup ? selectedChat.group_name : selectedChat.receiver?.username || "Unknown"}</p>
+//             <p>Active 1min ago</p>
+//           </div>
+//         </div>
+//         <div className="flex gap-4 px-8">
+//           <img src={Call} className="cursor-pointer" alt="" />
+//           <img src={Group} className="cursor-pointer" alt="" />
+//         </div>
+//       </div>
+//       <hr className="h-2 bg-mainTheme mt-4 mb-3" />
+//       <div className="flex flex-col gap-2 p-4 overflow-y-auto h-[550px]">
+//         {messages.map((msg, index) => (
+//           <div
+//             key={index}
+//             className={`flex ${
+//               msg.senderId === loggedInUserId ? "justify-end" : "justify-start"
+//             }`}
+//           >
+//             <p
+//               className={`max-w-[60%] px-3 py-2 text-white rounded-[20px] ${
+//                 msg.senderId === loggedInUserId ? "bg-orange-500" : "bg-blue-500"
+//               }`}
+//             >
+//               {msg.text}
+//             </p>
+//           </div>
+//         ))}
+//         <div ref={messageRef}></div>
+//       </div>
+//       <div className="absolute bottom-0 w-full flex justify-center">
+//         <form className="flex items-center gap-5" onSubmit={handleSendMessage}>
+//           <img src={files} alt="" />
+//           <input
+//             type="text"
+//             placeholder="Write Message"
+//             className="border-[2px] border-gray-400 px-28 w-full py-4 rounded-xl"
+//             value={message}
+//             onChange={(e) => setMessage(e.target.value)}
+//           />
+//           <button className="bg-mainTheme text-white px-4 py-1 rounded-lg">Send</button>
+//           <img src={camera} alt="" />
+//           <img src={sound} alt="" />
+//         </form>
+//       </div>
+//     </div>
+//   );
+// }
 function ChatDetails({
   selectedChat,
   messages,
@@ -294,6 +379,7 @@ function ChatDetails({
   messageRef,
 }) {
   const [deviceHeight, setDeviceHeight] = useState(window.innerHeight);
+  const loggedInUserId = JSON.parse(localStorage.getItem("user:detail")).id;
 
   useEffect(() => {
     const handleResize = () => {
@@ -328,14 +414,20 @@ function ChatDetails({
       <hr className="h-2 bg-mainTheme mt-4 mb-3" />
       <div className="flex flex-col gap-2 p-4 overflow-y-auto h-[550px]">
         {messages.map((msg, index) => (
-          <p
+          <div
             key={index}
-            className={`max-w-[60%] px-3 py-2 text-white rounded-[20px] ${
-              msg.sender === "sender" ? "bg-mainTheme self-end" : "bg-[#373E4E] self-start"
+            className={`flex ${
+              msg.senderId === loggedInUserId ? "justify-end" : "justify-start"
             }`}
           >
-            {msg.text}
-          </p>
+            <p
+              className={`max-w-[60%] px-3 py-2 text-white rounded-[20px] ${
+                msg.senderId === loggedInUserId ? "bg-orange-500" : "bg-blue-500"
+              }`}
+            >
+              {msg.text}
+            </p>
+          </div>
         ))}
         <div ref={messageRef}></div>
       </div>

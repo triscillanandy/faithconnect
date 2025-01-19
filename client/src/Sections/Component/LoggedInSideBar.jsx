@@ -1,4 +1,4 @@
-import { FaHome, FaSearch, FaPrayingHands, FaFilm, FaEnvelope, FaBell, FaUser } from "react-icons/fa";
+import { FaHome, FaSearch, FaPrayingHands, FaFilm,FaPlusSquare, FaCommentDots, FaBell, FaUser } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import Logo from "./LoggedInScreenImages/Logo.png";
 import { useCallback } from "react";
@@ -24,9 +24,9 @@ const LoggedInSideBar = ({ showSideBar = true }) => {
               <FaHome className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Home" onClick={() => handleNavigation("/home")} />
               <FaSearch className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Search" />
               <FaPrayingHands className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Pray" onClick={() => handleNavigation("/search")} />
-              <FaFilm className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Reels" />
-              <FaEnvelope className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="DM" onClick={() => handleNavigation("/post")} />
-              <FaEnvelope className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="DM" onClick={() => handleNavigation("/chats")} />
+              <FaFilm className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Reels" onClick={() => handleNavigation("/reels")} />
+              <FaPlusSquare className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="DM" onClick={() => handleNavigation("/post")} />
+              <FaCommentDots className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="DM" onClick={() => handleNavigation("/chats")} />
               <FaBell className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Notification" />
               <FaUser className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Account" onClick={() => handleNavigation("/user-profile")} />
             </div>

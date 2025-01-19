@@ -202,6 +202,7 @@ export const leavegroups = async (req, res) => {
 
     if (member.role === 'admin') {
       return res.status(400).json({ success: false, message: 'Admins cannot leave the group directly' });
+     // console.log(error.message);
     }
 
     await member.destroy();
@@ -209,6 +210,7 @@ export const leavegroups = async (req, res) => {
     res.status(200).json({ success: true, message: 'Left group successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+    console.log(error.message)
   }
 };
 

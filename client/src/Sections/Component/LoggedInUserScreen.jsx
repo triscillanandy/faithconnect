@@ -22,8 +22,91 @@ const LoggedInUserScreen = () => {
 
   useEffect(() => {
     fetchPosts();
+    fetchSuggestedPeople();
     fetchPrayerGroups();
   }, []);
+
+  
+  const fetchSuggestedPeople = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setErrorMessage("No token provided. Please log in.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/suggested-users`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSuggestedPeople(data.suggestedUsers);
+      } else {
+        console.error("Failed to fetch suggested people.");
+      }
+    } catch (error) {
+      console.error("Error fetching suggested people:", error);
+    }
+  };
+
+  const followUser = async (userId) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setErrorMessage("No token provided. Please log in.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/follow`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ followId: userId }),
+      });
+
+      if (response.ok) {
+        //fetchSuggestedPeople(); // Refresh the suggested people list
+      } else {
+        console.error("Failed to follow user.");
+      }
+    } catch (error) {
+      console.error("Error following user:", error);
+    }
+  };
+
+  const unfollowUser = async (userId) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setErrorMessage("No token provided. Please log in.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/unfollow`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ unfollowId: userId }),
+      });
+
+      if (response.ok) {
+        fetchSuggestedPeople(); // Refresh the suggested people list
+      } else {
+        console.error("Failed to unfollow user.");
+      }
+    } catch (error) {
+      console.error("Error unfollowing user:", error);
+    }
+  };
 
   const fetchPosts = async () => {
     const token = localStorage.getItem("token");
@@ -173,14 +256,18 @@ const LoggedInUserScreen = () => {
         <div className="w-[352px] p-4 hidden lg:block">
           <div className="flex justify-between items-center mb-4">
             <h1 className="font-bold text-lg">Suggested For You</h1>
-            <p
-              className="text-blue-500 cursor-pointer"
-              onClick={() => setShowAllGroupsModal(true)}
-            >
-              See All
-            </p>
+           
           </div>
-
+          {suggestedPeople.slice(0, 6).map((people) => (
+            <SuggestedFollows
+              key={people.id}
+              userId={people.id}
+              userName={people.username}
+              imgSrc={people.profile_image}
+              followUser={followUser}
+              unfollowUser={unfollowUser}
+            />
+          ))}
           <div className="flex justify-between items-center mt-6 mb-2">
             <h2 className="font-bold text-lg">Prayer Groups</h2>
             <p
@@ -524,6 +611,36 @@ function CommentModal({ postId, userImg, userName, description, isOpen, onClose,
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+
+function SuggestedFollows({ imgSrc, userName, userId, followUser, unfollowUser }) {
+  const [isFollowing, setIsFollowing] = useState(false);
+
+  const handleFollow = async () => {
+    if (isFollowing) {
+      await unfollowUser(userId);
+    } else {
+      await followUser(userId);
+    }
+    setIsFollowing(!isFollowing);
+  };
+
+  return (
+    <div className="flex items-center mb-4">
+      <img src={imgSrc} alt="" className="w-10 h-10 rounded-full" />
+      <div className="ml-2 flex-1">
+        <p className="font-semibold">{userName}</p>
+        <p className="text-[#A0A0A0] text-sm">Followed By</p>
+      </div>
+      <button
+        className={`rounded-[4px] px-4 py-1 text-white ${isFollowing ? "bg-gray-500" : "bg-[#ff6132]"}`}
+        onClick={handleFollow}
+      >
+        {isFollowing ? "Following" : "Follow"}
+      </button>
     </div>
   );
 }

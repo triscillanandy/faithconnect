@@ -139,38 +139,140 @@ connectDB().then(() => {
 });
 
 
-//socket.io
 
-let activeUsers = [];
+// // Active users array
+// let activeUsers = [];
 
-io.on("connection", (socket) => {
-  // add new User
-  socket.on("new-user-add", (newUserId) => {
-    // if user is not added previously
-    if (!activeUsers.some((user) => user.userId === newUserId)) {
-      activeUsers.push({ userId: newUserId, socketId: socket.id });
-      console.log("New User Connected", activeUsers);
+// // Socket.IO integration
+// io.on('connection', (socket) => {
+// //  console.log('A user connected');
+
+//   // Add a new user
+//   socket.on('joinRoom', (userId) => {
+//     if (!activeUsers.some((user) => user.userId === userId)) {
+//       activeUsers.push({ userId, socketId: socket.id });
+//       console.log('New user added:', activeUsers);
+//     }
+//     io.emit('get-users', activeUsers);
+//   });
+
+//   // Handle disconnection
+//   socket.on('disconnect', () => {
+//     activeUsers = activeUsers.filter((user) => user.socketId !== socket.id);
+//     console.log('User disconnected:', activeUsers);
+//     io.emit('get-users', activeUsers);
+//   });
+
+//   socket.on("sendMessage", async ({senderId, receiverId, message, conversationId }) => {
+//     const receiver = activeUsers.find(user => user.userId === receiverId);
+//     const sender = activeUsers.find(user => user.userId === senderId);
+//     //const user = await Users.findById(senderId); // Assuming 'Users' is your model.
+
+//     if (receiver) {
+//         // Emit to both the sender and receiver.
+//         io.to(receiver.socketId).emit("receive-message", {
+//             senderId,
+//             message,
+//             conversationId,
+//             receiverId,
+         
+//         });
+//         console.log("Received message:", { senderId, receiverId, message, conversationId });
+
+//     } else {
+//         // Emit only to the sender if receiver is not online.
+//         io.to(sender.socketId).emit("receive-message", {
+//             senderId,
+//             message,
+//             conversationId,
+//             receiverId,
+           
+//         });
+//         console.log("Received message:", { senderId, receiverId, message, conversationId });
+//     }
+
+
+//   });
+// });
+
+// // Pass `io` to the chat controller
+// app.set('io', io);
+// Active users array
+// Active users array
+// Active users array
+let activeUsers = []; // Change const to let
+const activeGroups = {}; // No change here
+
+io.on('connection', (socket) => {
+  // Handle user joining a room or group
+  socket.on('joinRoom', (userId) => {
+    // Check if the user is already active
+    if (!activeUsers.some((user) => user.userId === userId)) {
+      activeUsers.push({ userId, socketId: socket.id });
+      console.log('New user added:', activeUsers);
     }
-    // send all active users to new user
-    io.emit("get-users", activeUsers);
+
+    // Broadcast updated user list to all clients
+    io.emit('get-users', activeUsers);
   });
 
-  socket.on("disconnect", () => {
-    // remove user from active users
+  // Handle disconnection
+  socket.on('disconnect', () => {
+    // Remove user from activeUsers
     activeUsers = activeUsers.filter((user) => user.socketId !== socket.id);
-    console.log("User Disconnected", activeUsers);
-    // send all active users to all users
-    io.emit("get-users", activeUsers);
+
+    // // Remove user from all groups they were part of
+    // for (const groupId in activeGroups) {
+    //   activeGroups[groupId].delete(socket.id);
+    //   if (activeGroups[groupId].size === 0) {
+    //     delete activeGroups[groupId];
+    //   }
+    // }
+
+    console.log('User disconnected:', activeUsers);
+    io.emit('get-users', activeUsers);
   });
 
-  // send message to a specific user
-  socket.on("send-message", (data) => {
-    const { receiverId } = data;
-    const user = activeUsers.find((user) => user.userId === receiverId);
-    console.log("Sending from socket to :", receiverId)
-    console.log("Data: ", data)
-    if (user) {
-      io.to(user.socketId).emit("recieve-message", data);
+  // Handle sending messages
+  socket.on('sendMessage', ({ senderId, receiverId, message, conversationId, groupId }) => {
+    if (groupId) {
+      // Group message
+      const groupMembers = activeGroups[groupId] || new Set();
+      groupMembers.forEach((memberSocketId) => {
+        if (memberSocketId !== socket.id) { // Don't send message back to sender
+          io.to(memberSocketId).emit('receive-group-message', {
+            senderId,
+            message,
+            groupId,
+          });
+        }
+      });
+      console.log(`Group message sent to group ${groupId}:`, { senderId, message });
+    } else if (receiverId) {
+      // Direct message
+      const receiver = activeUsers.find((user) => user.userId === receiverId);
+      const sender = activeUsers.find((user) => user.userId === senderId);
+
+      if (receiver) {
+        // Emit message to receiver immediately
+        io.to(receiver.socketId).emit('receive-message', {
+          senderId,
+          message,
+          conversationId,
+          receiverId,
+        });
+        console.log(`Direct message sent to receiver ${receiverId}:`, { senderId, receiverId, message, conversationId });
+      }
+
+      // Always notify sender (to show message as sent)
+      if (sender) {
+        io.to(sender.socketId).emit('receive-message', {
+          senderId,
+          message,
+          conversationId,
+          receiverId,
+        });
+      }
     }
   });
 });

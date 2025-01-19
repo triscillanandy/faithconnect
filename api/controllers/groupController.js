@@ -48,6 +48,7 @@ import { Op } from 'sequelize';
   //     res.status(500).json({ success: false, message: error.message });
   //   }
   // };
+
   export const listGroups = async (req, res) => {
     try {
       const user_id = req.user.id; // Extracted from the token in middleware
@@ -201,6 +202,7 @@ export const leavegroups = async (req, res) => {
 
     if (member.role === 'admin') {
       return res.status(400).json({ success: false, message: 'Admins cannot leave the group directly' });
+     // console.log(error.message);
     }
 
     await member.destroy();
@@ -208,7 +210,51 @@ export const leavegroups = async (req, res) => {
     res.status(200).json({ success: true, message: 'Left group successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+    console.log(error.message)
   }
 };
 
 
+
+// Fetch group details including members and admin
+export const getGroupDetails = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+
+    // Fetch group details
+    const group = await Group.findByPk(groupId);
+    if (!group) {
+      return res.status(404).json({ success: false, message: 'Group not found' });
+    }
+
+    // Fetch group members
+    const members = await GroupMember.findAll({
+      where: { group_id: groupId },
+      include: [{ model: User, attributes: ['id', 'username', 'profilePicture'] }],
+    });
+
+    // Find the admin
+    const admin = members.find(member => member.role === 'admin');
+
+    res.status(200).json({
+      success: true,
+      group: {
+        ...group.toJSON(),
+        members: members.map(member => ({
+          id: member.User.id,
+          username: member.User.username,
+          profilePicture: member.User.profilePicture,
+          role: member.role,
+        })),
+        admin: admin ? {
+          id: admin.User.id,
+          username: admin.User.username,
+          profilePicture: admin.User.profilePicture,
+        } : null,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching group details:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

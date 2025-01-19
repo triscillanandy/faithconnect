@@ -8,6 +8,7 @@ import dotenv from 'dotenv';
 import User from '../models/User.js';
 import { randomBytes } from 'crypto';
 import fs from 'fs';
+import { Op } from 'sequelize';
 dotenv.config();
 
 // Configure Nodemailer
@@ -39,7 +40,7 @@ import crypto from 'crypto';
  * @returns {Promise<void>} - A promise that resolves when the user is registered.
  */
 export const register = async (req, res) => {
-  const { username, email, phone, firstName, lastName, password } = req.body;
+  const { username, email, phone, firstName, lastName, password, userType } = req.body;
 
   try {
     // Check if the user already exists
@@ -65,6 +66,7 @@ export const register = async (req, res) => {
       isVerified: false,
       verificationCode,
       verificationCodeExpires,
+      userType, // Add userType to the new user
     });
 
     // Send the verification email with the 6-digit code
@@ -124,8 +126,68 @@ export const verifyEmail = async (req, res) => {
   }
 };
 
+export const forgotPassword = async (req, res) => {
+  const { email } = req.body;
 
+  try {
+    const user = await User.findOne({ where: { email } });
 
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpires = Date.now() + 3600000; // 1 hour
+
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = resetTokenExpires;
+    await user.save();
+
+    const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Password Reset',
+      html: `<p>You requested a password reset. Click the link below to reset your password:</p>
+             <a href="${resetUrl}">${resetUrl}</a>
+             <p>If you did not request this, please ignore this email.</p>`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.json({ message: 'Password reset email sent.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  const { resetToken, newPassword } = req.body;
+
+  try {
+    const user = await User.findOne({
+      where: {
+        resetPasswordToken: resetToken,
+        resetPasswordExpires: { [Op.gt]: Date.now() },
+      },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired token.' });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    await user.save();
+
+    res.json({ message: 'Password reset successfully.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+    console.log(error.message);
+  }
+};
 
 export const getProtectedData = async (req, res) => {
   try {

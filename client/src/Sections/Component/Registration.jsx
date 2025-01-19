@@ -19,11 +19,12 @@ function Registration({ text }) {
   const [email, setEmailAddress] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [userType, setUserType] = useState(null);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleRegistration = async () => {
-   // console.log(import.meta.env.VITE_API_URL) // "123"
+    const userType = localStorage.getItem("userType");
     // Basic validation
     if (!firstName || !lastName || !email || !phone || !username || !password) {
       toast.error("All fields are required!");
@@ -55,6 +56,7 @@ function Registration({ text }) {
           phone,
           email,
           username,
+          userType,
           password,
         }),
       });

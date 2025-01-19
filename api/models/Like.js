@@ -1,18 +1,15 @@
-import { DataTypes, Model } from 'sequelize';
+import { DataTypes, Model  } from 'sequelize';
 import { sequelize } from '../config/database.js'; 
 import Post from './Post.js';
 import User from './User.js';
 
-class Comment extends Model {}
-Comment.init({
+
+class Like extends Model {}
+Like.init({
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
-  },
-  content: {
-    type: DataTypes.TEXT,
-    allowNull: false,
   },
   userId: {
     type: DataTypes.INTEGER,
@@ -30,14 +27,12 @@ Comment.init({
       key: 'id',
     },
   },
-}, { 
-  sequelize,
-    modelName: 'Comment',
-    tableName: 'Comment',
-    timestamps: true,
-});
+}, {  sequelize,
+    modelName: 'Like',
+    tableName: 'Like',
+    timestamps: true, });
 
-Comment.belongsTo(Post, { foreignKey: 'postId', as: 'post' });
-Comment.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+Like.belongsTo(Post, { foreignKey: 'postId', as: 'post' });
+Like.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
-export default Comment;
+export default Like;

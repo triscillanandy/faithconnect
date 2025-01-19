@@ -68,6 +68,14 @@ User.init(
       type: DataTypes.DATE,
       allowNull: true, // Allow null initially until the expiration is set
     },
+    resetPasswordToken: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    resetPasswordExpires: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
     profileImage: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -76,6 +84,11 @@ User.init(
     preferences: {
       type: DataTypes.JSON,
       allowNull: true,
+    },
+    userType: {
+      type: DataTypes.ENUM('personal', 'organization_church'),
+      allowNull: true,
+      field: 'user_type',
     },
   },
   {

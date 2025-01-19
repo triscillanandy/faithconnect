@@ -1,14 +1,184 @@
 import React, { useState, useEffect } from "react";
-
 import profileMenu from "./Profile-Images/menu.png";
 import reels from "./Profile-Images/reels.png";
 import tag from "./Profile-Images/tags.png";
 import LoggedInSideBar from "./LoggedInSideBar";
 
+
+const EditProfileModal = ({ isOpen, onClose, userProfile, onSave }) => {
+  const [formData, setFormData] = useState({
+    username: userProfile?.username || "",
+    email: userProfile?.email || "",
+    dateOfBirth: userProfile?.dateOfBirth || "",
+    preferences: userProfile?.preferences || "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave(formData);
+    onClose();
+    window.location.href = "/user-profile";
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="bg-white p-6 rounded-lg w-full max-w-md">
+        <h2 className="text-xl font-bold mb-4">Edit Profile</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Username</label>
+            <input
+              type="text"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Date of Birth</label>
+            <input
+              type="date"
+              name="dateOfBirth"
+              value={formData.dateOfBirth}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Preferences</label>
+            <textarea
+              name="preferences"
+              value={formData.preferences}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+              rows="3"
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-300 rounded"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-500 text-white rounded"
+            >
+              Save
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+
+
+const UpdateProfileImageModal = ({ isOpen, onClose, onSave }) => {
+  const [file, setFile] = useState(null);
+
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (file) {
+      const formData = new FormData();
+      formData.append("profileImage", file);
+
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/profile/image`, {
+          method: "POST",
+          headers: {
+        Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to upload profile image.");
+        }
+
+        const data = await response.json();
+        onSave(data.profileImage); // Update the profile image in the parent component
+        onClose();
+        window.location.href = "/user-profile"; // Redirect to the user profile page
+      } catch (error) {
+        console.error("Error uploading profile image:", error);
+      }
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="bg-white p-6 rounded-lg w-full max-w-md">
+        <h2 className="text-xl font-bold mb-4">Update Profile Image</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Choose Image</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-300 rounded"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-500 text-white rounded"
+            >
+              Upload
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 const UserProfile = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   useEffect(() => {
     // Fetch the user profile details
@@ -80,9 +250,38 @@ const UserProfile = () => {
     fetchPosts();
   }, []);
 
+  const handleSaveProfile = async (updatedData) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update profile.");
+      }
+
+      const data = await response.json();
+      setUserProfile(data.user); // Update the user profile in the state
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      setErrorMessage(error.message);
+    }
+  };
+
   if (!userProfile) {
     return <p>Loading...</p>;
   }
+
+  const handleSaveProfileImage = (newImageUrl) => {
+    setUserProfile((prev) => ({ ...prev, profileImage: newImageUrl }));
+  };
 
   return (
     <div className="flex gap-24 lg:gap-48 xl:gap-72 max-[833px]:flex-col-reverse max-[833px]:px-8">
@@ -92,7 +291,7 @@ const UserProfile = () => {
           <p>@{userProfile.username}</p>
           <button
             className="w-[170px] rounded-[6px] h-[30px] bg-[#EFEFEF]"
-            onClick={() => navigate("/edit-profile")}
+            onClick={() => setIsModalOpen(true)}
           >
             Edit Profile
           </button>
@@ -106,6 +305,7 @@ const UserProfile = () => {
               src={userProfile.profileImage}
               alt="Profile"
               className="w-20 h-20 rounded-full"
+              onClick={() => setIsImageModalOpen(true)}
             />
             <p className="text-[10px]">{userProfile.username}</p>
           </div>
@@ -125,48 +325,49 @@ const UserProfile = () => {
         <div className="mt-5">
           <p className="text-[11px] text-[#ADADAD]"></p>
           <p className="text-[11px]">Believe in Christ</p>
-          
         </div>
         <div className="flex gap-28 items-center mt-8">
           <img className="cursor-pointer" src={profileMenu} alt="" />
           <img className="cursor-pointer" src={reels} alt="" />
           <img className="cursor-pointer" src={tag} alt="" />
         </div>
-        {/* <div className="grid grid-cols-4 mt-4 max-[823px]:grid-cols-[1fr_1fr_1fr] gap-y-1">
-          {posts.map((post, index) => (
-            <div key={index}>
-              <img src={post.media} alt={post.caption} />
-              <p>{post.caption}</p>
-            </div>
-          ))}
-        </div> */}
         <div className="grid grid-cols-3 gap-1 sm:gap-2 mt-4">
-  {posts.map((post) =>
-    post.media && post.media.length > 0 ? (
-      post.media.map((item) => (
-        <div
-          key={item.id}
-          className="relative w-full aspect-square overflow-hidden"
-        >
-          <img
-            src={item.mediaUrl}
-            alt="Post media"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
+          {posts.map((post) =>
+            post.media && post.media.length > 0 ? (
+              post.media.map((item) => (
+                <div
+                  key={item.id}
+                  className="relative w-full aspect-square overflow-hidden"
+                >
+                  <img
+                    src={item.mediaUrl}
+                    alt="Post media"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                </div>
+              ))
+            ) : (
+              <div
+                key={post.id}
+                className="relative w-full aspect-square flex items-center justify-center bg-gray-100 text-gray-500"
+              ></div>
+            )
+          )}
         </div>
-      ))
-    ) : (
-      <div
-        key={post.id}
-        className="relative w-full aspect-square flex items-center justify-center bg-gray-100 text-gray-500"
-      >
- 
       </div>
-    )
-  )}
-</div>
 
-      </div>
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        userProfile={userProfile}
+        onSave={handleSaveProfile}
+      />
+       <UpdateProfileImageModal
+        isOpen={isImageModalOpen}
+        onClose={() => setIsImageModalOpen(false)}
+        onSave={handleSaveProfileImage}
+      />
     </div>
   );
 };

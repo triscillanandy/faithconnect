@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import LoggedInSideBar from "./LoggedInSideBar";
 
 const Posts = () => {
@@ -8,9 +10,23 @@ const Posts = () => {
   const [description, setDescription] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
+  const [postType, setPostType] = useState("post");
+  const [content, setContent] = useState("");
+  const [readingPlan, setReadingPlan] = useState("");
+  const [audioUrl, setAudioUrl] = useState("");
+  const [preacher, setPreacher] = useState("");
 
   const handleFileChange = (event) => {
     const files = Array.from(event.target.files);
+    const maxSize = 4 * 1024 * 1024; // 4MB in bytes
+
+    for (const file of files) {
+      if (file.type.startsWith("video") && file.size > maxSize) {
+        toast.error("File is too big. Please select a video less than 4MB.");
+        return;
+      }
+    }
+
     setSelectedFiles(files);
   };
 
@@ -21,11 +37,24 @@ const Posts = () => {
   const token = localStorage.getItem("token");
 
   const handleUpload = async () => {
-    if (selectedFiles.length === 0) return alert("Please select files to upload!");
-    if (!description) return alert("Please enter a description!");
+    if (!description) {
+      toast.error("Please enter a description!");
+      return;
+    }
 
     const formData = new FormData();
     formData.append("description", description);
+    formData.append("postType", postType);
+
+    if (postType === "devotional") {
+      formData.append("content", content);
+      formData.append("readingPlan", readingPlan);
+    } else if (postType === "sermon") {
+      formData.append("content", content);
+      formData.append("audioUrl", audioUrl);
+      formData.append("preacher", preacher);
+    }
+
     selectedFiles.forEach((file) => formData.append("media", file));
 
     setUploading(true);
@@ -40,29 +69,33 @@ const Posts = () => {
       });
 
       if (!response.ok) {
-        throw new Error("File upload failed!");
+        const data = await response.json();
+        throw new Error(data.message || "File upload failed!");
       }
 
       const responseData = await response.json();
-      alert("Post created successfully!");
+      toast.success("Post created successfully!");
       console.log("Upload Response:", responseData);
 
       setUploadProgress(0);
       setSelectedFiles([]);
       setDescription("");
+      setContent("");
+      setReadingPlan("");
+      setAudioUrl("");
+      setPreacher("");
     } catch (error) {
       console.error("Error uploading files:", error);
-      alert("Error uploading files.");
+      toast.error(error.message || "An error occurred. Please try again later.");
     } finally {
       setUploading(false);
     }
   };
 
-  const handleProgress = (event) => {
-    if (event.lengthComputable) {
-      const progress = Math.round((event.loaded / event.total) * 100);
-      setUploadProgress(progress);
-    }
+  const getProgressBarColor = () => {
+    if (uploadProgress < 33) return "bg-red-500";
+    if (uploadProgress < 66) return "bg-yellow-500";
+    return "bg-green-500";
   };
 
   return (
@@ -98,6 +131,35 @@ const Posts = () => {
             Select From Device
           </button>
         </div>
+        <div className="flex flex-col items-center mt-8 w-3/4">
+          <label className="text-lg font-semibold mb-2">Select Post Type</label>
+          <div className="flex justify-between gap-4">
+            <button
+              onClick={() => setPostType("post")}
+              className={`px-4 py-2 rounded-lg ${
+                postType === "post" ? "bg-mainTheme text-white" : "border border-mainTheme"
+              }`}
+            >
+              Normal Post
+            </button>
+            <button
+              onClick={() => setPostType("devotional")}
+              className={`px-4 py-2 rounded-lg ${
+                postType === "devotional" ? "bg-mainTheme text-white" : "border border-mainTheme"
+              }`}
+            >
+              Devotional
+            </button>
+            <button
+              onClick={() => setPostType("sermon")}
+              className={`px-4 py-2 rounded-lg ${
+                postType === "sermon" ? "bg-mainTheme text-white" : "border border-mainTheme"
+              }`}
+            >
+              Sermon
+            </button>
+          </div>
+        </div>
 
         <div className="flex flex-col items-center mt-8 w-3/4">
           <textarea
@@ -106,32 +168,93 @@ const Posts = () => {
             placeholder="Enter description"
             className="border border-mainTheme px-4 py-2 rounded-lg w-full"
           />
+
+          {postType === "devotional" && (
+            <>
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Enter devotional content"
+                className="border border-mainTheme px-4 py-2 rounded-lg w-full mt-4"
+              />
+              <input
+                type="text"
+                value={readingPlan}
+                onChange={(e) => setReadingPlan(e.target.value)}
+                placeholder="Enter reading plan"
+                className="border border-mainTheme px-4 py-2 rounded-lg w-full mt-4"
+              />
+            </>
+          )}
+
+          {postType === "sermon" && (
+            <>
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Enter sermon content"
+                className="border border-mainTheme px-4 py-2 rounded-lg w-full mt-4"
+              />
+              <input
+                type="text"
+                value={audioUrl}
+                onChange={(e) => setAudioUrl(e.target.value)}
+                placeholder="Enter audio URL"
+                className="border border-mainTheme px-4 py-2 rounded-lg w-full mt-4"
+              />
+              <input
+                type="text"
+                value={preacher}
+                onChange={(e) => setPreacher(e.target.value)}
+                placeholder="Enter preacher's name"
+                className="border border-mainTheme px-4 py-2 rounded-lg w-full mt-4"
+              />
+            </>
+          )}
         </div>
 
         {selectedFiles.length > 0 && (
           <div className="flex flex-col items-center mt-8 w-3/4">
-            <ul>
+            <ul className="flex flex-wrap gap-4">
               {selectedFiles.map((file, index) => (
-                <li key={index}>{file.name}</li>
+                <li key={index} className="w-24 h-24 relative">
+                  {file.type.startsWith("image") && (
+                    <img
+                      src={URL.createObjectURL(file)}
+                      alt="Preview"
+                      className="w-full h-full object-cover rounded-md"
+                    />
+                  )}
+                  {file.type.startsWith("video") && (
+                    <video
+                      src={URL.createObjectURL(file)}
+                      className="w-full h-full object-cover rounded-md"
+                      controls
+                    />
+                  )}
+                </li>
               ))}
             </ul>
-            <button
-              onClick={handleUpload}
-              disabled={uploading}
-              className={`border ${
-                uploading ? "bg-gray-300" : "border-mainTheme"
-              } px-8 py-1 rounded-2xl text-[24px] mt-4`}
-            >
-              {uploading ? "Uploading..." : "Upload"}
-            </button>
           </div>
         )}
+
+        <div className="flex flex-col items-center mt-8 w-3/4">
+          <button
+            onClick={handleUpload}
+            disabled={uploading}
+            className={`border ${
+              uploading ? "bg-gray-300" : "border-mainTheme"
+            } px-8 py-1 rounded-2xl text-[24px] mt-4`}
+          >
+            {uploading ? "Uploading..." : "Post"}
+          </button>
+        </div>
 
         {uploading && (
           <div className="flex flex-col items-center mt-4 w-3/4">
             <div className="w-full bg-gray-200 rounded-full h-4">
               <div
-                className="bg-mainTheme h-4 rounded-full"
+                className={`${getProgressBarColor()} h-4 rounded-full`}
                 style={{ width: `${uploadProgress}%` }}
               ></div>
             </div>
@@ -139,6 +262,18 @@ const Posts = () => {
           </div>
         )}
       </div>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 };

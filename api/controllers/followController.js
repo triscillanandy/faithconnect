@@ -91,6 +91,7 @@ export const getFollowing = async (req, res) => {
     return res.status(500).json({ error: 'An error occurred.' });
   }
 };
+
 export const getSuggestedUsers = async (req, res) => {
   const userId = req.user.id; // The authenticated user's ID
 
@@ -118,3 +119,24 @@ export const getSuggestedUsers = async (req, res) => {
     return res.status(500).json({ error: 'An error occurred while fetching suggested users.' });
   }
 };
+
+
+export const getSuggestedFriends = async (req, res) => {
+  const userId = req.user.id; // The authenticated user's ID
+
+  try {
+    // Fetch all users except the logged-in user
+    const suggestedUsers = await User.findAll({
+      where: {
+        id: { [Op.not]: userId }, // Exclude the logged-in user
+      },
+      attributes: ['id', 'username', 'email', 'profileImage'], // Adjust attributes as needed
+    });
+
+    res.status(200).json({ suggestedUsers });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'An error occurred while fetching suggested users.' });
+  }
+};
+

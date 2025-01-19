@@ -249,6 +249,41 @@ export const login = async (req, res) => {
 //     res.status(500).json({ error: error.message });
 //   }
 // };
+
+export const getUserProfile = async (req, res) => {
+  try {
+    const { userId } = req.params; // Get the userId from the request parameters
+
+    // Find the user by their ID
+    const user = await User.findByPk(userId, {
+      attributes: ['id', 'username', 'email', 'dateOfBirth', 'isVerified', 'profileImage'],
+    });
+
+    // If the user is not found, return a 404 error
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Construct the profile image URL
+    const profileImageUrl = user.profileImage
+      ? `${req.protocol}://${req.get('host')}/uploads/profile-images/${user.profileImage}`
+      : null;
+
+    // Return the user's profile data
+    res.json({
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        dateOfBirth: user.dateOfBirth,
+        isVerified: user.isVerified,
+        profileImage: profileImageUrl, // Include full image URL
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 export const getMyProfile = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, {

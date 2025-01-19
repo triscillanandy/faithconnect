@@ -32,6 +32,27 @@ export const createConversation = async (req, res) => {
     return res.status(500).json({ error: 'Error creating conversation.' });
   }
 };
+
+export const checkConversationExists = async (req, res) => {
+  const { userId1, userId2 } = req.params;
+
+  try {
+    const conversation = await Conversation.findOne({
+      where: {
+        userIds: { [Op.contains]: [userId1, userId2] },
+      },
+    });
+
+    if (conversation) {
+      return res.status(200).json({ exists: true, conversation });
+    } else {
+      return res.status(200).json({ exists: false });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'An error occurred while checking the conversation.' });
+  }
+};
 // export const createConversation = async (req, res) => {
 //   const { senderId, receiverId } = req.body;
 

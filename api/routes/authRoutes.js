@@ -1,6 +1,6 @@
 
 import express from 'express';
-import { register, verifyEmail, forgotPassword,resetPassword, login, getProtectedData ,getMyProfile,updateProfile,uploadProfileImage,updatePreferences, getPreferences} from '../controllers/authController.js';
+import { register, verifyEmail, forgotPassword,resetPassword, login,getUserProfile, getProtectedData ,getMyProfile,updateProfile,uploadProfileImage,updatePreferences, getPreferences} from '../controllers/authController.js';
 import { isAuthenticated } from '../middleware/authMiddleware.js';
 import { createPost,getMyPosts,getPosts,getPostById,deletePost,getOtherPosts,addComment,getCommentsByPostId,toggleLike, getLikesByPostId, } from '../controllers/postController.js';
 import { upload } from '../middleware/uploadMiddleware.js';
@@ -25,6 +25,8 @@ router.get('/preferences', isAuthenticated, getPreferences);   // Fetch preferen
 // Password reset routes
 router.post('/forgot-password', forgotPassword); // Endpoint to request password reset
 router.post('/reset-password', resetPassword); // Endpoint to reset password using token
+
+router.get('/users/:userId',isAuthenticated, getUserProfile);
 
 
 //posts

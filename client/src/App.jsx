@@ -41,7 +41,7 @@ function App() {
           <Route path="/devotional" element={<Devotional />} />
           <Route path="/post" element={<Posts />} />
           <Route path="/edit-profile" element={<EditProfile />} />
-          <Route path="/chats" element={<Chat />} />
+          <Route path="/chats" element={<Chat/>} />
           <Route path="/reels" element={<Reels />} /> {/* Add the route for Reels */}
         </Routes>
       </Router>

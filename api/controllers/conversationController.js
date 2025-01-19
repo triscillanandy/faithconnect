@@ -97,7 +97,6 @@ export const createConversation = async (req, res) => {
 //   }
 // };
 
-
 export const getMessages = async (req, res) => {
   const { conversationId } = req.params;
 
@@ -111,6 +110,7 @@ export const getMessages = async (req, res) => {
           attributes: ['id', 'username', 'profileImage'],
         },
       ],
+      order: [['createdAt', 'ASC']], // Order messages by createdAt in descending order
     });
 
     const formattedMessages = messages.map((message) => ({
@@ -119,7 +119,6 @@ export const getMessages = async (req, res) => {
       senderId: message.sender, // Use the correct foreign key
       sender: {
         id: message.user.id, // Access the user using the correct alias
- 
         username: message.user.username,
         profileImage: message.user.profileImage || 'default.png',
       },
@@ -155,7 +154,6 @@ export const getMessages = async (req, res) => {
 //     return res.status(500).json({ error: err.message });
 //   }
 // };
-
 export const getConversations = async (req, res) => {
   const { userId } = req.params;
 
@@ -165,6 +163,7 @@ export const getConversations = async (req, res) => {
       where: {
         userIds: { [Sequelize.Op.contains]: [userId] }, // PostgreSQL array operator
       },
+      order: [['createdAt', 'ASC']], // Order conversations by createdAt in descending order
     });
 
     // Fetch receiver details for each conversation

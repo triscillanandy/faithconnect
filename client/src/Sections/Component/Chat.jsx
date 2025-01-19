@@ -88,21 +88,15 @@ const Chats = () => {
 
   const fetchMessages = async (conversationId) => {
     const token = localStorage.getItem("token");
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/messages/${conversationId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-      });
-      const data = await res.json();
-      console.log("Fetched messages:", data); // Debugging
-      setMessages(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-      setMessages([]);
-    }
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/messages/${conversationId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+    });
+    const data = await res.json();
+    setMessages(data);
   };
 
   const handleSendMessage = async (e) => {

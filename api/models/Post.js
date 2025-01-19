@@ -23,6 +23,11 @@ Post.init(
       type: DataTypes.JSONB, // JSONB is for PostgreSQL; for MySQL use JSON
       allowNull: true,
     },
+    postType: {
+      type: DataTypes.STRING,
+      defaultValue: 'post',
+      allowNull: true,
+    },
   },
   {
     sequelize,

@@ -1,5 +1,5 @@
-import { DataTypes } from 'sequelize';
-import sequelize from '../config/database.js';
+import { DataTypes, Model  } from 'sequelize';
+import { sequelize } from '../config/database.js'; 
 import Post from './Post.js';
 import User from './User.js';
 
@@ -27,7 +27,10 @@ Like.init({
       key: 'id',
     },
   },
-}, { timestamps: true });
+}, {  sequelize,
+    modelName: 'Like',
+    tableName: 'Like',
+    timestamps: true, });
 
 Like.belongsTo(Post, { foreignKey: 'postId', as: 'post' });
 Like.belongsTo(User, { foreignKey: 'userId', as: 'user' });

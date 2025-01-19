@@ -10,6 +10,11 @@ const Posts = () => {
   const [description, setDescription] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
+  const [postType, setPostType] = useState("post");
+  const [content, setContent] = useState("");
+  const [readingPlan, setReadingPlan] = useState("");
+  const [audioUrl, setAudioUrl] = useState("");
+  const [preacher, setPreacher] = useState("");
 
   const handleFileChange = (event) => {
     const files = Array.from(event.target.files);
@@ -32,10 +37,6 @@ const Posts = () => {
   const token = localStorage.getItem("token");
 
   const handleUpload = async () => {
-    if (selectedFiles.length === 0) {
-      toast.error("Please select files to upload!");
-      return;
-    }
     if (!description) {
       toast.error("Please enter a description!");
       return;
@@ -43,6 +44,17 @@ const Posts = () => {
 
     const formData = new FormData();
     formData.append("description", description);
+    formData.append("postType", postType);
+
+    if (postType === "devotional") {
+      formData.append("content", content);
+      formData.append("readingPlan", readingPlan);
+    } else if (postType === "sermon") {
+      formData.append("content", content);
+      formData.append("audioUrl", audioUrl);
+      formData.append("preacher", preacher);
+    }
+
     selectedFiles.forEach((file) => formData.append("media", file));
 
     setUploading(true);
@@ -68,6 +80,10 @@ const Posts = () => {
       setUploadProgress(0);
       setSelectedFiles([]);
       setDescription("");
+      setContent("");
+      setReadingPlan("");
+      setAudioUrl("");
+      setPreacher("");
     } catch (error) {
       console.error("Error uploading files:", error);
       toast.error(error.message || "An error occurred. Please try again later.");
@@ -115,6 +131,35 @@ const Posts = () => {
             Select From Device
           </button>
         </div>
+        <div className="flex flex-col items-center mt-8 w-3/4">
+          <label className="text-lg font-semibold mb-2">Select Post Type</label>
+          <div className="flex justify-between gap-4">
+            <button
+              onClick={() => setPostType("post")}
+              className={`px-4 py-2 rounded-lg ${
+                postType === "post" ? "bg-mainTheme text-white" : "border border-mainTheme"
+              }`}
+            >
+              Normal Post
+            </button>
+            <button
+              onClick={() => setPostType("devotional")}
+              className={`px-4 py-2 rounded-lg ${
+                postType === "devotional" ? "bg-mainTheme text-white" : "border border-mainTheme"
+              }`}
+            >
+              Devotional
+            </button>
+            <button
+              onClick={() => setPostType("sermon")}
+              className={`px-4 py-2 rounded-lg ${
+                postType === "sermon" ? "bg-mainTheme text-white" : "border border-mainTheme"
+              }`}
+            >
+              Sermon
+            </button>
+          </div>
+        </div>
 
         <div className="flex flex-col items-center mt-8 w-3/4">
           <textarea
@@ -123,6 +168,49 @@ const Posts = () => {
             placeholder="Enter description"
             className="border border-mainTheme px-4 py-2 rounded-lg w-full"
           />
+
+          {postType === "devotional" && (
+            <>
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Enter devotional content"
+                className="border border-mainTheme px-4 py-2 rounded-lg w-full mt-4"
+              />
+              <input
+                type="text"
+                value={readingPlan}
+                onChange={(e) => setReadingPlan(e.target.value)}
+                placeholder="Enter reading plan"
+                className="border border-mainTheme px-4 py-2 rounded-lg w-full mt-4"
+              />
+            </>
+          )}
+
+          {postType === "sermon" && (
+            <>
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Enter sermon content"
+                className="border border-mainTheme px-4 py-2 rounded-lg w-full mt-4"
+              />
+              <input
+                type="text"
+                value={audioUrl}
+                onChange={(e) => setAudioUrl(e.target.value)}
+                placeholder="Enter audio URL"
+                className="border border-mainTheme px-4 py-2 rounded-lg w-full mt-4"
+              />
+              <input
+                type="text"
+                value={preacher}
+                onChange={(e) => setPreacher(e.target.value)}
+                placeholder="Enter preacher's name"
+                className="border border-mainTheme px-4 py-2 rounded-lg w-full mt-4"
+              />
+            </>
+          )}
         </div>
 
         {selectedFiles.length > 0 && (
@@ -147,17 +235,20 @@ const Posts = () => {
                 </li>
               ))}
             </ul>
-            <button
-              onClick={handleUpload}
-              disabled={uploading}
-              className={`border ${
-                uploading ? "bg-gray-300" : "border-mainTheme"
-              } px-8 py-1 rounded-2xl text-[24px] mt-4`}
-            >
-              {uploading ? "Uploading..." : "Post"}
-            </button>
           </div>
         )}
+
+        <div className="flex flex-col items-center mt-8 w-3/4">
+          <button
+            onClick={handleUpload}
+            disabled={uploading}
+            className={`border ${
+              uploading ? "bg-gray-300" : "border-mainTheme"
+            } px-8 py-1 rounded-2xl text-[24px] mt-4`}
+          >
+            {uploading ? "Uploading..." : "Post"}
+          </button>
+        </div>
 
         {uploading && (
           <div className="flex flex-col items-center mt-4 w-3/4">
@@ -172,7 +263,6 @@ const Posts = () => {
         )}
       </div>
 
-      {/* Toast Container */}
       <ToastContainer
         position="top-right"
         autoClose={3000}

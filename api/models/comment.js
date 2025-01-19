@@ -1,5 +1,5 @@
 import { DataTypes, Model } from 'sequelize';
-import sequelize from '../config/database.js';
+import { sequelize } from '../config/database.js'; 
 import Post from './Post.js';
 import User from './User.js';
 
@@ -32,8 +32,9 @@ Comment.init({
   },
 }, { 
   sequelize,
-  modelName: 'Comment',
-  timestamps: true 
+    modelName: 'Comment',
+    tableName: 'Comment',
+    timestamps: true,
 });
 
 Comment.belongsTo(Post, { foreignKey: 'postId', as: 'post' });

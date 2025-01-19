@@ -16,7 +16,7 @@ import no from "./chat-images/no.png";
 import blocked from "./chat-images/blocked.png";
 import LoggedInSideBar from "./LoggedInSideBar";
 
-const Chats = () => {
+const Chat = () => {
   const [selectedChat, setSelectedChat] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -248,7 +248,7 @@ return (
   </div>
 );
 };
-export default Chats;
+export default Chat;
 
 function ShowFilter() {
   return (

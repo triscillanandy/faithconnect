@@ -7,6 +7,7 @@ import arrow from "./chat-images/arrow.png";
 import Search from "./chat-images/Search.png";
 import camera from "./chat-images/camera.png";
 import sound from "./chat-images/sound.png";
+import { useNavigate } from "react-router-dom";
 import files from "./chat-images/files.png";
 import { io } from "socket.io-client";
 import following from "./chat-images/following.png";
@@ -449,7 +450,7 @@ function NewGroupPopup({ onClose }) {
   const [description, setDescription] = useState("");
   const [visibility, setVisibility] = useState("public"); // Default visibility
   const [error, setError] = useState("");
-
+  const navigate = useNavigate();
   const handleCreateGroup = async (e) => {
     e.preventDefault();
 
@@ -484,7 +485,7 @@ function NewGroupPopup({ onClose }) {
       const data = await response.json();
       console.log("Group created successfully:", data);
       onClose(); // Close the popup after successful creation
-      window.location.reload(); // Refresh the page to reflect the new group
+      navigate("/home"); // Navigate to the home page
     } catch (error) {
       setError(error.message);
     }

@@ -31,7 +31,7 @@ function App() {
           <Route path="/group-registration" element={<GroupPlan />} />
           <Route path="/Login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="reset-password/:token" element={<ResetPassword />} />
           <Route path="/email-verification" element={<Validation />} />
           <Route path="/verified" element={<SucessfulVerification />} />
           <Route path="/home" element={<LoggedInUserScreen />} />

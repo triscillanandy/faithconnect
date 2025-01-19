@@ -52,8 +52,8 @@ export const register = async (req, res) => {
     // Generate a 6-digit verification code
     const verificationCode = Math.floor(100000 + Math.random() * 900000);
 
-    // Optionally, set an expiration time for the code (e.g., 15 minutes from now)
-    const verificationCodeExpires = Date.now() + 15 * 60 * 1000;
+    // Set an expiration time for the code (3 days from now)
+    const verificationCodeExpires = Date.now() + 3 * 24 * 60 * 60 * 1000;
 
     // Create a new user
     const newUser = await User.create({

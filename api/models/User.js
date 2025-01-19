@@ -68,6 +68,14 @@ User.init(
       type: DataTypes.DATE,
       allowNull: true, // Allow null initially until the expiration is set
     },
+    resetPasswordToken: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    resetPasswordExpires: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
     profileImage: {
       type: DataTypes.STRING,
       allowNull: true,

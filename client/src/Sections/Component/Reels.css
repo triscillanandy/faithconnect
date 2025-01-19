@@ -1,0 +1,68 @@
+.reels-container {
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .reel {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+  
+  .reel video {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .overlay {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  
+  .user-info {
+    display: flex;
+    align-items: center;
+  }
+  
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  
+  .username {
+    font-size: 16px;
+    font-weight: bold;
+  }
+  
+  .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .actions button {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .actions button:hover {
+    opacity: 0.8;
+  }

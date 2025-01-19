@@ -1,8 +1,10 @@
 import Post from '../models/Post.js';
 import Media from '../models/Media.js';
 import User from '../models/User.js';
-import Comment from '../models/Comment .js';
+import Comment from '../models/Comment.js';
 import Like from '../models/Like.js';
+import Devotional from '../models/Devotional.js'; // Adjust the path as needed
+import Sermon from '../models/Sermon.js'; // Adjust the path as needed
 import fs from 'fs';
 import { mediaUpload } from '../middleware/mediaUploadMiddleware.js';  // Import your media upload middleware
 import { v2 as cloudinary } from 'cloudinary';
@@ -10,18 +12,101 @@ import { Op } from 'sequelize';
 
 
 
+// export const createPost = [
+//   mediaUpload.array('media', 5), // Allows uploading up to 5 files
+
+//   async (req, res) => {
+//     try {
+//       const { description } = req.body;
+
+//       // Create the post in the database
+//       const newPost = await Post.create({
+//         description,
+//         userId: req.user.id, // From isAuthenticated middleware
+//       });
+
+//       // Upload media files to Cloudinary if they exist
+//       if (req.files && req.files.length > 0) {
+//         const mediaPromises = req.files.map(async (file) => {
+//           let uploadResult;
+//           const fileExtension = file.originalname.split('.').pop().toLowerCase();
+//           const isVideo = ['mp4', 'avi', 'mov'].includes(fileExtension);
+
+//           // Upload the file to Cloudinary with resource_type based on file type
+//           try {
+//             if (isVideo) {
+//               // Upload video to Cloudinary
+//               uploadResult = await cloudinary.uploader.upload(file.path, {
+//                 folder: 'posts',
+//                 resource_type: 'video', // Specify that it's a video
+//               });
+//             } else {
+//               // Upload image to Cloudinary
+//               uploadResult = await cloudinary.uploader.upload(file.path, {
+//                 folder: 'posts',
+//                 resource_type: 'image', // Specify that it's an image
+//               });
+//             }
+
+//             // Save media details (URL, type, post ID) in the database
+//             const media = await Media.create({
+//               mediaType: file.mimetype, // File type (image/video)
+//               mediaUrl: uploadResult.secure_url, // Cloudinary URL
+//               postId: newPost.id, // Link media to the post
+//             });
+
+//             // Delete the local file after successful upload to Cloudinary
+//             fs.unlinkSync(file.path);
+//             return media;
+//           } catch (error) {
+//             console.error('Error uploading media:', error);
+//             throw new Error('Error uploading media to Cloudinary');
+//           }
+//         });
+
+//         // Wait for all media files to upload (images and videos)
+//         await Promise.all(mediaPromises);
+//       }
+
+//       // Respond with success message and the created post
+//       res.status(201).json({
+//         message: 'Post created successfully.',
+//         post: newPost,
+//       });
+//     } catch (error) {
+//       res.status(500).json({ error: error.message });
+//     }
+//   },
+// ];
 export const createPost = [
   mediaUpload.array('media', 5), // Allows uploading up to 5 files
 
   async (req, res) => {
     try {
-      const { description } = req.body;
+      const { description, postType = 'post', content, readingPlan, audioUrl, preacher } = req.body;
 
       // Create the post in the database
       const newPost = await Post.create({
         description,
         userId: req.user.id, // From isAuthenticated middleware
+        postType, // Use the provided postType or default to 'post'
       });
+
+      // Create Devotional or Sermon based on postType
+      if (postType === 'devotional') {
+        await Devotional.create({
+          postId: newPost.id,
+          content,
+          readingPlan,
+        });
+      } else if (postType === 'sermon') {
+        await Sermon.create({
+          postId: newPost.id,
+          content,
+          audioUrl,
+          preacher,
+        });
+      }
 
       // Upload media files to Cloudinary if they exist
       if (req.files && req.files.length > 0) {
@@ -76,7 +161,6 @@ export const createPost = [
     }
   },
 ];
-
 
 export const getMyPosts = async (req, res) => {
   try {

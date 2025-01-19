@@ -22,6 +22,8 @@ Post.belongsTo(User, { as: "user", foreignKey: "userId" });
 
 // User model
 User.hasMany(Post, { as: "posts", foreignKey: "userId" });
+Post.hasOne(Devotional, { foreignKey: 'postId', as: 'devotional' });
+Post.hasOne(Sermon, { foreignKey: 'postId', as: 'sermon' });
 
 // Export all models as named exports for better modularity
 export { User, Post, Comment, Favorite, Follower };

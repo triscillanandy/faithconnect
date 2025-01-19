@@ -6,8 +6,8 @@ import { createPost,getMyPosts,getPosts,getPostById,deletePost,getOtherPosts,add
 import { upload } from '../middleware/uploadMiddleware.js';
 import {creategroups,joingroups,leavegroups,listGroups,getGroupDetails} from '../controllers/groupController.js';
 
-import { createConversation, getConversations, getConversationByUsers,sendMessage,getMessages ,sendGroupMessage,getGroupMessages} from '../controllers/conversationController.js';
-import {followUser, unfollowUser,getFollowers, getFollowing,getSuggestedUsers} from '../controllers/followController.js'; // New controllers for follow functionality
+import { createConversation, getConversations, getConversationByUsers,checkConversationExists,sendMessage,getMessages ,sendGroupMessage,getGroupMessages} from '../controllers/conversationController.js';
+import {followUser, unfollowUser,getFollowers,getSuggestedFriends, getFollowing,getSuggestedUsers} from '../controllers/followController.js'; // New controllers for follow functionality
 const router = express.Router();
 router.post('/register', register);
 // Use URL parameter for the token
@@ -52,6 +52,7 @@ router.post('/unfollow', isAuthenticated, unfollowUser); // Unfollow a user
 router.get('/:userId/followers', isAuthenticated, getFollowers); // Get user's followers
 router.get('/:userId/following', isAuthenticated, getFollowing); // Get user's following list
 router.get('/suggested-users', isAuthenticated, getSuggestedUsers); // Get user's following list
+router.get('/suggested-friends', isAuthenticated, getSuggestedFriends); // Get user's following list
 //join gorups
 router.post('/creategroups', isAuthenticated,  creategroups);
 router.post('/groups/:groupId/join', isAuthenticated, joingroups); 
@@ -61,7 +62,9 @@ router.post('/groups/:groupId/leave', isAuthenticated, leavegroups);
 router.get('/groups/:groupId', isAuthenticated, getGroupDetails);
 
 // Conversation Routes and chats
-router.post('/conversations', isAuthenticated, createConversation);  // Create a new conversation
+router.post('/conversations', isAuthenticated, createConversation); 
+router.get('/check-conversation/:userId1/:userId2', isAuthenticated, checkConversationExists); 
+
 router.get('/conversations/:userId', isAuthenticated, getConversations);  // Get all conversations of a user
 router.get('/conversations/find/:firstUserId/:secondUserId', isAuthenticated, getConversationByUsers);  // Get conversation between two users
 router.post('/messages', isAuthenticated, sendMessage);  // Send a message

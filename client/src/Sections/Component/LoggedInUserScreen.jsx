@@ -224,6 +224,114 @@ const LoggedInUserScreen = () => {
     }
   };
 
+
+  const addComment = async (postId, content) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setErrorMessage("No token provided. Please log in.");
+      return;
+    }
+  
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/comments`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ postId, content }),
+      });
+  
+      if (response.ok) {
+        fetchPosts(); // Refresh the posts to show the new comment
+      } else {
+        console.error("Failed to add comment.");
+      }
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
+  };
+  
+  const fetchComments = async (postId) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setErrorMessage("No token provided. Please log in.");
+      return;
+    }
+  
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/posts/${postId}/comments`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        return data.comments;
+      } else {
+        console.error("Failed to fetch comments.");
+      }
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+    }
+  };
+  
+  const toggleLike = async (postId) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setErrorMessage("No token provided. Please log in.");
+      return;
+    }
+  
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/likes`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ postId }),
+      });
+  
+      if (response.ok) {
+        fetchPosts(); // Refresh the posts to show the updated like status
+      } else {
+        console.error("Failed to toggle like.");
+      }
+    } catch (error) {
+      console.error("Error toggling like:", error);
+    }
+  };
+  
+  const fetchLikes = async (postId) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setErrorMessage("No token provided. Please log in.");
+      return;
+    }
+  
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/posts/${postId}/likes`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        return data.likes;
+      } else {
+        console.error("Failed to fetch likes.");
+      }
+    } catch (error) {
+      console.error("Error fetching likes:", error);
+    }
+  };
   return (
     <div className="flex min-h-screen">
       {/* Navigation Bar */}

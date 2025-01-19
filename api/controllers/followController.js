@@ -10,9 +10,9 @@ export const followUser = async (req, res) => {
   try {
     // Check if the user to follow exists
     const userToFollow = await User.findByPk(followId);
-    if (!userToFollow) {
-      return res.status(404).json({ error: 'User to follow not found.' });
-    }
+    // if (!userToFollow) {
+    //   return res.status(404).json({ error: 'User to follow not found.' });
+    // }
 
     // Check if already following
     const alreadyFollowing = await Follower.findOne({
@@ -42,9 +42,9 @@ export const unfollowUser = async (req, res) => {
       where: { followerId: userId, followingId: unfollowId },
     });
 
-    if (!followRecord) {
-      return res.status(404).json({ error: 'Follow relationship not found.' });
-    }
+    // if (!followRecord) {
+    //   return res.status(404).json({ error: 'Follow relationship not found.' });
+    // }
 
     // Delete the follow relationship
     await followRecord.destroy();

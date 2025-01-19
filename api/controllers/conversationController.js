@@ -208,9 +208,9 @@ export const getConversationByUsers = async (req, res) => {
       },
     });
 
-    if (!conversation) {
-      return res.status(404).json({ error: 'Conversation not found.' });
-    }
+    // if (!conversation) {
+    //   return res.status(404).json({ error: 'Conversation not found.' });
+    // }
 
     return res.status(200).json(conversation);
   } catch (err) {

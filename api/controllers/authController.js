@@ -132,9 +132,9 @@ export const forgotPassword = async (req, res) => {
   try {
     const user = await User.findOne({ where: { email } });
 
-    if (!user) {
-      return res.status(404).json({ message: 'User not found.' });
-    }
+    // if (!user) {
+    //   return res.status(404).json({ message: 'User not found.' });
+    // }
 
     const resetToken = crypto.randomBytes(32).toString('hex');
     const resetTokenExpires = Date.now() + 3600000; // 1 hour
@@ -194,9 +194,9 @@ export const getProtectedData = async (req, res) => {
     // Example: Fetch user data using the authenticated user's ID
     const user = await User.findByPk(req.user.id);
 
-    if (!user) {
-      return res.status(404).json({ message: 'User not found.' });
-    }
+    // if (!user) {
+    //   return res.status(404).json({ message: 'User not found.' });
+    // }
 
     res.json({ message: 'This is protected data.', user });
   } catch (error) {
@@ -255,9 +255,9 @@ export const getMyProfile = async (req, res) => {
       attributes: ['id', 'username', 'email', 'dateOfBirth', 'isVerified', 'profileImage'],
     });
 
-    if (!user) {
-      return res.status(404).json({ message: 'User not found.' });
-    }
+    // if (!user) {
+    //   return res.status(404).json({ message: 'User not found.' });
+    // }
 
     const profileImageUrl = user.profileImage
       ? `${req.protocol}://${req.get('host')}/uploads/profile-images/${user.profileImage}`
@@ -286,9 +286,9 @@ export const updateProfile = async (req, res) => {
     // Find the user by the authenticated user's ID
     const user = await User.findByPk(req.user.id);
 
-    if (!user) {
-      return res.status(404).json({ message: 'User not found.' });
-    }
+    // if (!user) {
+    //   return res.status(404).json({ message: 'User not found.' });
+    // }
 
     // Update user data with the provided fields
     user.username = username || user.username;
@@ -308,9 +308,9 @@ export const updateProfile = async (req, res) => {
 export const uploadProfileImage = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found.' });
-    }
+    // if (!user) {
+    //   return res.status(404).json({ message: 'User not found.' });
+    // }
 
     if (req.file) {
       // Delete old profile image if it exists
@@ -331,9 +331,9 @@ export const updatePreferences = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id);
 
-    if (!user) {
-      return res.status(404).json({ message: 'User not found.' });
-    }
+    // if (!user) {
+    //   return res.status(404).json({ message: 'User not found.' });
+    // }
 
     // Update preferences
     user.preferences = req.body.preferences || user.preferences;
@@ -357,9 +357,9 @@ export const getPreferences = async (req, res) => {
       attributes: ['id', 'username','email', 'preferences'], // Include id, username, and preferences
     });
 
-    if (!user) {
-      return res.status(404).json({ message: 'User not found.' });
-    }
+    // if (!user) {
+    //   return res.status(404).json({ message: 'User not found.' });
+    // }
 
     res.json({
       id: user.id,

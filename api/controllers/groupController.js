@@ -80,9 +80,9 @@ import { Op } from 'sequelize';
       // Combine the lists with not joined groups first
       const combinedGroups = [...groupsNotJoined, ...groupsJoined];
 
-      if (!combinedGroups || combinedGroups.length === 0) {
-        return res.status(404).json({ success: false, message: 'No groups found.' });
-      }
+      // if (!combinedGroups || combinedGroups.length === 0) {
+      //   return res.status(404).json({ success: false, message: 'No groups found.' });
+      // }
 
       res.status(200).json({ success: true, groups: combinedGroups });
     } catch (error) {
@@ -164,9 +164,9 @@ import { Op } from 'sequelize';
       
           // Check if the group exists
           const group = await Group.findByPk(groupId);
-          if (!group) {
-            return res.status(404).json({ success: false, message: 'Group not found' });
-          }
+          // if (!group) {
+          //   return res.status(404).json({ success: false, message: 'Group not found' });
+          // }
       
           // Prevent joining private groups directly
           if (group.visibility === 'private') {
@@ -198,7 +198,7 @@ export const leavegroups = async (req, res) => {
     const { user_id } = req.body;
 
     const member = await GroupMember.findOne({ where: { group_id: groupId, user_id } });
-    if (!member) return res.status(404).json({ success: false, message: 'Not a member of this group' });
+   
 
     if (member.role === 'admin') {
       return res.status(400).json({ success: false, message: 'Admins cannot leave the group directly' });
@@ -223,9 +223,7 @@ export const getGroupDetails = async (req, res) => {
 
     // Fetch group details
     const group = await Group.findByPk(groupId);
-    if (!group) {
-      return res.status(404).json({ success: false, message: 'Group not found' });
-    }
+ 
 
     // Fetch group members
     const members = await GroupMember.findAll({

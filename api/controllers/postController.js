@@ -177,11 +177,6 @@ export const getMyPosts = async (req, res) => {
       ],
     });
 
-    // Check if the user has any posts
-    if (!posts || posts.length === 0) {
-      return res.status(404).json({ message: 'No posts found for this user.' });
-    }
-
     // Return the posts along with the media
     res.status(200).json({ posts });
   } catch (error) {
@@ -251,10 +246,7 @@ export const getPostById = async (req, res) => {
       ],
     });
 
-    if (!post) {
-      return res.status(404).json({ message: 'Post not found.' });
-    }
-
+  
     res.status(200).json({ post });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -269,9 +261,7 @@ export const deletePost = async (req, res) => {
         include: [{ model: Media, as: 'media' }]
       });
   
-      if (!post) {
-        return res.status(404).json({ message: 'Post not found.' });
-      }
+   
   
       // If the post has associated media
       if (post.media && post.media.length > 0) {
@@ -305,10 +295,7 @@ export const deletePost = async (req, res) => {
   
       // Validate the post exists
       const post = await Post.findByPk(postId);
-      if (!post) {
-        return res.status(404).json({ message: 'Post not found.' });
-      }
-  
+    
       // Create the comment
       const comment = await Comment.create({
         content,
@@ -353,10 +340,7 @@ export const toggleLike = async (req, res) => {
 
     // Check if the post exists
     const post = await Post.findByPk(postId);
-    if (!post) {
-      return res.status(404).json({ message: "Post not found." });
-    }
-
+   
     // Check if the user already liked the post
     const existingLike = await Like.findOne({
       where: { postId, userId },

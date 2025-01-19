@@ -197,81 +197,24 @@ const LoggedInUserScreen = () => {
   );
 };
 
+
+
+
 export default LoggedInUserScreen;
 
-function CommentModal({ postId, userImg, userName, description, isOpen, onClose, addComment, fetchComments }) {
-  const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState("");
 
-  useEffect(() => {
-    if (isOpen) {
-      fetchComments(postId).then((fetchedComments) => {
-        setComments(fetchedComments);
-      });
-    }
-  }, [isOpen, postId, fetchComments]);
-
-  const handleAddComment = async () => {
-    if (newComment.trim()) {
-      await addComment(postId, newComment);
-      setNewComment("");
-      const updatedComments = await fetchComments(postId);
-      const comments = await fetchComments(postId);
-      setComments(comments);
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-      <div className="bg-white rounded-lg p-6 w-full max-w-lg">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Comments</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            &times;
-          </button>
-        </div>
-        <div className="mb-4">
-          <div className="flex items-center gap-4 mb-3">
-            <img src={userImg} alt={`${userName}'s profile`} className="w-10 h-10 rounded-full" />
-            <p className="font-semibold">{userName}</p>
-          </div>
-          <p className="mb-3 text-sm">{description}</p>
-        </div>
-        <div className="max-h-64 overflow-y-auto mb-4">
-          {comments.map((comment) => (
-            <div key={comment.id} className="mb-2">
-              <p className="text-sm font-semibold">{comment.user.username}</p>
-              <p className="text-sm">{comment.content}</p>
-            </div>
-          ))}
-        </div>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            className="flex-1 border rounded-lg p-2"
-            placeholder="Add a comment..."
-          />
-          <button onClick={handleAddComment} className="bg-blue-500 text-white rounded-lg px-4 py-2">
-            Post
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 function PostsComponent({ postId, userImg, userName, description, media }) {
   const [isLiked, setIsLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [comments, setComments] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     fetchLikes(postId);
-    fetchComments(postId);
+    fetchComments(postId).then((fetchedComments) => {
+      setComments(fetchedComments);
+    });
   }, [postId]);
 
   const fetchLikes = async (postId) => {
@@ -295,7 +238,8 @@ function PostsComponent({ postId, userImg, userName, description, media }) {
         const userDetail = localStorage.getItem("user:detail");
         const user = userDetail ? JSON.parse(userDetail) : null;
         const userLiked = data.likes.some((like) => like.userId === user.id);
-        setIsLiked(userLiked); // Update isLiked state
+        setIsLiked(userLiked);
+        setLikesCount(data.likes.length);
       } else {
         console.error("Failed to fetch likes.");
       }
@@ -308,7 +252,7 @@ function PostsComponent({ postId, userImg, userName, description, media }) {
     const token = localStorage.getItem("token");
     if (!token) {
       setErrorMessage("No token provided. Please log in.");
-      return;
+      return [];
     }
 
     try {
@@ -322,12 +266,14 @@ function PostsComponent({ postId, userImg, userName, description, media }) {
 
       if (response.ok) {
         const data = await response.json();
-        setComments(data.comments);
+        return data.comments || [];
       } else {
         console.error("Failed to fetch comments.");
+        return [];
       }
     } catch (error) {
       console.error("Error fetching comments:", error);
+      return [];
     }
   };
 
@@ -351,8 +297,8 @@ function PostsComponent({ postId, userImg, userName, description, media }) {
       });
 
       if (response.ok) {
-        setIsLiked((prev) => !prev); // Toggle like status
-        fetchLikes(postId); // Refresh likes
+        setIsLiked((prev) => !prev);
+        setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
       } else {
         console.error("Failed to toggle like.");
       }
@@ -385,7 +331,8 @@ function PostsComponent({ postId, userImg, userName, description, media }) {
       if (!response.ok) {
         console.error("Failed to add comment.");
       } else {
-        fetchComments(postId); // Refresh comments
+        const updatedComments = await fetchComments(postId);
+        setComments(updatedComments);
       }
     } catch (error) {
       console.error("Error adding comment:", error);
@@ -437,6 +384,7 @@ function PostsComponent({ postId, userImg, userName, description, media }) {
         <img src={save} alt="Save" className="ml-auto cursor-pointer w-6 h-6" />
       </div>
       <div className="mt-4">
+        <p className="text-sm font-semibold">{likesCount} Likes</p>
         <p className="text-sm font-semibold">{comments.length} Comments</p>
         {comments.length > 0 && (
           <>
@@ -464,7 +412,69 @@ function PostsComponent({ postId, userImg, userName, description, media }) {
     </div>
   );
 }
+function CommentModal({ postId, userImg, userName, description, isOpen, onClose, addComment, fetchComments }) {
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
 
+  useEffect(() => {
+    if (isOpen) {
+      fetchComments(postId).then((fetchedComments) => {
+        setComments(fetchedComments);
+      });
+    }
+  }, [isOpen, postId, fetchComments]);
+
+  const handleAddComment = async () => {
+    if (newComment.trim()) {
+      await addComment(postId, newComment); // Add the comment
+      setNewComment(""); // Clear the input
+      const updatedComments = await fetchComments(postId); // Fetch updated comments
+      setComments(updatedComments); // Update the comments state
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+      <div className="bg-white rounded-lg p-6 w-full max-w-lg">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">Comments</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            &times;
+          </button>
+        </div>
+        <div className="mb-4">
+          <div className="flex items-center gap-4 mb-3">
+            <img src={userImg} alt={`${userName}'s profile`} className="w-10 h-10 rounded-full" />
+            <p className="font-semibold">{userName}</p>
+          </div>
+          <p className="mb-3 text-sm">{description}</p>
+        </div>
+        <div className="max-h-64 overflow-y-auto mb-4">
+          {comments && comments.map((comment) => (
+            <div key={comment.id} className="mb-2">
+              <p className="text-sm font-semibold">{comment.user.username}</p>
+              <p className="text-sm">{comment.content}</p>
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            className="flex-1 border rounded-lg p-2"
+            placeholder="Add a comment..."
+          />
+          <button onClick={handleAddComment} className="bg-blue-500 text-white rounded-lg px-4 py-2">
+            Post
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function SuggestedGroups({ imgSrc, group_name, groupId, isMember, joinGroup, leaveGroup }) {
   const [isGroupMember, setIsGroupMember] = useState(isMember);

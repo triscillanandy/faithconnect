@@ -16,7 +16,7 @@ import Devotional from "./Sections/Component/Devotional";
 import LandingPage1 from "./Sections/LandingPage1";
 import Posts from "./Sections/Component/Posts";
 import EditProfile from "./Sections/Component/EditProfile";
-import Chat from "./Sections/Component/Chat";
+import Chats from "./Sections/Component/Chats";
 import Reels from "./Sections/Component/Reels"; // Import the Reels component
 import './App.css'
 
@@ -41,7 +41,7 @@ function App() {
           <Route path="/devotional" element={<Devotional />} />
           <Route path="/post" element={<Posts />} />
           <Route path="/edit-profile" element={<EditProfile />} />
-          <Route path="/chats" element={<Chat/>} />
+          <Route path="/chats" element={<Chats/>} />
           <Route path="/reels" element={<Reels />} /> {/* Add the route for Reels */}
         </Routes>
       </Router>

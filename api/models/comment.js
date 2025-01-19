@@ -42,3 +42,4 @@ Comment.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
 export default Comment;
 //ekds
+//ss

@@ -1,7 +1,7 @@
 import Post from '../models/Post.js';
 import Media from '../models/Media.js';
 import User from '../models/User.js';
-import Comment from '../models/Comment.js';
+import Comment from '../models/comment.js';
 import Like from '../models/Like.js';
 import Devotional from '../models/Devotional.js'; // Adjust the path as needed
 import Sermon from '../models/Sermon.js'; // Adjust the path as needed

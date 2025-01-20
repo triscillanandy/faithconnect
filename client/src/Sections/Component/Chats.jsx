@@ -29,6 +29,8 @@ const Chats = () => {
   const [showNewGroupPopup, setShowNewGroupPopup] = useState(false);
   const [showNewCommunityPopup, setShowNewCommunityPopup] = useState(false);
   const [suggestedUsers, setSuggestedUsers] = useState([]);
+  const [showSuggestedUsersModal, setShowSuggestedUsersModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const messageRef = useRef(null);
 
   useEffect(() => {
@@ -160,48 +162,92 @@ const Chats = () => {
     const data = await res.json();
     setMessages(data);
   };
-
+  const handleStartChat = async (user) => {
+    setSelectedUser(user);
+    setSelectedChat(null); // Clear any selected chat
+  
+    const token = localStorage.getItem("token");
+    const loggedInUserId = JSON.parse(localStorage.getItem("user:detail")).id;
+  
+    try {
+      // Step 1: Check if a conversation already exists
+      const existingConversation = conversations.find((conv) => {
+        // Ensure the conversation and participants exist
+        if (!conv || !conv.participants) return false;
+  
+        // Check if the selected user is a participant
+        return conv.participants.some((participant) => participant.id === user.id);
+      });
+  
+      if (existingConversation) {
+        // Step 2: If a conversation exists, load it
+        console.log("Existing conversation found:", existingConversation);
+        handleSelectChat(existingConversation); // Load the existing conversation
+      } else {
+        // Step 3: If no conversation exists, create a new one
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/auth/conversations`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ userIds: [loggedInUserId, user.id] }),
+          }
+        );
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Error creating conversation:", errorData);
+          throw new Error(errorData.message || "Failed to create conversation");
+        }
+  
+        const newConversation = await response.json();
+        console.log("New conversation created:", newConversation);
+  
+        // Ensure the conversation object has a conversationId
+        if (!newConversation.id) {
+          console.error("New conversation is missing id:", newConversation);
+          throw new Error("New conversation is missing id");
+        }
+  
+        // Add the new conversation to the conversations list
+        setConversations((prev) => [...prev, newConversation]);
+  
+        // Load the new conversation
+        handleSelectChat({
+          conversationId: newConversation.id,
+          receiver: user, // Ensure the receiver is set to the selected user
+        });
+      }
+  
+      // Close the suggested users modal
+      setShowSuggestedUsersModal(false);
+    } catch (error) {
+      console.error("Error handling start chat:", error);
+    }
+  };
+  
   const handleSelectChat = (conversation) => {
+    if (!conversation || !conversation.conversationId) {
+      console.error("Invalid conversation object:", conversation);
+      return;
+    }
+  
     setSelectedChat(conversation);
     if (conversation.isGroup) {
       fetchGroupMessages(conversation.groupId);
     } else {
       setSelectedUser(conversation.receiver);
-      fetchMessages(conversation.conversationId);
+      fetchMessages(conversation.conversationId); // Fetch messages for the selected conversation
     }
   };
-
-  const handleStartChat = (user) => {
-    setSelectedUser(user);
-    setSelectedChat(null); // Clear any selected chat
-  };
-
-  const handleCreateConversation = async () => {
-    const token = localStorage.getItem("token");
-    const loggedInUserId = JSON.parse(localStorage.getItem("user:detail")).id;
-
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/auth/conversations`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ userIds: [loggedInUserId, selectedUser.id] }),
-        }
-      );
-      const newConversation = await response.json();
-      setSelectedChat(newConversation);
-      setMessages([]); // Clear any existing messages
-    } catch (error) {
-      console.error("Error creating conversation:", error);
-    }
-  };
-
-  // Filter groups where the user is a member or admin
   const filteredGroups = groupsList.filter((group) => group.is_member || group.role === "admin");
+
+  const filteredSuggestedUsers = suggestedUsers.filter((user) =>
+    user.username.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="flex gap-24 max-[833px]:flex-col-reverse">
@@ -211,7 +257,7 @@ const Chats = () => {
           <div>
             <div className="flex items-center justify-between max-[613px]:px-4 px-20 mt-3">
               <h1 className="font-bold text-2xl">Chats</h1>
-              <img src={people} alt="people icon" />
+              <img src={people} alt="people icon"    onClick={() => setShowSuggestedUsersModal(true)}/>
             </div>
             <div className="flex justify-center items-center">
               <div className="relative w-3/5 max-[600px]:w-[95%] mt-5 ml-3">
@@ -252,7 +298,6 @@ const Chats = () => {
               </button>
             </div>
             <div className="mt-4">
-              {/* Display existing conversations */}
               {conversations.map((conversation) => (
                 <Chat
                   key={conversation.conversationId || conversation.groupId}
@@ -271,7 +316,6 @@ const Chats = () => {
                 />
               ))}
 
-              {/* Display filtered groups */}
               {filteredGroups.map((group) => (
                 <Chat
                   key={group.id}
@@ -282,21 +326,6 @@ const Chats = () => {
                     handleSelectChat({ isGroup: true, groupId: group.id, group_name: group.group_name })
                   }
                 />
-              ))}
-
-              {/* Display suggested users */}
-              <h2 className="font-semibold mb-4">Suggested Users</h2>
-              {suggestedUsers.map((user) => (
-                <div
-                  key={user.id}
-                  className="flex items-center mb-4 cursor-pointer"
-                  onClick={() => handleStartChat(user)}
-                >
-                  <img className="w-10 h-10 rounded-full" src={user.profilePicture || "default.png"} alt={user.username} />
-                  <div className="ml-4">
-                    <p className="font-bold">{user.username}</p>
-                  </div>
-                </div>
               ))}
             </div>
           </div>
@@ -316,11 +345,15 @@ const Chats = () => {
               }}
               messageRef={messageRef}
               selectedUser={selectedUser}
-              handleCreateConversation={handleCreateConversation}
             />
           ) : (
-            <div className="mt-4">
-              <h2 className="font-semibold mb-4">No chat selected</h2>
+            <div className="mt-4 flex justify-center items-center h-full">
+              <button
+                onClick={() => setShowSuggestedUsersModal(true)}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+              >
+                Start Chat
+              </button>
             </div>
           )}
         </div>
@@ -328,6 +361,44 @@ const Chats = () => {
 
       {showNewGroupPopup && <NewGroupPopup onClose={() => setShowNewGroupPopup(false)} />}
       {showNewCommunityPopup && <NewCommunityPopup onClose={() => setShowNewCommunityPopup(false)} />}
+
+      {showSuggestedUsersModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-5 rounded-lg w-96">
+            <h2 className="text-xl font-bold mb-4">Start a New Chat</h2>
+            <input
+              type="text"
+              placeholder="Search users..."
+              className="w-full px-3 py-2 border rounded-lg mb-4"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <div className="overflow-y-auto max-h-60">
+              {filteredSuggestedUsers.map((user) => (
+                <div
+                  key={user.id}
+                  className="flex items-center mb-4 cursor-pointer"
+                  onClick={() => {
+                    handleStartChat(user); // Automatically create a conversation
+                    setShowSuggestedUsersModal(false); // Close the modal
+                  }}
+                >
+                  <img className="w-10 h-10 rounded-full" src={user.profilePicture || "default.png"} alt={user.username} />
+                  <div className="ml-4">
+                    <p className="font-bold">{user.username}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowSuggestedUsersModal(false)}
+              className="mt-4 bg-red-500 text-white px-4 py-2 rounded-lg"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -378,7 +449,6 @@ function ChatDetails({
   goBack,
   messageRef,
   selectedUser,
-  handleCreateConversation,
 }) {
   const [deviceHeight, setDeviceHeight] = useState(window.innerHeight);
   const loggedInUserId = JSON.parse(localStorage.getItem("user:detail")).id;
@@ -393,6 +463,12 @@ function ChatDetails({
     };
   }, []);
 
+  // Debugging: Log the selected chat and messages
+  useEffect(() => {
+    console.log("Selected chat:", selectedChat);
+    console.log("Messages:", messages);
+  }, [selectedChat, messages]);
+
   return (
     <div className="relative" style={{ height: `${deviceHeight}px` }}>
       <div className="flex justify-between items-center mt-5">
@@ -405,7 +481,7 @@ function ChatDetails({
           />
           <div>
             <p className="font-bold">
-              {selectedChat ? (selectedChat.isGroup ? selectedChat.group_name : selectedChat.receiver?.username || "Unknown") : selectedUser?.username || "Unknown"}
+              {selectedChat ? (selectedChat.isGroup ? selectedChat.group_name : selectedChat.receiver?.username || "Unkwn") : selectedUser?.username || "nown"}
             </p>
             <p>Active 1min ago</p>
           </div>
@@ -416,33 +492,27 @@ function ChatDetails({
         </div>
       </div>
       <hr className="h-2 bg-mainTheme mt-4 mb-3" />
-      {!selectedChat && selectedUser && (
-        <div className="flex justify-center mt-4">
-          <button
-            onClick={handleCreateConversation}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-          >
-            Start Chat
-          </button>
-        </div>
-      )}
       <div className="flex flex-col gap-2 p-4 overflow-y-auto h-[550px]">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`flex ${
-              msg.senderId === loggedInUserId ? "justify-end" : "justify-start"
-            }`}
-          >
-            <p
-              className={`max-w-[60%] px-3 py-2 text-white rounded-[20px] ${
-                msg.senderId === loggedInUserId ? "bg-orange-500" : "bg-blue-500"
+        {messages.length > 0 ? (
+          messages.map((msg, index) => (
+            <div
+              key={index}
+              className={`flex ${
+                msg.senderId === loggedInUserId ? "justify-end" : "justify-start"
               }`}
             >
-              {msg.text}
-            </p>
-          </div>
-        ))}
+              <p
+                className={`max-w-[60%] px-3 py-2 text-white rounded-[20px] ${
+                  msg.senderId === loggedInUserId ? "bg-orange-500" : "bg-blue-500"
+                }`}
+              >
+                {msg.text}
+              </p>
+            </div>
+          ))
+        ) : (
+          <p className="text-center text-gray-500">No messages yet. Start the conversation!</p>
+        )}
         <div ref={messageRef}></div>
       </div>
       {selectedChat && (
@@ -465,7 +535,6 @@ function ChatDetails({
     </div>
   );
 }
-
 function NewGroupPopup({ onClose }) {
   const [groupName, setGroupName] = useState("");
   const [description, setDescription] = useState("");

@@ -284,10 +284,15 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="flex gap-24 lg:gap-48 xl:gap-72 max-[833px]:flex-col-reverse max-[833px]:px-8">
-      <LoggedInSideBar />
-      <div className="mt-10">
-        <div className="flex gap-6">
+    <div className="flex min-h-screen">
+    {/* Sidebar */}
+    <LoggedInSideBar />
+  
+    {/* Main Content */}
+    <div className="flex flex-col flex-grow items-center justify-center">
+      <div className="text-center">
+        {/* User Info */}
+        <div className="flex gap-6 justify-center items-center mb-4">
           <p>@{userProfile.username}</p>
           <button
             className="w-[170px] rounded-[6px] h-[30px] bg-[#EFEFEF]"
@@ -299,38 +304,46 @@ const UserProfile = () => {
             Share profile
           </button>
         </div>
-        <div className="flex items-center gap-10 mt-5">
-          <div>
+  
+        {/* Profile Image and Stats */}
+        <div className="flex items-center justify-center gap-10 mt-5">
+          <div className="text-center">
             <img
               src={userProfile.profileImage}
               alt="Profile"
-              className="w-20 h-20 rounded-full"
+              className="w-20 h-20 rounded-full cursor-pointer"
               onClick={() => setIsImageModalOpen(true)}
             />
             <p className="text-[10px]">{userProfile.username}</p>
           </div>
-          <div>
+          <div className="text-center">
             <p className="text-[16px]">65</p>
             <p className="text-[12px]">Posts</p>
           </div>
-          <div>
+          <div className="text-center">
             <p className="text-[16px]">600</p>
             <p className="text-[12px]">Followers</p>
           </div>
-          <div>
+          <div className="text-center">
             <p className="text-[16px]">210</p>
             <p className="text-[12px]">Following</p>
           </div>
         </div>
+  
+        {/* Bio */}
         <div className="mt-5">
           <p className="text-[11px] text-[#ADADAD]"></p>
           <p className="text-[11px]">Believe in Christ</p>
         </div>
-        <div className="flex gap-28 items-center mt-8">
+  
+        {/* Menu Icons */}
+        <div className="flex gap-10 items-center mt-8 justify-center">
           <img className="cursor-pointer" src={profileMenu} alt="" />
           <img className="cursor-pointer" src={reels} alt="" />
           <img className="cursor-pointer" src={tag} alt="" />
         </div>
+  
+        {/* Posts Grid */}
         <div className="grid grid-cols-3 gap-1 sm:gap-2 mt-4">
           {posts.map((post) =>
             post.media && post.media.length > 0 ? (
@@ -355,20 +368,21 @@ const UserProfile = () => {
           )}
         </div>
       </div>
-
-      {/* Edit Profile Modal */}
-      <EditProfileModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        userProfile={userProfile}
-        onSave={handleSaveProfile}
-      />
-       <UpdateProfileImageModal
-        isOpen={isImageModalOpen}
-        onClose={() => setIsImageModalOpen(false)}
-        onSave={handleSaveProfileImage}
-      />
     </div>
+  
+    {/* Modals */}
+    <EditProfileModal
+      isOpen={isModalOpen}
+      onClose={() => setIsModalOpen(false)}
+      userProfile={userProfile}
+      onSave={handleSaveProfile}
+    />
+    <UpdateProfileImageModal
+      isOpen={isImageModalOpen}
+      onClose={() => setIsImageModalOpen(false)}
+      onSave={handleSaveProfileImage}
+    />
+  </div>
   );
 };
 

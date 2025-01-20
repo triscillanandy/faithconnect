@@ -85,55 +85,55 @@ function Registration({ text }) {
   };
 
   return (
-    <div className="flex mx-auto container ">
-       <ToastContainer
-  position="top-right"
-  autoClose={3000}
-  hideProgressBar={false}
-  newestOnTop={false}
-  closeOnClick
-  rtl={false}
-  pauseOnFocusLoss
-  draggable
-  pauseOnHover
-/>
-
-      <div className="h-[823px] w-[600px] flex flex-col justify-center items-center relative max-planSmallScreen:hidden">
-        <img src={Pray} />
+    <div className="flex mx-auto container flex-col md:flex-row">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+  
+      <div className="h-[823px] w-full md:w-[600px] flex flex-col justify-center items-center relative hidden md:flex">
+        <img src={Pray} alt="Pray" />
         <h1 className="text-[#FF6132] text-[36px]">Faith Connect</h1>
         <p className="font-bold text-3xl mt-60">Build a Bond with God</p>
         <div className="flex absolute bottom-2 left-1">
-          <img src={Rect1} className="w-[100px] h-[120px]" alt="" />
-          <img src={Rect2} className="w-[100px] h-[60px] mt-14" alt="" />
+          <img src={Rect1} className="w-[100px] h-[120px]" alt="Rect1" />
+          <img src={Rect2} className="w-[100px] h-[60px] mt-14" alt="Rect2" />
         </div>
       </div>
-      <div className="bg-[#FF6132] w-[650px] max-planSmallScreen:bg-white max-planSmallScreen:h-[900px] ">
-        <div className="flex justify-between mt-4 px-3 max-landingPageScreenFourthBreakPoint:hidden">
-          <img src={Vector} alt="" />
-          <img src={closeIcon} alt="" />
+      <div className="bg-[#FF6132] w-full md:w-[650px] max-planSmallScreen:bg-white max-planSmallScreen:h-[900px]">
+        <div className="flex justify-between mt-4 px-3 hidden md:flex">
+          <img src={Vector} alt="Vector" />
+          <img src={closeIcon} alt="Close" />
         </div>
-        <div className="w-[365.72px] h-[630px] mx-auto text-white mt-4 max-planSmallScreen:text-black">
+        <div className="w-full md:w-[365.72px] h-[630px] mx-auto text-white mt-4 max-planSmallScreen:text-black px-4">
           <div className="text-center">
             <p className="font-bold text-2xl mb-3 capitalize">{text}</p>
             <p>Fill in the information to continue.</p>
           </div>
-
-          <div className="flex mt-4 gap-36">
+  
+          <div className="flex mt-4 gap-4 md:gap-36 flex-col md:flex-row">
             <label className="text-center">First Name</label>
-            <label className="text-center ml-[-5px]">Last Name</label>
+            <label className="text-center">Last Name</label>
           </div>
-          <div className="flex justify-between gap-8 mt-1">
+          <div className="flex justify-between gap-4 md:gap-8 mt-1 flex-col md:flex-row">
             <input
               type="text"
               placeholder="First Name"
-              className="w-[165.39px] border-[#FF6132] h-[48.59px] rounded-[11.85px] border-[0.85px] pt-[15.79px] pr-[15px] pb-[15.79px] pl-[15px] text-black"
+              className="w-full md:w-[165.39px] border-[#FF6132] h-[48.59px] rounded-[11.85px] border-[0.85px] pt-[15.79px] pr-[15px] pb-[15.79px] pl-[15px] text-black"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
             />
             <input
               type="text"
               placeholder="Last Name"
-              className="w-[162.83px] h-[48.59px] rounded-[11.85px] border-[0.85px] pt-[15.79px] pr-[12px] pb-[15.79px] pl-[12px] text-black border-[#FF6132]"
+              className="w-full md:w-[162.83px] h-[48.59px] rounded-[11.85px] border-[0.85px] pt-[15.79px] pr-[12px] pb-[15.79px] pl-[12px] text-black border-[#FF6132]"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
             />
@@ -163,7 +163,7 @@ function Registration({ text }) {
             <label className="mb-4">Username</label>
             <input
               type="text"
-              className="w-[360.11px] h-[48.17px] rounded-[11.85px] border-[0.85px] pt-[15.79px] pr-[15px] pb-[15.79px] pl-[15px] text-black border-[#FF6132]"
+              className="w-full h-[48.17px] rounded-[11.85px] border-[0.85px] pt-[15.79px] pr-[15px] pb-[15.79px] pl-[15px] text-black border-[#FF6132]"
               placeholder="Business or Host Name"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -173,7 +173,7 @@ function Registration({ text }) {
             <label className="mb-4">Email</label>
             <input
               type="email"
-              className="w-[360.11px] h-[48.17px] rounded-[11.85px] border-[0.85px] pt-[15.79px] pr-[15px] pb-[15.79px] pl-[15px] text-black "
+              className="w-full h-[48.17px] rounded-[11.85px] border-[0.85px] pt-[15.79px] pr-[15px] pb-[15.79px] pl-[15px] text-black"
               placeholder="Email Address"
               value={email}
               onChange={(e) => setEmailAddress(e.target.value)}
@@ -183,7 +183,7 @@ function Registration({ text }) {
             <label className="mb-4">Password</label>
             <input
               type="password"
-              className="w-[360.11px] h-[48.17px] rounded-[11.85px] border-[0.85px] pt-[15.79px] pr-[15px] pb-[15.79px] pl-[15px] text-black"
+              className="w-full h-[48.17px] rounded-[11.85px] border-[0.85px] pt-[15.79px] pr-[15px] pb-[15.79px] pl-[15px] text-black"
               placeholder="Enter Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -197,21 +197,18 @@ function Registration({ text }) {
             </a>
           </p>
           <button
-           
-            className="text-center w-[357.74px] h-[50.54px] rounded-[11.85px] pt-[15.79px] pr-[47.38px] pb-[15.79px] pl-[47.38px] text-black bg-white mt-6 border-[#FF6132] border-[0.79px]"
-         //   onClick={() => navigate("/email-verification")}
-          
-         onClick={handleRegistration}
-          >Create Account
-            
+            className="text-center w-full md:w-[357.74px] h-[50.54px] rounded-[11.85px] pt-[15.79px] pr-[47.38px] pb-[15.79px] pl-[47.38px] text-black bg-white mt-6 border-[#FF6132] border-[0.79px]"
+            onClick={handleRegistration}
+          >
+            Create Account
           </button>
           <div className="flex items-center gap-2 mt-8">
             <hr className="flex-grow border-t border-[black]" />
             <p className="text-black font-bold">OR</p>
             <hr className="flex-grow border-t border-[black]" />
           </div>
-          <button className="text-black bg-white w-[354.65px] rounded-[13.43px] border-[0.79px] pt-[13.26px] pr-[66.29px] pb-[13.26px] pl-[66.29px] flex justify-center gap-2 mt-6 border-[#FF6132] ">
-            <img src={googleImg} />
+          <button className="text-black bg-white w-full md:w-[354.65px] rounded-[13.43px] border-[0.79px] pt-[13.26px] pr-[66.29px] pb-[13.26px] pl-[66.29px] flex justify-center gap-2 mt-6 border-[#FF6132]">
+            <img src={googleImg} alt="Google" />
             Sign up with Google
           </button>
           <p className="text-center mt-2">

@@ -4,7 +4,7 @@ const LandingPage1 = () => {
   const navigate = useNavigate();
   return (
     <div
-      className="flex flex-col justify-center items-center mx-auto mt-24 px-6 max-w-72
+      className="flex flex-col justify-center items-center mx-auto mt-14 px-6 max-w-72
     "
     >
       <div>
@@ -16,14 +16,14 @@ const LandingPage1 = () => {
           spiritually in a safe and welcoming space
         </p>
         <button
-          className="bg-[#FF6132] text-white rounded-[20px] w-[500px]  mt-52 h-[60px] max-[492px]:w-[300px]"
+          className="bg-[#FF6132] text-white rounded-[20px] w-[500px]  mt-40 h-[60px] max-[492px]:w-[300px]"
           onClick={() => navigate("/plans")}
         >
           Join the Faith Community Today!
         </button>
-        <div className="flex flex-col items-center mt-48">
+        <div className="flex flex-col items-center mt-40">
           <div className="flex items-center">
-            <img className="w-[26px] h-[18px]" src={Pray} alt="" />
+            <img className="w-[90px] h-[90px]" src={Pray} alt="" />
             <p className="font-bold">
               Faith<span className="text-[#FF6132]">Connect</span>
             </p>

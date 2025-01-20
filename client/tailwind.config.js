@@ -4,6 +4,7 @@ export default {
   theme: {
     extend: {
       screens: {
+        md: "768px",
         planSmallScreen: "793px",
         planSmallerScreen: "557px",
         loginScreen: "1025px",
@@ -14,6 +15,7 @@ export default {
         landingPageThirdScreenBreakPoint: "429px",
         landingPageScreenFourthBreakPoint: "403px",
         validationBreakPoint: "785px",
+        
       },
       fontFamily: {
         inika: "inika",

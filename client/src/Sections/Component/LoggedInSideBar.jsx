@@ -1,6 +1,6 @@
 import { FaHome, FaSearch, FaPrayingHands, FaFilm, FaPlusSquare, FaCommentDots, FaBell, FaUser } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import Logo from "./LoggedInScreenImages/Logo.png";
+import Pray from "./LoggedInScreenImages/Pray.png";
 import { useCallback } from "react";
 
 const LoggedInSideBar = ({ showSideBar = true }) => {
@@ -17,17 +17,17 @@ const LoggedInSideBar = ({ showSideBar = true }) => {
           {/* Sidebar for larger screens (hidden on mobile) */}
           <nav className="hidden md:flex flex-col items-center w-20 h-screen bg-white shadow-md py-8 px-4 fixed">
             <div className="mb-12">
-              <img className="w-[40px] cursor-pointer" src={Logo} alt="Logo" />
+              <img className="w-[60px] cursor-pointer" src={Pray} alt="Logo" />
             </div>
-            <div className="flex flex-col items-center gap-12">
-              <FaHome className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Home" onClick={() => handleNavigation("/home")} />
-              <FaSearch className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Search" onClick={() => handleNavigation("/search")} />
-              <FaPrayingHands className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Pray" onClick={() => handleNavigation("/search")} />
-              <FaFilm className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Reels" onClick={() => handleNavigation("/reels")} />
-              <FaPlusSquare className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="DM" onClick={() => handleNavigation("/post")} />
-              <FaCommentDots className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="DM" onClick={() => handleNavigation("/chats")} />
-              <FaBell className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Notification" />
-              <FaUser className="cursor-pointer w-8 h-8 text-gray-600 hover:text-blue-500" title="Account" onClick={() => handleNavigation("/user-profile")} />
+            <div className="flex flex-col items-center gap-10">
+              <FaHome className="cursor-pointer w-6 h-7 text-gray-600 hover:text-blue-500" title="Home" onClick={() => handleNavigation("/home")} />
+              <FaSearch className="cursor-pointer w-6 h-7 text-gray-600 hover:text-blue-500" title="Search" onClick={() => handleNavigation("/search")} />
+              <FaPrayingHands className="cursor-pointer w-6 h-7 text-gray-600 hover:text-blue-500" title="Pray" onClick={() => handleNavigation("/search")} />
+              <FaFilm className="cursor-pointer w-6 h-7 text-gray-600 hover:text-blue-500" title="Reels" onClick={() => handleNavigation("/reels")} />
+              <FaPlusSquare className="cursor-pointer w-6 h-7 text-gray-600 hover:text-blue-500" title="DM" onClick={() => handleNavigation("/post")} />
+              <FaCommentDots className="cursor-pointer w-6 h-7 text-gray-600 hover:text-blue-500" title="DM" onClick={() => handleNavigation("/chats")} />
+              <FaBell className="cursor-pointer w-6 h-7 text-gray-600 hover:text-blue-500" title="Notification" />
+              <FaUser className="cursor-pointer w-6 h-7 text-gray-600 hover:text-blue-500" title="Account" onClick={() => handleNavigation("/user-profile")} />
             </div>
           </nav>
 

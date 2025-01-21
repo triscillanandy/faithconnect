@@ -52,6 +52,7 @@ const Reels = ({ posts = [] }) => {
   return (
     <div className="flex min-h-screen">
     <LoggedInSideBar />
+    <div className="flex flex-col flex-grow items-center justify-center">
     <div className="reels-container" onWheel={handleScroll}>
       {posts.length > 0 ? (
         posts.map((reel, index) => (
@@ -108,6 +109,7 @@ const Reels = ({ posts = [] }) => {
       ) : (
         <p className="text-white">No video posts available.</p>
       )}
+    </div>
     </div>
     </div>
   );

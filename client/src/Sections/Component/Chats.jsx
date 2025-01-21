@@ -114,6 +114,41 @@ const Chats = () => {
     setMessages(data);
   };
 
+  const handleGroupClick = async (groupId) => {
+    const user = JSON.parse(localStorage.getItem("user:detail"));
+    const token = localStorage.getItem("token");
+  
+    try {
+      // Check if a conversation for this group exists
+      const conversationRes = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/conversations/group`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ groupId }),
+        }
+      );
+      const conversationData = await conversationRes.json();
+  
+      if (conversationRes.status === 200 || conversationRes.status === 201) {
+        // Set the selected chat to the conversation data
+        setSelectedChat({
+          isGroup: true,
+          groupId: groupId,
+          conversationId: conversationData.id, // Use the created/found conversation ID
+        });
+  
+        // You can also load the existing messages for the group here if needed
+      } else {
+        console.error("Failed to create or fetch group conversation", conversationData);
+      }
+    } catch (err) {
+      console.error("Error while creating or fetching group conversation", err);
+    }
+  };
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!message.trim()) return;
@@ -122,7 +157,7 @@ const Chats = () => {
     const token = localStorage.getItem("token");
     const newMessage = selectedChat.isGroup
       ? {
-          groupId: selectedChat.groupId,
+          conversationId: selectedChat.conversationId,
           senderId: user.id,
           message,
         }
@@ -135,7 +170,7 @@ const Chats = () => {
 
     socket.emit(selectedChat.isGroup ? "sendGroupMessage" : "sendMessage", newMessage);
     await fetch(
-      `${import.meta.env.VITE_API_URL}/api/auth/${selectedChat.isGroup ? "group-messages" : "messages"}`,
+      `${import.meta.env.VITE_API_URL}/api/auth/${selectedChat.isGroup ? "send-group-messages" : "messages"}`,
       {
         method: "POST",
         headers: {
@@ -160,7 +195,8 @@ const Chats = () => {
       },
     });
     const data = await res.json();
-    setMessages(data);
+    // setMessages(data);
+    setMessages(Array.isArray(data) ? data : []);
   };
   const handleStartChat = async (user) => {
     setSelectedUser(user);
@@ -230,7 +266,7 @@ const Chats = () => {
   };
   
   const handleSelectChat = (conversation) => {
-    if (!conversation || !conversation.conversationId) {
+    if (!conversation || (!conversation.conversationId && !conversation.groupId)) {
       console.error("Invalid conversation object:", conversation);
       return;
     }
@@ -243,6 +279,20 @@ const Chats = () => {
       fetchMessages(conversation.conversationId); // Fetch messages for the selected conversation
     }
   };
+  // const handleSelectChat = (conversation) => {
+  //   if (!conversation || !conversation.conversationId) {
+  //     console.error("Invalid conversation object:", conversation);
+  //     return;
+  //   }
+  
+  //   setSelectedChat(conversation);
+  //   if (conversation.isGroup) {
+  //     fetchGroupMessages(conversation.groupId);
+  //   } else {
+  //     setSelectedUser(conversation.receiver);
+  //     fetchMessages(conversation.conversationId); // Fetch messages for the selected conversation
+  //   }
+  // };
   const filteredGroups = groupsList.filter((group) => group.is_member || group.role === "admin");
 
   const filteredSuggestedUsers = suggestedUsers.filter((user) =>
@@ -322,9 +372,37 @@ const Chats = () => {
                   imgSrc="group-icon.png"
                   userName={group.group_name}
                   userMessage={group.role === "admin" ? "You are an admin" : "You are a member"}
-                  onClick={() =>
-                    handleSelectChat({ isGroup: true, groupId: group.id, group_name: group.group_name })
-                  }
+                  onClick={async () => {
+                    // Handle group selection
+                    const groupData = { isGroup: true, groupId: group.id, group_name: group.group_name };
+              
+                    // First, check if conversation exists for the group or create one
+                    const token = localStorage.getItem("token");
+                    const conversationRes = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/conversations/group`, {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                      },
+                      body: JSON.stringify({ groupId: group.id }),
+                    });
+                    const conversationData = await conversationRes.json();
+              
+                    if (conversationRes.status === 200 || conversationRes.status === 201) {
+                      // Successfully created or retrieved conversation
+                      // Handle socket emission for group message
+                      const user = JSON.parse(localStorage.getItem("user:detail"));
+                      socket.emit("joinGroup", { conversationId: conversationData.id, userId: user.id });
+              
+                      // Update the UI or state
+                      handleSelectChat(groupData); // Update selected chat state
+              
+                      // Optionally, fetch the group messages after creating/selecting the conversation
+                      fetchGroupMessages(group.id);
+                    } else {
+                      console.error("Failed to create or fetch group conversation", conversationData);
+                    }
+                  }}
                 />
               ))}
             </div>
@@ -406,27 +484,7 @@ const Chats = () => {
 // Other components (ShowFilter, FilterTags, Chat, ChatDetails, NewGroupPopup, NewCommunityPopup) remain unchanged.
 export default Chats;
 
-function ShowFilter() {
-  return (
-    <div>
-      <h1 className="mb-1">Filter chats by</h1>
-      <FilterTags imgSrc={chat} filterMessage={"Unread"} />
-      <FilterTags imgSrc={groups} filterMessage={"groups"} />
-      <FilterTags imgSrc={following} filterMessage={"following"} />
-      <FilterTags imgSrc={no} filterMessage={"not following"} />
-      <FilterTags imgSrc={blocked} filterMessage={"blocked users"} />
-    </div>
-  );
-}
 
-function FilterTags({ imgSrc, filterMessage }) {
-  return (
-    <div className="flex gap-2 mb-2 items-center cursor-pointer">
-      <img src={imgSrc} className="w-[15px] h-[15.65px]" alt="" />
-      <p className="capitalize">{filterMessage}</p>
-    </div>
-  );
-}
 
 function Chat({ imgSrc, userName, userMessage, onClick }) {
   return (
@@ -439,6 +497,8 @@ function Chat({ imgSrc, userName, userMessage, onClick }) {
     </div>
   );
 }
+
+
 
 function ChatDetails({
   selectedChat,
@@ -463,12 +523,6 @@ function ChatDetails({
     };
   }, []);
 
-  // Debugging: Log the selected chat and messages
-  useEffect(() => {
-    console.log("Selected chat:", selectedChat);
-    console.log("Messages:", messages);
-  }, [selectedChat, messages]);
-
   return (
     <div className="relative" style={{ height: `${deviceHeight}px` }}>
       <div className="flex justify-between items-center mt-5">
@@ -481,7 +535,7 @@ function ChatDetails({
           />
           <div>
             <p className="font-bold">
-              {selectedChat ? (selectedChat.isGroup ? selectedChat.group_name : selectedChat.receiver?.username || "Unkwn") : selectedUser?.username || "nown"}
+              {selectedChat ? (selectedChat.isGroup ? selectedChat.group_name : selectedChat.receiver?.username || "Unknown") : selectedUser?.username || "Unknown"}
             </p>
             <p>Active 1min ago</p>
           </div>
@@ -535,6 +589,101 @@ function ChatDetails({
     </div>
   );
 }
+// function ChatDetails({
+//   selectedChat,
+//   messages,
+//   message,
+//   setMessage,
+//   handleSendMessage,
+//   goBack,
+//   messageRef,
+//   selectedUser,
+// }) {
+//   const [deviceHeight, setDeviceHeight] = useState(window.innerHeight);
+//   const loggedInUserId = JSON.parse(localStorage.getItem("user:detail")).id;
+
+//   useEffect(() => {
+//     const handleResize = () => {
+//       setDeviceHeight(window.innerHeight);
+//     };
+//     window.addEventListener("resize", handleResize);
+//     return () => {
+//       window.removeEventListener("resize", handleResize);
+//     };
+//   }, []);
+
+//   // Debugging: Log the selected chat and messages
+//   useEffect(() => {
+//     console.log("Selected chat:", selectedChat);
+//     console.log("Messages:", messages);
+//   }, [selectedChat, messages]);
+
+//   return (
+//     <div className="relative" style={{ height: `${deviceHeight}px` }}>
+//       <div className="flex justify-between items-center mt-5">
+//         <div className="flex items-center gap-4 px-5">
+//           <img onClick={goBack} className="cursor-pointer" src={arrow} alt="" />
+//           <img
+//             className="w-20 h-20 rounded-full"
+//             src={selectedChat ? (selectedChat.isGroup ? "group-icon.png" : selectedChat.receiver?.profilePicture || "default.png") : selectedUser?.profilePicture || "default.png"}
+//             alt={selectedChat ? (selectedChat.isGroup ? "Group" : "Receiver") : "User"}
+//           />
+//           <div>
+//             <p className="font-bold">
+//               {selectedChat ? (selectedChat.isGroup ? selectedChat.group_name : selectedChat.receiver?.username || "Unkwn") : selectedUser?.username || "nown"}
+//             </p>
+//             <p>Active 1min ago</p>
+//           </div>
+//         </div>
+//         <div className="flex gap-4 px-8">
+//           <img src={Call} className="cursor-pointer" alt="" />
+//           <img src={Group} className="cursor-pointer" alt="" />
+//         </div>
+//       </div>
+//       <hr className="h-2 bg-mainTheme mt-4 mb-3" />
+//       <div className="flex flex-col gap-2 p-4 overflow-y-auto h-[550px]">
+//         {messages.length > 0 ? (
+//           messages.map((msg, index) => (
+//             <div
+//               key={index}
+//               className={`flex ${
+//                 msg.senderId === loggedInUserId ? "justify-end" : "justify-start"
+//               }`}
+//             >
+//               <p
+//                 className={`max-w-[60%] px-3 py-2 text-white rounded-[20px] ${
+//                   msg.senderId === loggedInUserId ? "bg-orange-500" : "bg-blue-500"
+//                 }`}
+//               >
+//                 {msg.text}
+//               </p>
+//             </div>
+//           ))
+//         ) : (
+//           <p className="text-center text-gray-500">No messages yet. Start the conversation!</p>
+//         )}
+//         <div ref={messageRef}></div>
+//       </div>
+//       {selectedChat && (
+//         <div className="absolute bottom-0 w-full flex justify-center">
+//           <form className="flex items-center gap-5" onSubmit={handleSendMessage}>
+//             <img src={files} alt="" />
+//             <input
+//               type="text"
+//               placeholder="Write Message"
+//               className="border-[2px] border-gray-400 px-28 w-full py-4 rounded-xl"
+//               value={message}
+//               onChange={(e) => setMessage(e.target.value)}
+//             />
+//             <button className="bg-mainTheme text-white px-4 py-1 rounded-lg">Send</button>
+//             <img src={camera} alt="" />
+//             <img src={sound} alt="" />
+//           </form>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
 function NewGroupPopup({ onClose }) {
   const [groupName, setGroupName] = useState("");
   const [description, setDescription] = useState("");

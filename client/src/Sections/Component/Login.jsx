@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Pray from "./Registration-Images/Pray-white.png";
+import Pray from "./Registration-Images/Pray.png";
 import Lock from "./Registration-Images/Lock.png";
 import Hide from "./Registration-Images/Hide.png";
 import { toast, ToastContainer } from "react-toastify";

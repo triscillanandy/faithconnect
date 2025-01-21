@@ -4,6 +4,7 @@ import { Sequelize } from 'sequelize';
 import { Server as SocketIo } from 'socket.io'; // Correct way to import socket.io
 import User from "../models/User.js"; // Adjust path based on your project structure
 import Op from 'sequelize';
+import Group from "../models/Group.js";
 // Create a new conversation
 
 export const createConversation = async (req, res) => {
@@ -32,91 +33,6 @@ export const createConversation = async (req, res) => {
     return res.status(500).json({ error: 'Error creating conversation.' });
   }
 };
-
-// export const checkConversationExists = async (req, res) => {
-//   const { userId1, userId2 } = req.params;
-
-//   try {
-//     const conversation = await Conversation.findOne({
-//       where: {
-//         userIds: { [Op.contains]: [userId1, userId2] },
-//       },
-//     });
-
-//     if (conversation) {
-//       return res.status(200).json({ exists: true, conversation });
-//     } else {
-//       return res.status(200).json({ exists: false });
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(500).json({ error: 'An error occurred while checking the conversation.' });
-//   }
-// };
-// export const createConversation = async (req, res) => {
-//   const { senderId, receiverId } = req.body;
-
-//   try {
-//     // Ensure user IDs are sorted to maintain consistency
-//     const userIds = [senderId, receiverId].sort();
-
-//     // Check if a conversation already exists
-//     const existingConversation = await Conversation.findOne({
-//       where: { userIds: { [Sequelize.Op.contains]: userIds } }, // PostgreSQL array operator
-//     });
-
-//     if (existingConversation) {
-//       return res.status(200).json(existingConversation); // Return the existing conversation
-//     }
-
-//     // Create a new conversation if none exists
-//     const newConversation = await Conversation.create({
-//       userIds,
-//     });
-
-//     return res.status(201).json(newConversation);
-//   } catch (err) {
-//     console.error(err);
-//     return res.status(500).json({ error: 'Error creating conversation.' });
-//   }
-// };
-
-
-
-// export const getMessages = async (req, res) => {
-//   const { conversationId } = req.params;
-
-//   try {
-//     const messages = await Message.findAll({
-//       where: { conversationId },
-//       include: [
-//         {
-//           model: User,
-//           as: "sender",
-//           attributes: ["id", "username", "profileImage"],
-//         },
-//       ],
-//     });
-
-//     const formattedMessages = messages.map((message) => ({
-//       id: message.id,
-//       text: message.text,
-//       senderId: message.senderId,
-//       sender: {
-//         id: message.sender.id,
-//         username: message.sender.username,
-//         profileImage: message.sender.profileImage || "default.png",
-//       },
-//       createdAt: message.createdAt,
-//     }));
-
-//     res.status(200).json(formattedMessages); // Always returns an array
-//   } catch (error) {
-//     console.error("Error fetching messages:", error.message);
-// console.log(error.message)
-//    // res.status(500).json([]); // Fallback to an empty array on error
-//   }
-// };
 
 export const getMessages = async (req, res) => {
   const { conversationId } = req.params;
@@ -153,28 +69,7 @@ export const getMessages = async (req, res) => {
   }
 };
 
-// export const sendMessage = async (req, res) => {
-//   const { conversationId, senderId, message } = req.body;
-  
-//   //console.log('Request body:', req.body);
 
-//   try {
-//     // Create new message
-
-
-//     const newMessage = await Message.create({
-//       conversationId,
-//       sender: senderId,
-//       text: message,
-//     });
-//     console.log('Message created:', newMessage);
-   
-//     return res.status(200).json(newMessage);
-//   } catch (err) {
-//     console.error('Error creating message:', err);
-//     return res.status(500).json({ error: err.message });
-//   }
-// };
 export const getConversations = async (req, res) => {
   const { userId } = req.params;
 
@@ -262,103 +157,116 @@ export const sendMessage = async (req, res) => {
   }
 };
 
-
-// Get all messages for a specific conversation
-// export const getMessages = async (req, res) => {
-//   const { conversationId } = req.params;
+// export const sendGroupMessage = async (req, res) => {
+//   const { groupId, senderId, message } = req.body;
 
 //   try {
-//     const messages = await Message.findAll({
-//       where: {
-//         conversationId,
-//       },
+//     if (!groupId || !senderId || !message) {
+//       return res.status(400).json({ error: 'Invalid request: Missing required fields.' });
+//     }
+
+//     // Verify if the user is a member of the group
+//     const isMember = await GroupMember.findOne({
+//       where: { group_id: groupId, user_id: senderId },
 //     });
 
-//     return res.status(200).json(messages);
+//     if (!isMember) {
+//       return res.status(403).json({ error: 'You are not a member of this group.' });
+//     }
+
+//     // Create a new group message
+//     const newMessage = await Message.create({
+//       groupId,
+//       sender: senderId,
+//       text: message,
+//     });
+
+//     return res.status(201).json(newMessage);
 //   } catch (err) {
-//     console.error(err);
-//     return res.status(500).json({ error: 'Error fetching messages.' });
+//     console.error('Error sending group message:', err);
+//     return res.status(500).json({ error: 'Error sending group message.' });
 //   }
 // };
+
+
 export const sendGroupMessage = async (req, res) => {
-  const { groupId, senderId, message } = req.body;
+  const {       conversationId,
+    sender: senderId,
+    text: message,} = req.body;
 
   try {
-    if (!groupId || !senderId || !message) {
-      return res.status(400).json({ error: 'Invalid request: Missing required fields.' });
+    // Validate the conversation
+    const conversation = await Conversation.findByPk(conversationId);
+    if (!conversation || conversation.type !== 'group') {
+      return res.status(404).json({ error: 'Group conversation not found.' });
     }
 
-    // Verify if the user is a member of the group
-    const isMember = await GroupMember.findOne({
-      where: { group_id: groupId, user_id: senderId },
-    });
-
-    if (!isMember) {
-      return res.status(403).json({ error: 'You are not a member of this group.' });
-    }
-
-    // Create a new group message
+    // Save the message
     const newMessage = await Message.create({
-      groupId,
+      conversationId,
       sender: senderId,
       text: message,
     });
 
+    // Return the new message
     return res.status(201).json(newMessage);
   } catch (err) {
-    console.error('Error sending group message:', err);
-    return res.status(500).json({ error: 'Error sending group message.' });
+    // console.error(err);
+    console.log('Error sending message:', err.message);
+    return res.status(500).json({ error: 'Error sending message.' });
+    
   }
 };
 
 
 
-export const getGroupMessages = async (req, res) => {
-  const { groupId } = req.params;
+export const getGroupConversation = async (req, res) => {
+  const { id } = req.params;
 
   try {
-    const messages = await Message.findAll({
-      where: { groupId },
-      include: {
-        model: User,
-        as: 'user',
-        attributes: ['id', 'username', 'profileImage'],
-      },
+    // Find the group conversation by ID
+    const conversation = await Conversation.findOne({
+      where: { id, type: 'group' },
     });
+
+    if (!conversation) {
+      return res.status(404).json({ error: 'Group conversation not found.' });
+    }
+
+    return res.status(200).json(conversation);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Error fetching group conversation.' });
+  }
+};
+
+export const getGroupMessages = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Find all messages related to the group conversation and include sender details
+    const messages = await Message.findAll({
+      where: { conversationId: id },
+      order: [['createdAt', 'ASC']], // Optional: Sort messages by creation time
+      include: [
+        {
+          model: User,
+          as: 'user', /// Make sure the alias matches the association in the model
+          attributes: ['id', 'username', 'email'], // Adjust attributes as needed
+        },
+      ],
+    });
+   console.log('Messages:', messages);
+    if (!messages.length) {
+      return res.status(404).json({ error: 'No messages found for this group conversation.' });
+    }
 
     return res.status(200).json(messages);
   } catch (err) {
-    console.error('Error fetching group messages:', err);
-    return res.status(500).json({ error: 'Error fetching messages.' });
+    console.error(err);
+    return res.status(500).json({ error: 'Error fetching group messages.' });
   }
 };
-// export const getConversations = async (req, res) => {
-//   const { userId } = req.params;
-
-//   try {
-//     // Fetch all direct and group conversations
-//     const conversations = await Conversation.findAll({
-//       where: {
-//         [Sequelize.Op.or]: [
-//           { userIds: { [Sequelize.Op.contains]: [userId] } },
-//           { type: 'group' },
-//         ],
-//       },
-//       include: [
-//         {
-//           model: Group,
-//           as: 'group',
-//           attributes: ['id', 'group_name', 'description', 'visibility'],
-//         },
-//       ],
-//     });
-
-//     res.status(200).json(conversations);
-//   } catch (err) {
-//     console.error('Error fetching conversations:', err);
-//     res.status(500).json({ error: 'Error fetching conversations.' });
-//   }
-// };
 export const checkConversationExists = async (req, res) => {
   const { userId1, userId2 } = req.params;
 
@@ -377,5 +285,53 @@ export const checkConversationExists = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'An error occurred while checking the conversation.' });
+  }
+};
+
+// export const createGroupConversation = async (req, res) => {
+//   const { groupId } = req.body;
+
+//   try {
+//     // Validate groupId
+//     if (!groupId) {
+//       return res.status(400).json({ error: 'Group conversations must have a valid groupId.' });
+//     }
+
+//     // Create a new group conversation
+//     const newConversation = await Conversation.create({
+//       type: 'group',
+//       groupId,
+//     });
+
+//     return res.status(201).json(newConversation);
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({ error: 'Error creating group conversation.' });
+//   }
+// };
+
+
+export const createGroupConversation = async (req, res) => {
+  const { groupId } = req.body;
+
+  try {
+    // Check if the group exists
+    const groupExists = await Group.findByPk(groupId);
+    if (!groupExists) {
+      return res.status(404).json({ error: 'Group not found.' });
+    }
+
+    // Check if a conversation for this group already exists
+    const existingConversation = await Conversation.findOne({ where: { groupId, type: 'group' } });
+    if (existingConversation) {
+      return res.status(200).json(existingConversation);
+    }
+
+    // Create a new conversation for the group
+    const newConversation = await Conversation.create({ groupId, type: 'group' });
+    return res.status(201).json(newConversation);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Error creating group conversation.' });
   }
 };

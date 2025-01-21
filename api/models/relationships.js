@@ -1,7 +1,7 @@
 // Import necessary models
 import User from './User.js';
 import Post from './Post.js';
-import Comment from './Comment.js';
+import Comment from './comment.js';
 import Favorite from './Favorite.js';
 import Follower from './Follower.js';
 import Message from './Message.js';
@@ -20,6 +20,7 @@ Post.hasMany(Favorite, { foreignKey: 'postId', as: 'favorites' });
 // Post model
 Post.belongsTo(User, { as: "user", foreignKey: "userId" });
 
+User.hasMany(Message, { foreignKey: 'senderId', as: 'messages' });
 // User model
 User.hasMany(Post, { as: "posts", foreignKey: "userId" });
 Post.hasOne(Devotional, { foreignKey: 'postId', as: 'devotional' });

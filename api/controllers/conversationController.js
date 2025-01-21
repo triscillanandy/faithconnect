@@ -192,12 +192,13 @@ export const sendMessage = async (req, res) => {
 export const sendGroupMessage = async (req, res) => {
   const {       conversationId,
     sender: senderId,
-    text: message,} = req.body;
+    text: message,
+  groupId} = req.body;
 
   try {
     // Validate the conversation
     const conversation = await Conversation.findByPk(conversationId);
-    if (!conversation || conversation.type !== 'group') {
+    if (!conversation) {
       return res.status(404).json({ error: 'Group conversation not found.' });
     }
 
@@ -206,6 +207,7 @@ export const sendGroupMessage = async (req, res) => {
       conversationId,
       sender: senderId,
       text: message,
+      groupId
     });
 
     // Return the new message

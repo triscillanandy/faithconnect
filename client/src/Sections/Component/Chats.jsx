@@ -113,43 +113,6 @@ const Chats = () => {
     const data = await res.json();
     setMessages(data);
   };
-
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
-    if (!message.trim()) return;
-
-    const user = JSON.parse(localStorage.getItem("user:detail"));
-    const token = localStorage.getItem("token");
-    const newMessage = selectedChat.isGroup
-      ? {
-          conversationId: selectedChat.conversationId,
-          senderId: user.id,
-          message,
-        }
-      : {
-          conversationId: selectedChat.conversationId,
-          senderId: user.id,
-          receiverId: selectedUser.id,
-          message,
-        };
-
-    socket.emit(selectedChat.isGroup ? "sendGroupMessage" : "sendMessage", newMessage);
-    await fetch(
-      `${import.meta.env.VITE_API_URL}/api/auth/${selectedChat.isGroup ? "send-group-messages" : "messages"}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(newMessage),
-      }
-    );
-
-    setMessages((prev) => [...prev, { text: message, senderId: user.id }]);
-    setMessage("");
-  };
-
   const fetchGroupMessages = async (groupId) => {
     const token = localStorage.getItem("token");
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/group-messages/${groupId}`, {
@@ -163,6 +126,46 @@ const Chats = () => {
     // setMessages(data);
     setMessages(Array.isArray(data) ? data : []);
   };
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!message.trim()) return;
+
+    const user = JSON.parse(localStorage.getItem("user:detail"));
+    const token = localStorage.getItem("token");
+    const newMessage = selectedChat.isGroup
+      ? {
+          conversationId: selectedChat.conversationId,
+          senderId: user.id,
+          message,
+          groupId
+        }
+      : {
+          conversationId: selectedChat.conversationId,
+          senderId: user.id,
+          receiverId: selectedUser.id,
+          message,
+        };
+
+    socket.emit(selectedChat.isGroup ? "sendGroupMessage" : "sendMessage", newMessage);
+    await fetch(
+      `${import.meta.env.VITE_API_URL}/api/auth/${selectedChat.isGroup ? "groupmessages" : "messages"}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(newMessage),
+    
+      }
+    );
+    console.log("SENT", newMessage);
+
+    setMessages((prev) => [...prev, { text: message, senderId: user.id }]);
+    setMessage("");
+  };
+
+
   const handleStartChat = async (user) => {
     setSelectedUser(user);
     setSelectedChat(null); // Clear any selected chat
@@ -229,6 +232,49 @@ const Chats = () => {
       console.error("Error handling start chat:", error);
     }
   };
+  const handleGroupSelection = async (group) => {
+    const groupData = {
+      isGroup: true,
+      groupId: group.id,
+      group_name: group.group_name
+    };
+  
+    const token = localStorage.getItem("token");
+  
+    try {
+      // First, check if conversation exists for the group or create one
+      const conversationRes = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/conversations/group`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ groupId: group.id }),
+      });
+  
+      const conversationData = await conversationRes.json();
+  
+      if (conversationRes.status === 200 || conversationRes.status === 201) {
+        // Successfully created or retrieved conversation
+        const user = JSON.parse(localStorage.getItem("user:detail"));
+        socket.emit("joinGroup", { conversationId: conversationData.id, userId: user.id });
+        console.log("Joined group conversation:", conversationData);
+  
+        // Update the selected chat state, including conversationId
+        handleSelectChat({
+          ...groupData,
+          conversationId: conversationData.id, // Ensure this is passed
+        });
+  
+        // Optionally, fetch the group messages after creating/selecting the conversation
+        fetchGroupMessages(group.id);
+      } else {
+        console.error("Failed to create or fetch group conversation", conversationData);
+      }
+    } catch (error) {
+      console.error("Error handling group selection:", error);
+    }
+  };
   
   // const handleSelectChat = (conversation) => {
 
@@ -258,7 +304,7 @@ const Chats = () => {
           isGroup: true,
           groupId: conversation.groupId,
          // group_name: conversation.group_name,
-          conversationId: conversation.conversationId, // Ensure this is included
+         conversationId: conversation.conversationId || conversation.id,  // Ensure this is included
         });
       } else {
         console.error('Missing groupId for group conversation');
@@ -348,45 +394,16 @@ const Chats = () => {
                 />
               ))}
 
-              {filteredGroups.map((group) => (
-                <Chat
-                  key={group.id}
-                  imgSrc="group-icon.png"
-                  userName={group.group_name}
-                  userMessage={group.role === "admin" ? "You are an admin" : "You are a member"}
-                  onClick={async () => {
-                    // Handle group selection
-                    const groupData = { isGroup: true, groupId: group.id, group_name: group.group_name };
-              
-                    // First, check if conversation exists for the group or create one
-                    const token = localStorage.getItem("token");
-                    const conversationRes = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/conversations/group`, {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                      },
-                      body: JSON.stringify({ groupId: group.id }),
-                    });
-                    const conversationData = await conversationRes.json();
-              
-                    if (conversationRes.status === 200 || conversationRes.status === 201) {
-                      // Successfully created or retrieved conversation
-                      // Handle socket emission for group message
-                      const user = JSON.parse(localStorage.getItem("user:detail"));
-                      socket.emit("joinGroup", { conversationId: conversationData.id, userId: user.id });
-              
-                      // Update the UI or state
-                      handleSelectChat(groupData); // Update selected chat state
-              
-                      // Optionally, fetch the group messages after creating/selecting the conversation
-                      fetchGroupMessages(group.id);
-                    } else {
-                      console.error("Failed to create or fetch group conversation", conversationData);
-                    }
-                  }}
-                />
-              ))}
+{filteredGroups.map((group) => (
+  <Chat
+    key={group.id}
+    imgSrc="group-icon.png"
+    userName={group.group_name}
+    userMessage={group.role === "admin" ? "You are an admin" : "You are a member"}
+    onClick={() => handleGroupSelection(group)} // Call the method
+  />
+))}
+
             </div>
           </div>
         </div>

@@ -71,7 +71,7 @@ router.get('/conversations/:userId', isAuthenticated, getConversations);  // Get
 router.get('/conversations/find/:firstUserId/:secondUserId', isAuthenticated, getConversationByUsers);  // Get conversation between two users
 router.post('/messages', isAuthenticated, sendMessage);  // Send a message
 router.get('/messages/:conversationId', isAuthenticated, getMessages);  
-router.post('/send-group-messages', isAuthenticated, sendGroupMessage); 
+router.post('/groupmessages', isAuthenticated, sendGroupMessage); 
 
 // Get all messages in a specific conversation
 router.post('/conversations/group', isAuthenticated,  createGroupConversation);

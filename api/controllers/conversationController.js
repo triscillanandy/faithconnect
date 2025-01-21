@@ -246,7 +246,7 @@ export const getGroupMessages = async (req, res) => {
   try {
     // Find all messages related to the group conversation and include sender details
     const messages = await Message.findAll({
-      where: { conversationId: id },
+      where: { groupId: id },
       order: [['createdAt', 'ASC']], // Optional: Sort messages by creation time
       include: [
         {
@@ -267,6 +267,54 @@ export const getGroupMessages = async (req, res) => {
     return res.status(500).json({ error: 'Error fetching group messages.' });
   }
 };
+
+// export const getGroupMessages = async (req, res) => {
+//   const { groupId } = req.params; // Use groupId as the parameter
+
+//   try {
+  
+//     const conversation = await Conversation.findOne({ where: { groupId } });
+//     console.log(conversation);
+//     if (!conversation) {
+//       return res.status(404).json({ error: 'Conversation not found for the specified group' });
+//     }
+
+//     const { id: conversationId } = conversation;
+
+//     // Fetch messages associated with the determined conversationId
+//     const messages = await Message.findAll({
+//       where: { conversationId },
+//       include: [
+//         {
+//           model: User,
+//           as: 'user', // Alias defined in the Sequelize association
+//           attributes: ['id', 'username', 'profileImage'],
+//         },
+//       ],
+//       order: [['createdAt', 'ASC']], // Ensure messages are sorted by creation time
+//     });
+
+//     // Format messages for a consistent API response
+//     const formattedMessages = messages.map((message) => ({
+//       id: message.id,
+//       text: message.text,
+//       senderId: message.senderId,
+//       sender: {
+//         id: message.user.id,
+//         username: message.user.username,
+//         profileImage: message.user.profileImage || 'default.png',
+//       },
+//       createdAt: message.createdAt,
+//     }));
+
+//     // Send the formatted messages as a response
+//     res.status(200).json(formattedMessages);
+//   } catch (error) {
+//     console.error('Error fetching group messages:', error.message);
+//     res.status(500).json({ error: 'An error occurred while fetching group messages.' });
+//   }
+// };
+
 export const checkConversationExists = async (req, res) => {
   const { userId1, userId2 } = req.params;
 

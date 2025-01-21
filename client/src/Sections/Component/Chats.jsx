@@ -114,41 +114,6 @@ const Chats = () => {
     setMessages(data);
   };
 
-  const handleGroupClick = async (groupId) => {
-    const user = JSON.parse(localStorage.getItem("user:detail"));
-    const token = localStorage.getItem("token");
-  
-    try {
-      // Check if a conversation for this group exists
-      const conversationRes = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/auth/conversations/group`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ groupId }),
-        }
-      );
-      const conversationData = await conversationRes.json();
-  
-      if (conversationRes.status === 200 || conversationRes.status === 201) {
-        // Set the selected chat to the conversation data
-        setSelectedChat({
-          isGroup: true,
-          groupId: groupId,
-          conversationId: conversationData.id, // Use the created/found conversation ID
-        });
-  
-        // You can also load the existing messages for the group here if needed
-      } else {
-        console.error("Failed to create or fetch group conversation", conversationData);
-      }
-    } catch (err) {
-      console.error("Error while creating or fetching group conversation", err);
-    }
-  };
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!message.trim()) return;
@@ -265,34 +230,51 @@ const Chats = () => {
     }
   };
   
-  const handleSelectChat = (conversation) => {
-    if (!conversation || (!conversation.conversationId && !conversation.groupId)) {
-      console.error("Invalid conversation object:", conversation);
-      return;
-    }
-  
-    setSelectedChat(conversation);
-    if (conversation.isGroup) {
-      fetchGroupMessages(conversation.groupId);
-    } else {
-      setSelectedUser(conversation.receiver);
-      fetchMessages(conversation.conversationId); // Fetch messages for the selected conversation
-    }
-  };
   // const handleSelectChat = (conversation) => {
-  //   if (!conversation || !conversation.conversationId) {
-  //     console.error("Invalid conversation object:", conversation);
-  //     return;
-  //   }
-  
-  //   setSelectedChat(conversation);
+
   //   if (conversation.isGroup) {
-  //     fetchGroupMessages(conversation.groupId);
+  //     if (conversation.groupId) {
+  //       fetchGroupMessages(conversation.groupId);
+  //     } else {
+  //       console.error('Missing groupId for group conversation');
+  //     }
   //   } else {
   //     setSelectedUser(conversation.receiver);
   //     fetchMessages(conversation.conversationId); // Fetch messages for the selected conversation
   //   }
+    
+    
   // };
+
+  const handleSelectChat = async (conversation) => {
+    if (conversation.isGroup) {
+      // Handle group chat selection
+      if (conversation.groupId) {
+        // Fetch group messages
+        await fetchGroupMessages(conversation.groupId);
+        
+        // Update selectedChat state with group details
+        setSelectedChat({
+          isGroup: true,
+          groupId: conversation.groupId,
+         // group_name: conversation.group_name,
+          conversationId: conversation.conversationId, // Ensure this is included
+        });
+      } else {
+        console.error('Missing groupId for group conversation');
+      }
+    } else {
+      // Handle individual chat selection
+      setSelectedUser(conversation.receiver);
+      setSelectedChat({
+        isGroup: false,
+        conversationId: conversation.conversationId,
+        receiver: conversation.receiver,
+      });
+      fetchMessages(conversation.conversationId); // Fetch messages for the selected conversation
+    }
+  };
+  
   const filteredGroups = groupsList.filter((group) => group.is_member || group.role === "admin");
 
   const filteredSuggestedUsers = suggestedUsers.filter((user) =>

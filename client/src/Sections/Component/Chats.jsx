@@ -77,23 +77,55 @@ const Chats = () => {
     fetchSuggestedUsers();
   }, []);
 
+  // useEffect(() => {
+  //   if (socket) {
+  //     socket.emit("joinRoom", JSON.parse(localStorage.getItem("user:detail")).id);
+  //     console.log("Joining room:", JSON.parse(localStorage.getItem("user:detail")).id);
+  //     socket.on("get-users", (activeUsers) => {
+  //       console.log("Active users:", activeUsers);
+  //     });
+
+  //     socket.on("receive-message", (data) => {
+  //       setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
+  //     });
+
+  //     socket.on("receive-group-message", (data) => {
+  //       if (data.groupId === selectedChat?.groupId) {
+  //         setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
+  //       }
+  //     });
+  //   }
+  // }, [socket, selectedChat]);
+
   useEffect(() => {
     if (socket) {
       socket.emit("joinRoom", JSON.parse(localStorage.getItem("user:detail")).id);
       console.log("Joining room:", JSON.parse(localStorage.getItem("user:detail")).id);
+  
       socket.on("get-users", (activeUsers) => {
         console.log("Active users:", activeUsers);
       });
-
-      socket.on("receive-message", (data) => {
-        setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
-      });
+  
+      // socket.on("receive-message", (data) => {
+      //   setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
+      // });
 
       socket.on("receive-group-message", (data) => {
+        console.log("Received group message:", data); // Log the received data
+  
         if (data.groupId === selectedChat?.groupId) {
+          console.log("Group ID matches selected chat. Adding message to state.");
           setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
+        } else {
+          console.log("Group ID does not match selected chat. Ignoring message.");
         }
       });
+  
+      // socket.on("receive-group-message", (data) => {
+      //   if (data.groupId === selectedChat?.groupId) {
+      //     setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
+      //   }
+      // });
     }
   }, [socket, selectedChat]);
 
@@ -146,6 +178,8 @@ const Chats = () => {
   
     setMessages(messagesWithSenderName); // Set messages with senderName
   };
+
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!message.trim()) return;
@@ -252,11 +286,59 @@ const Chats = () => {
       console.error("Error handling start chat:", error);
     }
   };
+
+
+  
+  // const handleGroupSelection = async (group) => {
+  //   const groupData = {
+  //     isGroup: true,
+  //     groupId: group.id,
+  //     group_name: group.group_name
+  //   };
+  
+  //   const token = localStorage.getItem("token");
+  
+  //   try {
+  //     // First, check if conversation exists for the group or create one
+  //     const conversationRes = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/conversations/group`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       body: JSON.stringify({ groupId: group.id }),
+  //     });
+  
+  //     const conversationData = await conversationRes.json();
+  
+  //     if (conversationRes.status === 200 || conversationRes.status === 201) {
+  //       // Successfully created or retrieved conversation
+  //       const user = JSON.parse(localStorage.getItem("user:detail"));
+  //       socket.emit("joinGroup", { conversationId: conversationData.id, userId: user.id });
+  //       console.log("Joined group conversation:", conversationData);
+  
+  //       // Update the selected chat state, including conversationId
+  //       handleSelectChat({
+  //         ...groupData,
+  //         conversationId: conversationData.id, // Ensure this is passed
+  //       });
+  
+  //       // Optionally, fetch the group messages after creating/selecting the conversation
+  //       fetchGroupMessages(group.id);
+  //     } else {
+  //       console.error("Failed to create or fetch group conversation", conversationData);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error handling group selection:", error);
+  //   }
+  // };
+  
+
   const handleGroupSelection = async (group) => {
     const groupData = {
       isGroup: true,
       groupId: group.id,
-      group_name: group.group_name
+      group_name: group.group_name,
     };
   
     const token = localStorage.getItem("token");
@@ -277,7 +359,7 @@ const Chats = () => {
       if (conversationRes.status === 200 || conversationRes.status === 201) {
         // Successfully created or retrieved conversation
         const user = JSON.parse(localStorage.getItem("user:detail"));
-        socket.emit("joinGroup", { conversationId: conversationData.id, userId: user.id });
+        socket.emit("joinGroup", { groupId: group.id, userId: user.id }); // Emit joinGroup event
         console.log("Joined group conversation:", conversationData);
   
         // Update the selected chat state, including conversationId
@@ -295,7 +377,6 @@ const Chats = () => {
       console.error("Error handling group selection:", error);
     }
   };
-  
 
   const handleSelectChat = async (conversation) => {
     if (conversation.isGroup) {

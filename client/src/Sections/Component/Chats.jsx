@@ -106,9 +106,9 @@ const Chats = () => {
         console.log("Active users:", activeUsers);
       });
   
-      // socket.on("receive-message", (data) => {
-      //   setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
-      // });
+      socket.on("receive-message", (data) => {
+        setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
+      });
 
       socket.on("receive-group-message", (data) => {
         console.log("Received group message:", data); // Log the received data
@@ -173,6 +173,7 @@ const Chats = () => {
     // Map messages to include senderName
     const messagesWithSenderName = data.map((msg) => ({
       ...msg,
+      senderId: msg.user?.id || msg.senderId,
       senderName: msg.user?.username || "Unknown User", // Include senderName
     }));
   
@@ -200,6 +201,8 @@ const Chats = () => {
           message,
         };
 
+
+        
     socket.emit(selectedChat.isGroup ? "sendGroupMessage" : "sendMessage", newMessage);
     await fetch(
       `${import.meta.env.VITE_API_URL}/api/auth/${selectedChat.isGroup ? "groupmessages" : "messages"}`,
@@ -723,26 +726,29 @@ function ChatDetails({
       <hr className="h-2 bg-mainTheme mt-4 mb-3" />
       <div className="flex flex-col gap-2 p-4 overflow-y-auto h-[550px]">
         {messages.length > 0 ? (
-          messages.map((msg, index) => (
-            <div
-              key={index}
-              className={`flex ${
-                msg.senderId === loggedInUserId ? "justify-end" : "justify-start"
-              }`}
-            >
-              <div className={`max-w-[60%] px-3 py-2 text-white rounded-[20px] ${
-                msg.senderId === loggedInUserId ? "bg-orange-500" : "bg-blue-500"
-              }`}>
-                {/* Display sender name for other users */}
-                {msg.senderId !== loggedInUserId && (
-                  <p className="text-sm font-semibold text-gray-200">
-                    {msg.senderName || "Unknown User"}
-                  </p>
-                )}
-                <p>{msg.text}</p>
+          messages.map((msg, index) => {
+            const isLoggedInUser = msg.senderId === loggedInUserId;
+            console.log(`Message ${index}:`, { senderId: msg.senderId, loggedInUserId, isLoggedInUser }); // Log message details
+
+            return (
+              <div
+                key={index}
+                className={`flex ${isLoggedInUser ? "justify-end" : "justify-start"}`}
+              >
+                <div className={`max-w-[60%] px-3 py-2 text-white rounded-[20px] ${
+                  isLoggedInUser ? "bg-orange-500" : "bg-blue-500"
+                }`}>
+                  {/* Display sender name for other users */}
+                  {!isLoggedInUser && (
+                    <p className="text-sm font-semibold text-gray-200">
+                      {msg.senderName}
+                    </p>
+                  )}
+                  <p>{msg.text}</p>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         ) : (
           <p className="text-center text-gray-500">No messages yet. Start the conversation!</p>
         )}
@@ -768,6 +774,100 @@ function ChatDetails({
     </div>
   );
 }
+
+// function ChatDetails({
+//   selectedChat,
+//   messages,
+//   message,
+//   setMessage,
+//   handleSendMessage,
+//   goBack,
+//   messageRef,
+//   selectedUser,
+// }) {
+//   const [deviceHeight, setDeviceHeight] = useState(window.innerHeight);
+//   const loggedInUserId = JSON.parse(localStorage.getItem("user:detail")).id;
+
+//   useEffect(() => {
+//     const handleResize = () => {
+//       setDeviceHeight(window.innerHeight);
+//     };
+//     window.addEventListener("resize", handleResize);
+//     return () => {
+//       window.removeEventListener("resize", handleResize);
+//     };
+//   }, []);
+
+//   return (
+//     <div className="relative" style={{ height: `${deviceHeight}px` }}>
+//       <div className="flex justify-between items-center mt-5">
+//         <div className="flex items-center gap-4 px-5">
+//           <img onClick={goBack} className="cursor-pointer" src={arrow} alt="" />
+//           <img
+//             className="w-20 h-20 rounded-full"
+//             src={selectedChat ? (selectedChat.isGroup ? "group-icon.png" : selectedChat.receiver?.profilePicture || "default.png") : selectedUser?.profilePicture || "default.png"}
+//             alt={selectedChat ? (selectedChat.isGroup ? "Group" : "Receiver") : "User"}
+//           />
+//           <div>
+//             <p className="font-bold">
+//               {selectedChat ? (selectedChat.isGroup ? selectedChat.group_name : selectedChat.receiver?.username || "Unknown") : selectedUser?.username || "Unknown"}
+//             </p>
+//             <p>Active 1min ago</p>
+//           </div>
+//         </div>
+//         <div className="flex gap-4 px-8">
+//           <img src={Call} className="cursor-pointer" alt="" />
+//           <img src={Group} className="cursor-pointer" alt="" />
+//         </div>
+//       </div>
+//       <hr className="h-2 bg-mainTheme mt-4 mb-3" />
+//       <div className="flex flex-col gap-2 p-4 overflow-y-auto h-[550px]">
+//         {messages.length > 0 ? (
+//           messages.map((msg, index) => (
+//             <div
+//               key={index}
+//               className={`flex ${
+//                 msg.senderId === loggedInUserId ? "justify-end" : "justify-start"
+//               }`}
+//             >
+//               <div className={`max-w-[60%] px-3 py-2 text-white rounded-[20px] ${
+//                 msg.senderId === loggedInUserId ? "bg-orange-500" : "bg-blue-500"
+//               }`}>
+//                 {/* Display sender name for other users */}
+//                 {msg.senderId !== loggedInUserId && (
+//                   <p className="text-sm font-semibold text-gray-200">
+//                     {msg.senderName }
+//                   </p>
+//                 )}
+//                 <p>{msg.text}</p>
+//               </div>
+//             </div>
+//           ))
+//         ) : (
+//           <p className="text-center text-gray-500">No messages yet. Start the conversation!</p>
+//         )}
+//         <div ref={messageRef}></div>
+//       </div>
+//       {selectedChat && (
+//         <div className="absolute bottom-0 w-full flex justify-center">
+//           <form className="flex items-center gap-5" onSubmit={handleSendMessage}>
+//             <img src={files} alt="" />
+//             <input
+//               type="text"
+//               placeholder="Write Message"
+//               className="border-[2px] border-gray-400 px-28 w-full py-4 rounded-xl"
+//               value={message}
+//               onChange={(e) => setMessage(e.target.value)}
+//             />
+//             <button className="bg-mainTheme text-white px-4 py-1 rounded-lg">Send</button>
+//             <img src={camera} alt="" />
+//             <img src={sound} alt="" />
+//           </form>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
 function NewGroupPopup({ onClose }) {
   const [groupName, setGroupName] = useState("");
   const [description, setDescription] = useState("");

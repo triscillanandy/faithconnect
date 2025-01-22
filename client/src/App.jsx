@@ -26,7 +26,7 @@ const NotFound = lazy(() => import("./Sections/Component/NotFound")); // Add a 4
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("token"); // Check if the user is authenticated
-  return token ? children : <Navigate to="/login" />; // Redirect to login if not authenticated
+  return token ? children : <Navigate to="/Login" />; // Redirect to login if not authenticated
 };
 
 function App() {
@@ -39,7 +39,7 @@ function App() {
           <Route path="/plans" element={<Plans />} />
           <Route path="/individual-registration" element={<IndividualPlan />} />
           <Route path="/group-registration" element={<GroupPlan />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/Login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/email-verification" element={<Validation />} />

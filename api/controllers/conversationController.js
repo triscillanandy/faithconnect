@@ -257,7 +257,7 @@ export const getGroupMessages = async (req, res) => {
     });
    console.log('Messages:', messages);
     if (!messages.length) {
-      return res.status(404).json({ error: 'No messages found for this group conversation.' });
+      return res.status(200).json(messages || []);
     }
 
     return res.status(200).json(messages);

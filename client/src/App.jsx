@@ -21,7 +21,7 @@ const Posts = lazy(() => import("./Sections/Component/Posts"));
 const EditProfile = lazy(() => import("./Sections/Component/EditProfile"));
 const Chats = lazy(() => import("./Sections/Component/Chats"));
 const Reels = lazy(() => import("./Sections/Component/Reels"));
-const NotFound = lazy(() => import("./Sections/Component/NotFound")); // Add a 404 Not Found component
+ // Add a 404 Not Found component
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -113,7 +113,7 @@ function App() {
           />
 
           {/* 404 Not Found Route */}
-          <Route path="*" element={<NotFound />} />
+       
         </Routes>
       </Suspense>
     </Router>

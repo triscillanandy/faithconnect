@@ -1,51 +1,122 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Plans from "./Sections/Plans";
-import IndividualPlan from "./Sections/IndividualPlan";
-import GroupPlan from "./Sections/Component/GroupPlan";
-import Login from "./Sections/Component/Login";
-import ForgotPassword from "./Sections/Component/ForgotPassword";
-import ResetPassword from "./Sections/Component/ResetPassword";
-import Validation from "./Sections/Component/Validation";
-import SucessfulVerification from "./Sections/Component/SucessfulVerification";
-import EmailInstruction from "./Sections/Component/EmailInstruction";
-import LoggedInUserScreen from "./Sections/Component/LoggedInUserScreen";
-import UserProfile from "./Sections/Component/UserProfile";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import React, { Suspense, lazy } from "react";
 import "./App.css";
-import Search from "./Sections/Component/Search";
-import Devotional from "./Sections/Component/Devotional";
-import LandingPage1 from "./Sections/LandingPage1";
-import Posts from "./Sections/Component/Posts";
-import EditProfile from "./Sections/Component/EditProfile";
-import Chats from "./Sections/Component/Chats";
-import Reels from "./Sections/Component/Reels"; // Import the Reels component
-import './App.css'
+
+// Lazy-load components for better performance
+const Plans = lazy(() => import("./Sections/Plans"));
+const IndividualPlan = lazy(() => import("./Sections/IndividualPlan"));
+const GroupPlan = lazy(() => import("./Sections/Component/GroupPlan"));
+const Login = lazy(() => import("./Sections/Component/Login"));
+const ForgotPassword = lazy(() => import("./Sections/Component/ForgotPassword"));
+const ResetPassword = lazy(() => import("./Sections/Component/ResetPassword"));
+const Validation = lazy(() => import("./Sections/Component/Validation"));
+const SucessfulVerification = lazy(() => import("./Sections/Component/SucessfulVerification"));
+const EmailInstruction = lazy(() => import("./Sections/Component/EmailInstruction"));
+const LoggedInUserScreen = lazy(() => import("./Sections/Component/LoggedInUserScreen"));
+const UserProfile = lazy(() => import("./Sections/Component/UserProfile"));
+const Search = lazy(() => import("./Sections/Component/Search"));
+const Devotional = lazy(() => import("./Sections/Component/Devotional"));
+const LandingPage1 = lazy(() => import("./Sections/LandingPage1"));
+const Posts = lazy(() => import("./Sections/Component/Posts"));
+const EditProfile = lazy(() => import("./Sections/Component/EditProfile"));
+const Chats = lazy(() => import("./Sections/Component/Chats"));
+const Reels = lazy(() => import("./Sections/Component/Reels"));
+const NotFound = lazy(() => import("./Sections/Component/NotFound")); // Add a 404 Not Found component
+
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem("token"); // Check if the user is authenticated
+  return token ? children : <Navigate to="/login" />; // Redirect to login if not authenticated
+};
 
 function App() {
   return (
-    <>
-      <Router>
+    <Router>
+      <Suspense fallback={<div>Loading...</div>}>
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<LandingPage1 />} />
           <Route path="/plans" element={<Plans />} />
           <Route path="/individual-registration" element={<IndividualPlan />} />
           <Route path="/group-registration" element={<GroupPlan />} />
-          <Route path="/Login" element={<Login />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="reset-password/:token" element={<ResetPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/email-verification" element={<Validation />} />
           <Route path="/verified" element={<SucessfulVerification />} />
-          <Route path="/home" element={<LoggedInUserScreen />} />
           <Route path="/email-popup" element={<EmailInstruction />} />
-          <Route path="/user-profile" element={<UserProfile />} />
-          <Route path="/search" element={<Search />} />
-          <Route path="/devotional" element={<Devotional />} />
-          <Route path="/post" element={<Posts />} />
-          <Route path="/edit-profile" element={<EditProfile />} />
-          <Route path="/chats" element={<Chats/>} />
-          <Route path="/reels" element={<Reels />} /> {/* Add the route for Reels */}
+
+          {/* Protected Routes */}
+          <Route
+            path="/home"
+            element={
+              <ProtectedRoute>
+                <LoggedInUserScreen />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user-profile"
+            element={
+              <ProtectedRoute>
+                <UserProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/search"
+            element={
+              <ProtectedRoute>
+                <Search />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/devotional"
+            element={
+              <ProtectedRoute>
+                <Devotional />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/post"
+            element={
+              <ProtectedRoute>
+                <Posts />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/edit-profile"
+            element={
+              <ProtectedRoute>
+                <EditProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/chats"
+            element={
+              <ProtectedRoute>
+                <Chats />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reels"
+            element={
+              <ProtectedRoute>
+                <Reels />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* 404 Not Found Route */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
-      </Router>
-    </>
+      </Suspense>
+    </Router>
   );
 }
 

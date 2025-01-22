@@ -3,8 +3,8 @@ import profileMenu from "./Profile-Images/menu.png";
 import reels from "./Profile-Images/reels.png";
 import tag from "./Profile-Images/tags.png";
 import LoggedInSideBar from "./LoggedInSideBar";
-
-
+import {FaImages,FaPlayCircle} from "react-icons/fa"; 
+import PostDetailModal from "./PostDetailModal"; 
 const EditProfileModal = ({ isOpen, onClose, userProfile, onSave }) => {
   const [formData, setFormData] = useState({
     username: userProfile?.username || "",
@@ -179,6 +179,7 @@ const UserProfile = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null); // State for selected post
 
   useEffect(() => {
     // Fetch the user profile details
@@ -275,114 +276,136 @@ const UserProfile = () => {
     }
   };
 
-  if (!userProfile) {
-    return <p>Loading...</p>;
-  }
+  // if (!userProfile) {
+  //   return <p>Loading...</p>;
+  // }
 
   const handleSaveProfileImage = (newImageUrl) => {
     setUserProfile((prev) => ({ ...prev, profileImage: newImageUrl }));
   };
+  const handlePostClick = (post) => {
+    setSelectedPost(post); // Set the selected post
+  };
+
+  const handleClosePostModal = () => {
+    setSelectedPost(null); // Close the modal
+  };
+
+  if (!userProfile) {
+    return <p>Loading...</p>;
+  }
 
   return (
     <div className="flex min-h-screen">
-    {/* Sidebar */}
-    <LoggedInSideBar />
-  
-    {/* Main Content */}
-    <div className="flex flex-col flex-grow items-center justify-center">
-      <div className="text-center">
-        {/* User Info */}
-        <div className="flex gap-6 justify-center items-center mb-4">
-          <p>@{userProfile.username}</p>
-          <button
-            className="w-[170px] rounded-[6px] h-[30px] bg-[#EFEFEF]"
-            onClick={() => setIsModalOpen(true)}
-          >
-            Edit Profile
-          </button>
-          <button className="w-[170px] rounded-[6px] h-[30px] bg-[#EFEFEF]">
-            Share profile
-          </button>
-        </div>
-  
-        {/* Profile Image and Stats */}
-        <div className="flex items-center justify-center gap-10 mt-5">
-          <div className="text-center">
-            <img
-              src={userProfile.profileImage}
-              alt="Profile"
-              className="w-20 h-20 rounded-full cursor-pointer"
-              onClick={() => setIsImageModalOpen(true)}
-            />
-            <p className="text-[10px]">{userProfile.username}</p>
+      {/* Sidebar */}
+      <LoggedInSideBar />
+
+      {/* Main Content */}
+      <div className="flex flex-col flex-grow items-center justify-center">
+        <div className="text-center">
+          {/* User Info */}
+          <div className="flex gap-6 justify-center items-center mb-4">
+            <p>@{userProfile.username}</p>
+            <button
+              className="w-[170px] rounded-[6px] h-[30px] bg-[#EFEFEF]"
+              onClick={() => setIsModalOpen(true)}
+            >
+              Edit Profile
+            </button>
+            <button className="w-[170px] rounded-[6px] h-[30px] bg-[#EFEFEF]">
+              Share profile
+            </button>
           </div>
-          <div className="text-center">
-            <p className="text-[16px]">65</p>
-            <p className="text-[12px]">Posts</p>
+
+          {/* Profile Image and Stats */}
+          <div className="flex items-center justify-center gap-10 mt-5">
+            <div className="text-center">
+              <img
+                src={userProfile.profileImage}
+                alt="Profile"
+                className="w-20 h-20 rounded-full cursor-pointer"
+                onClick={() => setIsImageModalOpen(true)}
+              />
+              <p className="text-[10px]">{userProfile.username}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-[16px]">65</p>
+              <p className="text-[12px]">Posts</p>
+            </div>
+            <div className="text-center">
+              <p className="text-[16px]">600</p>
+              <p className="text-[12px]">Followers</p>
+            </div>
+            <div className="text-center">
+              <p className="text-[16px]">210</p>
+              <p className="text-[12px]">Following</p>
+            </div>
           </div>
-          <div className="text-center">
-            <p className="text-[16px]">600</p>
-            <p className="text-[12px]">Followers</p>
+
+          {/* Bio */}
+          <div className="mt-5">
+            <p className="text-[11px] text-[#ADADAD]"></p>
+            <p className="text-[11px]">Believe in Christ</p>
           </div>
-          <div className="text-center">
-            <p className="text-[16px]">210</p>
-            <p className="text-[12px]">Following</p>
+
+          {/* Menu Icons */}
+          <div className="flex gap-10 items-center mt-8 justify-center">
+            <img className="cursor-pointer" src={profileMenu} alt="" />
+            <img className="cursor-pointer" src={reels} alt="" />
+            <img className="cursor-pointer" src={tag} alt="" />
           </div>
-        </div>
-  
-        {/* Bio */}
-        <div className="mt-5">
-          <p className="text-[11px] text-[#ADADAD]"></p>
-          <p className="text-[11px]">Believe in Christ</p>
-        </div>
-  
-        {/* Menu Icons */}
-        <div className="flex gap-10 items-center mt-8 justify-center">
-          <img className="cursor-pointer" src={profileMenu} alt="" />
-          <img className="cursor-pointer" src={reels} alt="" />
-          <img className="cursor-pointer" src={tag} alt="" />
-        </div>
-  
-        {/* Posts Grid */}
-        <div className="grid grid-cols-3 gap-1 sm:gap-2 mt-4">
-          {posts.map((post) =>
-            post.media && post.media.length > 0 ? (
-              post.media.map((item) => (
-                <div
-                  key={item.id}
-                  className="relative w-full aspect-square overflow-hidden"
-                >
-                  <img
-                    src={item.mediaUrl}
-                    alt="Post media"
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                </div>
-              ))
-            ) : (
+
+          {/* Posts Grid */}
+          <div className="grid grid-cols-3 gap-1 sm:gap-2 mt-4">
+            {posts.map((post) => (
               <div
                 key={post.id}
-                className="relative w-full aspect-square flex items-center justify-center bg-gray-100 text-gray-500"
-              ></div>
-            )
-          )}
+                className="relative w-full aspect-square overflow-hidden cursor-pointer"
+                onClick={() => handlePostClick(post)} // Pass the post to the modal
+              >
+                {post.media && post.media.length > 0 && (
+                  <>
+                    <img
+                      src={post.media[0].mediaUrl}
+                      alt="Post media"
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                    {post.media.length > 1 && (
+                      <div className="absolute top-2 right-2 text-white">
+                        <FaImages size={20} />
+                      </div>
+                    )}
+                    {post.media.some((media) => media.mediaType.startsWith("video")) && (
+                      <div className="absolute bottom-2 right-2 text-white">
+                        <FaPlayCircle size={20} />
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <EditProfileModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        userProfile={userProfile}
+        onSave={handleSaveProfile}
+      />
+      <UpdateProfileImageModal
+        isOpen={isImageModalOpen}
+        onClose={() => setIsImageModalOpen(false)}
+        onSave={handleSaveProfileImage}
+      />
+
+      {/* Post Detail Modal */}
+      {selectedPost && (
+        <PostDetailModal post={selectedPost} onClose={handleClosePostModal} />
+      )}
     </div>
-  
-    {/* Modals */}
-    <EditProfileModal
-      isOpen={isModalOpen}
-      onClose={() => setIsModalOpen(false)}
-      userProfile={userProfile}
-      onSave={handleSaveProfile}
-    />
-    <UpdateProfileImageModal
-      isOpen={isImageModalOpen}
-      onClose={() => setIsImageModalOpen(false)}
-      onSave={handleSaveProfileImage}
-    />
-  </div>
   );
 };
 

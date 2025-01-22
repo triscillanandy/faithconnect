@@ -15,6 +15,11 @@ Group.init({
   description: {
     type: DataTypes.TEXT,
   },
+  profileImage: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'profile_image',
+  },
   visibility: {
     type: DataTypes.ENUM('public', 'private'),
     allowNull: false,

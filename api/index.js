@@ -203,6 +203,81 @@ connectDB().then(() => {
 let activeUsers = []; // Change const to let
 const activeGroups = {}; // No change here
 
+// io.on('connection', (socket) => {
+//   // Handle user joining a room or group
+//   socket.on('joinRoom', (userId) => {
+//     // Check if the user is already active
+//     if (!activeUsers.some((user) => user.userId === userId)) {
+//       activeUsers.push({ userId, socketId: socket.id });
+//       console.log('New user added:', activeUsers);
+//     }
+
+//     // Broadcast updated user list to all clients
+//     io.emit('get-users', activeUsers);
+//   });
+
+//   // Handle disconnection
+//   socket.on('disconnect', () => {
+//     // Remove user from activeUsers
+//     activeUsers = activeUsers.filter((user) => user.socketId !== socket.id);
+
+//     // // Remove user from all groups they were part of
+//     for (const groupId in activeGroups) {
+//       activeGroups[groupId].delete(socket.id);
+//       if (activeGroups[groupId].size === 0) {
+//         delete activeGroups[groupId];
+//       }
+//     }
+
+//     console.log('User disconnected:', activeUsers);
+//     io.emit('get-users', activeUsers);
+//   });
+
+//   // Handle sending messages
+//   socket.on('sendMessage', ({ senderId, receiverId, message, conversationId, groupId }) => {
+//     if (groupId) {
+//       // Group message
+//       const groupMembers = activeGroups[groupId] || new Set();
+//       groupMembers.forEach((memberSocketId) => {
+//         if (memberSocketId !== socket.id) { // Don't send message back to sender
+//           io.to(memberSocketId).emit('receive-group-message', {
+//             conversationId,
+//             senderId,
+//             message,
+//             groupId,
+//           });
+//         }
+//       });
+//       console.log(`Group message sent to group ${groupId}:`, { senderId, message });
+//     } else if (receiverId) {
+//       // Direct message
+//       const receiver = activeUsers.find((user) => user.userId === receiverId);
+//       const sender = activeUsers.find((user) => user.userId === senderId);
+
+//       if (receiver) {
+//         // Emit message to receiver immediately
+//         io.to(receiver.socketId).emit('receive-message', {
+//           senderId,
+//           message,
+//           conversationId,
+//           receiverId,
+//         });
+//         console.log(`Direct message sent to receiver ${receiverId}:`, { senderId, receiverId, message, conversationId });
+//       }
+
+//       // Always notify sender (to show message as sent)
+//       if (sender) {
+//         io.to(sender.socketId).emit('receive-message', {
+//           senderId,
+//           message,
+//           conversationId,
+//           receiverId,
+//         });
+//       }
+//     }
+//   });
+// });
+
 io.on('connection', (socket) => {
   // Handle user joining a room or group
   socket.on('joinRoom', (userId) => {
@@ -216,63 +291,159 @@ io.on('connection', (socket) => {
     io.emit('get-users', activeUsers);
   });
 
+  // Handle user joining a group
+  socket.on('joinGroup', ({ groupId, userId }) => {
+    if (!activeGroups[groupId]) {
+      activeGroups[groupId] = new Set(); // Initialize a new Set for the group
+    }
+    activeGroups[groupId].add(socket.id); // Add the user's socket ID to the group
+    console.log(`User ${userId} joined group ${groupId}:`, activeGroups[groupId]);
+  });
+
   // Handle disconnection
   socket.on('disconnect', () => {
     // Remove user from activeUsers
     activeUsers = activeUsers.filter((user) => user.socketId !== socket.id);
 
-    // // Remove user from all groups they were part of
-    // for (const groupId in activeGroups) {
-    //   activeGroups[groupId].delete(socket.id);
-    //   if (activeGroups[groupId].size === 0) {
-    //     delete activeGroups[groupId];
-    //   }
-    // }
+    // Remove user from all groups they were part of
+    for (const groupId in activeGroups) {
+      activeGroups[groupId].delete(socket.id);
+      if (activeGroups[groupId].size === 0) {
+        delete activeGroups[groupId];
+      }
+    }
 
     console.log('User disconnected:', activeUsers);
     io.emit('get-users', activeUsers);
   });
 
-  // Handle sending messages
-  socket.on('sendMessage', ({ senderId, receiverId, message, conversationId, groupId }) => {
-    if (groupId) {
-      // Group message
-      const groupMembers = activeGroups[groupId] || new Set();
-      groupMembers.forEach((memberSocketId) => {
-        if (memberSocketId !== socket.id) { // Don't send message back to sender
-          io.to(memberSocketId).emit('receive-group-message', {
-            senderId,
-            message,
-            groupId,
-          });
-        }
+  // Handle sending direct messages
+  socket.on('sendMessage', ({ senderId, receiverId, message, conversationId }) => {
+    const receiver = activeUsers.find((user) => user.userId === receiverId);
+    const sender = activeUsers.find((user) => user.userId === senderId);
+
+    if (receiver) {
+      // Emit message to receiver immediately
+      io.to(receiver.socketId).emit('receive-message', {
+        senderId,
+        message,
+        conversationId,
+        receiverId,
       });
-      console.log(`Group message sent to group ${groupId}:`, { senderId, message });
-    } else if (receiverId) {
-      // Direct message
-      const receiver = activeUsers.find((user) => user.userId === receiverId);
-      const sender = activeUsers.find((user) => user.userId === senderId);
+      console.log(`Direct message sent to receiver ${receiverId}:`, { senderId, receiverId, message, conversationId });
+    }
 
-      if (receiver) {
-        // Emit message to receiver immediately
-        io.to(receiver.socketId).emit('receive-message', {
-          senderId,
-          message,
-          conversationId,
-          receiverId,
-        });
-        console.log(`Direct message sent to receiver ${receiverId}:`, { senderId, receiverId, message, conversationId });
-      }
-
-      // Always notify sender (to show message as sent)
-      if (sender) {
-        io.to(sender.socketId).emit('receive-message', {
-          senderId,
-          message,
-          conversationId,
-          receiverId,
-        });
-      }
+    // Always notify sender (to show message as sent)
+    if (sender) {
+      io.to(sender.socketId).emit('receive-message', {
+        senderId,
+        message,
+        conversationId,
+        receiverId,
+      });
     }
   });
+
+  // Handle sending group messages
+  socket.on('sendGroupMessage', ({ senderId, message, conversationId, groupId }) => {
+    const groupMembers = activeGroups[groupId] || new Set();
+    console.log('groupMembers:', groupMembers); // Log group members
+    groupMembers.forEach((memberSocketId) => {
+      if (memberSocketId !== socket.id) { // Don't send message back to sender
+        io.to(memberSocketId).emit('receive-group-message', {
+          conversationId,
+          senderId,
+          message,
+          groupId,
+        });
+      }
+    });
+    console.log(`Group message sent to group ${groupId}:`, { senderId, message });
+  });
 });
+
+// let activeUsers = []; // Track active users
+// const activeGroups = {}; // Track active group members
+
+// io.on('connection', (socket) => {
+//   // Handle user joining a room or group
+//   socket.on('joinRoom', (userId) => {
+//     // Check if the user is already active
+//     if (!activeUsers.some((user) => user.userId === userId)) {
+//       activeUsers.push({ userId, socketId: socket.id });
+//       console.log('New user added:', activeUsers);
+//     }
+
+//     // Broadcast updated user list to all clients
+//     io.emit('get-users', activeUsers);
+//   });
+
+//   // Handle user joining a group
+//   socket.on('joinGroup', ({ groupId, userId }) => {
+//     if (!activeGroups[groupId]) {
+//       activeGroups[groupId] = new Set(); // Initialize a new Set for the group
+//     }
+//     activeGroups[groupId].add(socket.id); // Add the user's socket ID to the group
+//     console.log(`User ${userId} joined group ${groupId}:`, activeGroups[groupId]);
+//   });
+
+//   // Handle disconnection
+//   socket.on('disconnect', () => {
+//     // Remove user from activeUsers
+//     activeUsers = activeUsers.filter((user) => user.socketId !== socket.id);
+
+//     // Remove user from all groups they were part of
+//     for (const groupId in activeGroups) {
+//       activeGroups[groupId].delete(socket.id);
+//       if (activeGroups[groupId].size === 0) {
+//         delete activeGroups[groupId];
+//       }
+//     }
+
+//     console.log('User disconnected:', activeUsers);
+//     io.emit('get-users', activeUsers);
+//   });
+
+//   // Handle sending messages
+//   socket.on('sendMessage', ({ senderId, receiverId, message, conversationId, groupId }) => {
+//     if (groupId) {
+//       // Group message
+//       const groupMembers = activeGroups[groupId] || new Set();
+//       groupMembers.forEach((memberSocketId) => {
+//         if (memberSocketId !== socket.id) { // Don't send message back to sender
+//           io.to(memberSocketId).emit('receive-group-message', {
+//             senderId,
+//             message,
+//             groupId,
+//           });
+//         }
+//       });
+//       console.log(`Group message sent to group ${groupId}:`, { senderId, message });
+//     } else if (receiverId) {
+//       // Direct message
+//       const receiver = activeUsers.find((user) => user.userId === receiverId);
+//       const sender = activeUsers.find((user) => user.userId === senderId);
+
+//       if (receiver) {
+//         // Emit message to receiver immediately
+//         io.to(receiver.socketId).emit('receive-message', {
+//           senderId,
+//           message,
+//           conversationId,
+//           receiverId,
+//         });
+//         console.log(`Direct message sent to receiver ${receiverId}:`, { senderId, receiverId, message, conversationId });
+//       }
+
+//       // Always notify sender (to show message as sent)
+//       if (sender) {
+//         io.to(sender.socketId).emit('receive-message', {
+//           senderId,
+//           message,
+//           conversationId,
+//           receiverId,
+//         });
+//       }
+//     }
+//   });
+// });

@@ -2,7 +2,7 @@ import express from 'express';
 import Group from '../models/Group.js';
 import GroupMember from '../models/GroupMember.js';
 import { Op } from 'sequelize';
-
+import Conversation from '../models/Conversation.js'; 
 
 // List All Groups
 // export const listGroups = async (req, res) => {
@@ -20,6 +20,8 @@ import { Op } from 'sequelize';
 //     }
 //   };
   // List Groups Not Joined
+
+
   // export const listGroups = async (req, res) => {
   //   try {
   //     const user_id = req.user.id; // Extracted from the token in middleware
@@ -31,16 +33,29 @@ import { Op } from 'sequelize';
   //     // Get all groups
   //     const allGroups = await Group.findAll();
 
-  //     // Separate groups into joined and not joined
-  //     const groupsNotJoined = allGroups.filter(group => !userGroupIds.includes(group.id));
-  //     const groupsJoined = allGroups.filter(group => userGroupIds.includes(group.id));
+  //     // Add membership information and separate groups
+  //     const groupsNotJoined = [];
+  //     const groupsJoined = [];
+
+  //     allGroups.forEach(group => {
+  //       const groupData = {
+  //         ...group.toJSON(),
+  //         is_member: userGroupIds.includes(group.id),
+  //       };
+
+  //       if (groupData.is_member) {
+  //         groupsJoined.push(groupData);
+  //       } else {
+  //         groupsNotJoined.push(groupData);
+  //       }
+  //     });
 
   //     // Combine the lists with not joined groups first
   //     const combinedGroups = [...groupsNotJoined, ...groupsJoined];
 
-  //     if (!combinedGroups || combinedGroups.length === 0) {
-  //       return res.status(404).json({ success: false, message: 'No groups found.' });
-  //     }
+  //     // if (!combinedGroups || combinedGroups.length === 0) {
+  //     //   return res.status(404).json({ success: false, message: 'No groups found.' });
+  //     // }
 
   //     res.status(200).json({ success: true, groups: combinedGroups });
   //   } catch (error) {
@@ -52,87 +67,50 @@ import { Op } from 'sequelize';
   export const listGroups = async (req, res) => {
     try {
       const user_id = req.user.id; // Extracted from the token in middleware
-
+  
       // Get groups the user is a member of
       const userGroups = await GroupMember.findAll({ where: { user_id } });
       const userGroupIds = userGroups.map(group => group.group_id);
-
+  
       // Get all groups
       const allGroups = await Group.findAll();
-
-      // Add membership information and separate groups
-      const groupsNotJoined = [];
-      const groupsJoined = [];
-
-      allGroups.forEach(group => {
-        const groupData = {
-          ...group.toJSON(),
-          is_member: userGroupIds.includes(group.id),
-        };
-
-        if (groupData.is_member) {
-          groupsJoined.push(groupData);
-        } else {
-          groupsNotJoined.push(groupData);
-        }
-      });
-
-      // Combine the lists with not joined groups first
-      const combinedGroups = [...groupsNotJoined, ...groupsJoined];
-
-      // if (!combinedGroups || combinedGroups.length === 0) {
-      //   return res.status(404).json({ success: false, message: 'No groups found.' });
-      // }
-
+  
+      // Add membership information and check for past conversations
+      const groupsWithConversations = await Promise.all(
+        allGroups.map(async (group) => {
+          const groupData = {
+            ...group.toJSON(),
+            is_member: userGroupIds.includes(group.id),
+          };
+  
+          // Check if the group has any past conversations
+          const conversation = await Conversation.findOne({
+            where: { groupId: group.id },
+          });
+  
+          groupData.hasConversation = !!conversation; // true if conversation exists, false otherwise
+  
+          return groupData;
+        })
+      );
+  
+      // Separate groups into those with and without conversations
+      const groupsWithPastConversations = groupsWithConversations.filter(
+        (group) => group.hasConversation
+      );
+      const groupsWithoutConversations = groupsWithConversations.filter(
+        (group) => !group.hasConversation
+      );
+  
+      // Combine the lists with groups with conversations first
+      const combinedGroups = [...groupsWithPastConversations, ...groupsWithoutConversations];
+  
       res.status(200).json({ success: true, groups: combinedGroups });
     } catch (error) {
       console.error('Error fetching groups:', error);
       res.status(500).json({ success: false, message: error.message });
     }
   };
-  
-  // export const listGroups = async (req, res) => {
-  //   try {
-  //     const user_id = req.user.id; // Extracted from the token in middleware
-  
-  //     // Get groups the user is a member of
-  //     const userGroups = await GroupMember.findAll({ where: { user_id } });
-  //     const userGroupIds = userGroups.map(group => group.group_id);
-  
-  //     // Get all groups
-  //     const allGroups = await Group.findAll();
-  
-  //     // Categorize groups into not joined and joined
-  //     const groupsNotJoined = [];
-  //     const groupsJoined = [];
-  
-  //     allGroups.forEach(group => {
-  //       const groupData = {
-  //         ...group.toJSON(),
-  //         is_member: userGroupIds.includes(group.id),
-  //       };
-  
-  //       if (groupData.is_member) {
-  //         groupsJoined.push(groupData);
-  //       } else {
-  //         groupsNotJoined.push(groupData);
-  //       }
-  //     });
-  
-  //     // Prioritize groups not joined, followed by groups joined
-  //     const prioritizedGroups = [...groupsNotJoined, ...groupsJoined];
-  
-  //     if (!prioritizedGroups || prioritizedGroups.length === 0) {
-  //       return res.status(404).json({ success: false, message: 'No groups found.' });
-  //     }
-  
-  //     res.status(200).json({ success: true, groups: prioritizedGroups });
-  //   } catch (error) {
-  //     console.error('Error fetching groups:', error);
-  //     res.status(500).json({ success: false, message: error.message });
-  //   }
-  // };
-  
 // Create Group
 // router.post('/groups', async (req, res) => {
 

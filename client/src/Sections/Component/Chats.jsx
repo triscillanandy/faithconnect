@@ -77,23 +77,55 @@ const Chats = () => {
     fetchSuggestedUsers();
   }, []);
 
+  // useEffect(() => {
+  //   if (socket) {
+  //     socket.emit("joinRoom", JSON.parse(localStorage.getItem("user:detail")).id);
+  //     console.log("Joining room:", JSON.parse(localStorage.getItem("user:detail")).id);
+  //     socket.on("get-users", (activeUsers) => {
+  //       console.log("Active users:", activeUsers);
+  //     });
+
+  //     socket.on("receive-message", (data) => {
+  //       setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
+  //     });
+
+  //     socket.on("receive-group-message", (data) => {
+  //       if (data.groupId === selectedChat?.groupId) {
+  //         setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
+  //       }
+  //     });
+  //   }
+  // }, [socket, selectedChat]);
+
   useEffect(() => {
     if (socket) {
       socket.emit("joinRoom", JSON.parse(localStorage.getItem("user:detail")).id);
       console.log("Joining room:", JSON.parse(localStorage.getItem("user:detail")).id);
+  
       socket.on("get-users", (activeUsers) => {
         console.log("Active users:", activeUsers);
       });
-
+  
       socket.on("receive-message", (data) => {
         setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
       });
 
       socket.on("receive-group-message", (data) => {
+        console.log("Received group message:", data); // Log the received data
+  
         if (data.groupId === selectedChat?.groupId) {
+          console.log("Group ID matches selected chat. Adding message to state.");
           setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
+        } else {
+          console.log("Group ID does not match selected chat. Ignoring message.");
         }
       });
+  
+      // socket.on("receive-group-message", (data) => {
+      //   if (data.groupId === selectedChat?.groupId) {
+      //     setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
+      //   }
+      // });
     }
   }, [socket, selectedChat]);
 
@@ -114,41 +146,6 @@ const Chats = () => {
     setMessages(data);
   };
 
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
-    if (!message.trim()) return;
-
-    const user = JSON.parse(localStorage.getItem("user:detail"));
-    const token = localStorage.getItem("token");
-    const newMessage = selectedChat.isGroup
-      ? {
-          groupId: selectedChat.groupId,
-          senderId: user.id,
-          message,
-        }
-      : {
-          conversationId: selectedChat.conversationId,
-          senderId: user.id,
-          receiverId: selectedUser.id,
-          message,
-        };
-
-    socket.emit(selectedChat.isGroup ? "sendGroupMessage" : "sendMessage", newMessage);
-    await fetch(
-      `${import.meta.env.VITE_API_URL}/api/auth/${selectedChat.isGroup ? "group-messages" : "messages"}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(newMessage),
-      }
-    );
-
-    setMessages((prev) => [...prev, { text: message, senderId: user.id }]);
-    setMessage("");
-  };
 
   const fetchGroupMessages = async (groupId) => {
     const token = localStorage.getItem("token");
@@ -160,8 +157,60 @@ const Chats = () => {
       },
     });
     const data = await res.json();
-    setMessages(data);
+  // console.log("Group messages:", data);
+    // Map messages to include senderName
+    const messagesWithSenderName = data.map((msg) => ({
+      ...msg,
+      senderId: msg.user?.id || msg.senderId,
+      senderName: msg.user?.username || "Unknown User", // Include senderName
+    }));
+  
+    setMessages(messagesWithSenderName); // Set messages with senderName
   };
+
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!message.trim()) return;
+
+    const user = JSON.parse(localStorage.getItem("user:detail"));
+    const token = localStorage.getItem("token");
+    const newMessage = selectedChat.isGroup
+      ? {
+          conversationId: selectedChat.conversationId,
+          senderId: user.id,
+          message,
+          groupId:selectedChat.groupId
+        }
+      : {
+          conversationId: selectedChat.conversationId,
+          senderId: user.id,
+          receiverId: selectedUser.id,
+          message,
+        };
+
+
+        
+    socket.emit(selectedChat.isGroup ? "sendGroupMessage" : "sendMessage", newMessage);
+    await fetch(
+      `${import.meta.env.VITE_API_URL}/api/auth/${selectedChat.isGroup ? "groupmessages" : "messages"}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(newMessage),
+    
+      }
+    );
+    console.log("SENT", newMessage);
+
+    setMessages((prev) => [...prev, { text: message, senderId: user.id }]);
+    setMessage("");
+  };
+
+
   const handleStartChat = async (user) => {
     setSelectedUser(user);
     setSelectedChat(null); // Clear any selected chat
@@ -228,108 +277,191 @@ const Chats = () => {
       console.error("Error handling start chat:", error);
     }
   };
+
+
   
-  const handleSelectChat = (conversation) => {
-    if (!conversation || !conversation.conversationId) {
-      console.error("Invalid conversation object:", conversation);
-      return;
+
+  
+
+  const handleGroupSelection = async (group) => {
+    const groupData = {
+      isGroup: true,
+      groupId: group.id,
+      group_name: group.group_name,
+    };
+  
+    const token = localStorage.getItem("token");
+  
+    try {
+      // First, check if conversation exists for the group or create one
+      const conversationRes = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/conversations/group`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ groupId: group.id }),
+      });
+  
+      const conversationData = await conversationRes.json();
+  
+      if (conversationRes.status === 200 || conversationRes.status === 201) {
+        // Successfully created or retrieved conversation
+        const user = JSON.parse(localStorage.getItem("user:detail"));
+        socket.emit("joinGroup", { groupId: group.id, userId: user.id }); // Emit joinGroup event
+        console.log("Joined group conversation:", conversationData);
+  
+        // Update the selected chat state, including conversationId
+        handleSelectChat({
+          ...groupData,
+          conversationId: conversationData.id, // Ensure this is passed
+        });
+  
+        // Optionally, fetch the group messages after creating/selecting the conversation
+        fetchGroupMessages(group.id);
+      } else {
+        console.error("Failed to create or fetch group conversation", conversationData);
+      }
+    } catch (error) {
+      console.error("Error handling group selection:", error);
     }
-  
-    setSelectedChat(conversation);
+  };
+
+
+  const handleSelectChat = async (conversation) => {
     if (conversation.isGroup) {
-      fetchGroupMessages(conversation.groupId);
+      // Handle group chat selection
+      if (conversation.groupId) {
+        // Step 1: Fetch group messages
+        await fetchGroupMessages(conversation.groupId);
+  
+        // Step 2: Update selectedChat state with group details
+        setSelectedChat({
+          isGroup: true,
+          groupId: conversation.groupId,
+          group_name: conversation.group_name,
+          conversationId: conversation.conversationId || conversation.id, // Ensure this is included
+        });
+      } else {
+        console.error("Missing groupId for group conversation");
+      }
     } else {
+      // Handle individual chat selection
       setSelectedUser(conversation.receiver);
+      setSelectedChat({
+        isGroup: false,
+        conversationId: conversation.conversationId,
+        receiver: conversation.receiver,
+      });
       fetchMessages(conversation.conversationId); // Fetch messages for the selected conversation
     }
   };
-  const filteredGroups = groupsList.filter((group) => group.is_member || group.role === "admin");
+  
+
+  // Filter groups based on whether they have past conversations
+const groupsWithConversations = groupsList.filter((group) => group.hasConversation);
+const groupsWithoutConversations = groupsList.filter((group) => !group.hasConversation);
+
+// Render groups with conversations first
+const filteredGroups = [...groupsWithConversations, ...groupsWithoutConversations];
+  //const filteredGroups = groupsList.filter((group) => group.is_member || group.role === "admin");
 
   const filteredSuggestedUsers = suggestedUsers.filter((user) =>
     user.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  return (
-    <div className="flex gap-24 max-[833px]:flex-col-reverse">
-      <LoggedInSideBar />
-      <div className="w-full flex">
-        <div className="w-1/3">
-          <div>
-            <div className="flex items-center justify-between max-[613px]:px-4 px-20 mt-3">
-              <h1 className="font-bold text-2xl">Chats</h1>
-              <img src={people} alt="people icon"    onClick={() => setShowSuggestedUsersModal(true)}/>
-            </div>
-            <div className="flex justify-center items-center">
-              <div className="relative w-3/5 max-[600px]:w-[95%] mt-5 ml-3">
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 bg-[#EDEBEB] focus:ring-blue-500 flex flex-col justify-center"
-                />
-                <img
-                  src={Search}
-                  alt="search icon"
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-[21.05px] h-[40px] text-gray-400"
-                />
-              </div>
-            </div>
-            <div className="flex justify-between px-8 mb-5 items-center mt-3">
-              <p className="font-semibold">Messages</p>
-              <img
-                onClick={() => setShowFilter((prevState) => !prevState)}
-                src={filter}
-                alt=""
-                className="cursor-pointer"
-              />
-              {showFilter && <ShowFilter />}
-            </div>
-            <div className="flex justify-between px-8 mb-5 items-center mt-3">
-              <button
-                onClick={() => setShowNewGroupPopup(true)}
-                className="font-semibold text-blue-500"
-              >
-                New Group
-              </button>
-              <button
-                onClick={() => setShowNewCommunityPopup(true)}
-                className="font-semibold text-blue-500"
-              >
-                New Community
-              </button>
-            </div>
-            <div className="mt-4">
-              {conversations.map((conversation) => (
-                <Chat
-                  key={conversation.conversationId || conversation.groupId}
-                  imgSrc={
-                    conversation.isGroup
-                      ? "group-icon.png"
-                      : conversation.receiver?.profilePicture || "default.png"
-                  }
-                  userName={
-                    conversation.isGroup
-                      ? conversation.group_name
-                      : conversation.receiver?.username || "Unknown"
-                  }
-                  userMessage="Last message here"
-                  onClick={() => handleSelectChat(conversation)}
-                />
-              ))}
 
-              {filteredGroups.map((group) => (
-                <Chat
-                  key={group.id}
-                  imgSrc="group-icon.png"
-                  userName={group.group_name}
-                  userMessage={group.role === "admin" ? "You are an admin" : "You are a member"}
-                  onClick={() =>
-                    handleSelectChat({ isGroup: true, groupId: group.id, group_name: group.group_name })
-                  }
-                />
-              ))}
+  
+  return (
+    
+    <div className="flex gap-24 max-[833px]:flex-col-reverse">
+   <div className="w-6"> {/* Fixed width for sidebar */}
+      <LoggedInSideBar />
+    </div>
+  
+    <div className="w-full flex">
+      {/* Left Side: Chat List */}
+      <div className="w-1/3">
+        <div>
+          <div className="flex items-center justify-between max-[613px]:px-4 px-20 mt-3">
+            <h1 className="font-bold text-2xl">Chats</h1>
+            <img
+              src={people}
+              alt="people icon"
+              onClick={() => setShowSuggestedUsersModal(true)}
+              className="cursor-pointer"
+            />
+          </div>
+          <div className="flex justify-center items-center">
+            <div className="relative w-3/5 max-[600px]:w-[95%] mt-5 ml-3">
+              <input
+                type="text"
+                placeholder="Search..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 bg-[#EDEBEB] focus:ring-blue-500"
+              />
+              <img
+                src={Search}
+                alt="search icon"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-[21.05px] h-[40px] text-gray-400"
+              />
             </div>
           </div>
+          <div className="flex justify-between px-8 mb-5 items-center mt-3">
+            <p className="font-semibold">Messages</p>
+            <img
+              onClick={() => setShowFilter((prevState) => !prevState)}
+              src={filter}
+              alt=""
+              className="cursor-pointer"
+            />
+            {showFilter && <ShowFilter />}
+          </div>
+          <div className="flex justify-between px-8 mb-5 items-center mt-3">
+            <button
+              onClick={() => setShowNewGroupPopup(true)}
+              className="font-semibold text-blue-500"
+            >
+              New Group
+            </button>
+            <button
+              onClick={() => setShowNewCommunityPopup(true)}
+              className="font-semibold text-blue-500"
+            >
+              New Community
+            </button>
+          </div>
+          <div className="mt-4 overflow-y-auto h-[calc(100vh-300px)]">
+            {conversations.map((conversation) => (
+              <Chat
+                key={conversation.conversationId || conversation.groupId}
+                imgSrc={
+                  conversation.isGroup
+                    ? "group-icon.png"
+                    : conversation.receiver?.profilePicture || "default.png"
+                }
+                userName={
+                  conversation.isGroup
+                    ? conversation.group_name
+                    : conversation.receiver?.username || "Unknown"
+                }
+                userMessage="Last message here"
+                onClick={() => handleSelectChat(conversation)}
+              />
+            ))}
+
+            {groupsWithConversations.map((group) => (
+              <Chat
+                key={group.id}
+                imgSrc="group-icon.png"
+                userName={group.group_name}
+                userMessage={group.role === "admin" ? "You are an admin" : "You are a member"}
+                onClick={() => handleGroupSelection(group)}
+              />
+            ))}
+          </div>
         </div>
+      </div>
+
 
         <div className="w-2/3">
           {selectedChat || selectedUser ? (
@@ -363,42 +495,63 @@ const Chats = () => {
       {showNewCommunityPopup && <NewCommunityPopup onClose={() => setShowNewCommunityPopup(false)} />}
 
       {showSuggestedUsersModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-5 rounded-lg w-96">
-            <h2 className="text-xl font-bold mb-4">Start a New Chat</h2>
-            <input
-              type="text"
-              placeholder="Search users..."
-              className="w-full px-3 py-2 border rounded-lg mb-4"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <div className="overflow-y-auto max-h-60">
-              {filteredSuggestedUsers.map((user) => (
-                <div
-                  key={user.id}
-                  className="flex items-center mb-4 cursor-pointer"
-                  onClick={() => {
-                    handleStartChat(user); // Automatically create a conversation
-                    setShowSuggestedUsersModal(false); // Close the modal
-                  }}
-                >
-                  <img className="w-10 h-10 rounded-full" src={user.profilePicture || "default.png"} alt={user.username} />
-                  <div className="ml-4">
-                    <p className="font-bold">{user.username}</p>
-                  </div>
-                </div>
-              ))}
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+    <div className="bg-white p-5 rounded-lg w-96">
+      <h2 className="text-xl font-bold mb-4">Start a New Chat</h2>
+      <input
+        type="text"
+        placeholder="Search users or groups..."
+        className="w-full px-3 py-2 border rounded-lg mb-4"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+      <div className="overflow-y-auto max-h-60">
+        {/* Suggested Users */}
+        <h3 className="font-bold mb-2">Users</h3>
+        {filteredSuggestedUsers.map((user) => (
+          <div
+            key={user.id}
+            className="flex items-center mb-4 cursor-pointer"
+            onClick={() => {
+              handleStartChat(user); // Automatically create a conversation
+              setShowSuggestedUsersModal(false); // Close the modal
+            }}
+          >
+            <img className="w-10 h-10 rounded-full" src={user.profilePicture || "default.png"} alt={user.username} />
+            <div className="ml-4">
+              <p className="font-bold">{user.username}</p>
             </div>
-            <button
-              onClick={() => setShowSuggestedUsersModal(false)}
-              className="mt-4 bg-red-500 text-white px-4 py-2 rounded-lg"
-            >
-              Close
-            </button>
           </div>
-        </div>
-      )}
+        ))}
+
+        {/* Groups */}
+        <h3 className="font-bold mb-2 mt-4">Groups</h3>
+        {filteredGroups.map((group) => (
+          <div
+            key={group.id}
+            className="flex items-center mb-4 cursor-pointer"
+            onClick={() => {
+              handleGroupSelection(group); // Handle group selection
+              setShowSuggestedUsersModal(false); // Close the modal
+            }}
+          >
+            <img className="w-10 h-10 rounded-full" src="group-icon.png" alt={group.group_name} />
+            <div className="ml-4">
+              <p className="font-bold">{group.group_name}</p>
+              <p className="text-sm text-gray-500">{group.role === "admin" ? "Admin" : "Member"}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      <button
+        onClick={() => setShowSuggestedUsersModal(false)}
+        className="mt-4 bg-red-500 text-white px-4 py-2 rounded-lg"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+)}
     </div>
   );
 };
@@ -406,27 +559,7 @@ const Chats = () => {
 // Other components (ShowFilter, FilterTags, Chat, ChatDetails, NewGroupPopup, NewCommunityPopup) remain unchanged.
 export default Chats;
 
-function ShowFilter() {
-  return (
-    <div>
-      <h1 className="mb-1">Filter chats by</h1>
-      <FilterTags imgSrc={chat} filterMessage={"Unread"} />
-      <FilterTags imgSrc={groups} filterMessage={"groups"} />
-      <FilterTags imgSrc={following} filterMessage={"following"} />
-      <FilterTags imgSrc={no} filterMessage={"not following"} />
-      <FilterTags imgSrc={blocked} filterMessage={"blocked users"} />
-    </div>
-  );
-}
 
-function FilterTags({ imgSrc, filterMessage }) {
-  return (
-    <div className="flex gap-2 mb-2 items-center cursor-pointer">
-      <img src={imgSrc} className="w-[15px] h-[15.65px]" alt="" />
-      <p className="capitalize">{filterMessage}</p>
-    </div>
-  );
-}
 
 function Chat({ imgSrc, userName, userMessage, onClick }) {
   return (
@@ -439,6 +572,8 @@ function Chat({ imgSrc, userName, userMessage, onClick }) {
     </div>
   );
 }
+
+
 
 function ChatDetails({
   selectedChat,
@@ -463,12 +598,6 @@ function ChatDetails({
     };
   }, []);
 
-  // Debugging: Log the selected chat and messages
-  useEffect(() => {
-    console.log("Selected chat:", selectedChat);
-    console.log("Messages:", messages);
-  }, [selectedChat, messages]);
-
   return (
     <div className="relative" style={{ height: `${deviceHeight}px` }}>
       <div className="flex justify-between items-center mt-5">
@@ -481,7 +610,7 @@ function ChatDetails({
           />
           <div>
             <p className="font-bold">
-              {selectedChat ? (selectedChat.isGroup ? selectedChat.group_name : selectedChat.receiver?.username || "Unkwn") : selectedUser?.username || "nown"}
+              {selectedChat ? (selectedChat.isGroup ? selectedChat.group_name : selectedChat.receiver?.username || "Unknown") : selectedUser?.username || "Unknown"}
             </p>
             <p>Active 1min ago</p>
           </div>
@@ -494,43 +623,50 @@ function ChatDetails({
       <hr className="h-2 bg-mainTheme mt-4 mb-3" />
       <div className="flex flex-col gap-2 p-4 overflow-y-auto h-[550px]">
         {messages.length > 0 ? (
-          messages.map((msg, index) => (
-            <div
-              key={index}
-              className={`flex ${
-                msg.senderId === loggedInUserId ? "justify-end" : "justify-start"
-              }`}
-            >
-              <p
-                className={`max-w-[60%] px-3 py-2 text-white rounded-[20px] ${
-                  msg.senderId === loggedInUserId ? "bg-orange-500" : "bg-blue-500"
-                }`}
+          messages.map((msg, index) => {
+            const isLoggedInUser = msg.senderId === loggedInUserId;
+            console.log(`Message ${index}:`, { senderId: msg.senderId, loggedInUserId, isLoggedInUser }); // Log message details
+
+            return (
+              <div
+                key={index}
+                className={`flex ${isLoggedInUser ? "justify-end" : "justify-start"}`}
               >
-                {msg.text}
-              </p>
-            </div>
-          ))
+                <div className={`max-w-[60%] px-3 py-2 text-white rounded-[20px] ${
+                  isLoggedInUser ? "bg-orange-500" : "bg-blue-500"
+                }`}>
+                  {/* Display sender name for other users */}
+                  {!isLoggedInUser && (
+                    <p className="text-sm font-semibold text-gray-200">
+                      {msg.senderName}
+                    </p>
+                  )}
+                  <p>{msg.text}</p>
+                </div>
+              </div>
+            );
+          })
         ) : (
           <p className="text-center text-gray-500">No messages yet. Start the conversation!</p>
         )}
         <div ref={messageRef}></div>
       </div>
       {selectedChat && (
-        <div className="absolute bottom-0 w-full flex justify-center">
-          <form className="flex items-center gap-5" onSubmit={handleSendMessage}>
-            <img src={files} alt="" />
-            <input
-              type="text"
-              placeholder="Write Message"
-              className="border-[2px] border-gray-400 px-28 w-full py-4 rounded-xl"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-            />
-            <button className="bg-mainTheme text-white px-4 py-1 rounded-lg">Send</button>
-            <img src={camera} alt="" />
-            <img src={sound} alt="" />
-          </form>
-        </div>
+      <div className="absolute bottom-8 w-full flex justify-center"> {/* Adjusted to bottom-8 */}
+      <form className="flex items-center gap-5" onSubmit={handleSendMessage}>
+        <img src={files} alt="" />
+        <input
+          type="text"
+          placeholder="Write Message"
+          className="border-[2px] border-gray-400 px-28 w-full py-4 rounded-xl"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+        <button className="bg-mainTheme text-white px-4 py-1 rounded-lg">Send</button>
+        <img src={camera} alt="" />
+        <img src={sound} alt="" />
+      </form>
+    </div>
       )}
     </div>
   );

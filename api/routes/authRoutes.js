@@ -6,7 +6,7 @@ import { createPost,getMyPosts,getPosts,getPostById,deletePost,getOtherPosts,add
 import { upload } from '../middleware/uploadMiddleware.js';
 import {creategroups,joingroups,leavegroups,listGroups,getGroupDetails} from '../controllers/groupController.js';
 
-import { createConversation, getConversations, getConversationByUsers,checkConversationExists,sendMessage,getMessages ,sendGroupMessage,getGroupMessages} from '../controllers/conversationController.js';
+import { createConversation, getConversations, getConversationByUsers,checkConversationExists,getGroupConversation, createGroupConversation,sendMessage,getMessages ,sendGroupMessage,getGroupMessages} from '../controllers/conversationController.js';
 import {followUser, unfollowUser,getFollowers,getSuggestedFriends, getFollowing,getSuggestedUsers} from '../controllers/followController.js'; // New controllers for follow functionality
 const router = express.Router();
 router.post('/register', register);
@@ -70,9 +70,15 @@ router.get('/check-conversation/:userId1/:userId2', isAuthenticated, checkConver
 router.get('/conversations/:userId', isAuthenticated, getConversations);  // Get all conversations of a user
 router.get('/conversations/find/:firstUserId/:secondUserId', isAuthenticated, getConversationByUsers);  // Get conversation between two users
 router.post('/messages', isAuthenticated, sendMessage);  // Send a message
-router.get('/messages/:conversationId', isAuthenticated, getMessages);  // Get all messages in a specific conversation
-router.post('/messages/group', isAuthenticated, sendGroupMessage);  // Send a message to a group
-router.get('/group-messages/:groupId', isAuthenticated, getGroupMessages);  // Get all messages of a specific group
+router.get('/messages/:conversationId', isAuthenticated, getMessages);  
+router.post('/groupmessages', isAuthenticated, sendGroupMessage); 
+
+// Get all messages in a specific conversation
+router.post('/conversations/group', isAuthenticated,  createGroupConversation);
+
+router.get('/conversations/group/:id', isAuthenticated,  getGroupConversation);
+router.get('/group-messages/:id', isAuthenticated,  getGroupMessages);// Send a message to a group
+///router.get('/group-messages/:groupId', isAuthenticated, getGroupMessages);  // Get all messages of a specific group
 
 export default router;
 

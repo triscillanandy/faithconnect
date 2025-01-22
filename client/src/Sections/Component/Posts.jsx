@@ -99,21 +99,26 @@ const Posts = () => {
   };
 
   return (
-    <div className="flex gap-24 max-[833px]:flex-col-reverse">
+    <div className="flex gap-8 max-[833px]:flex-col-reverse">
+       <div className="w-6"> {/* Fixed width for sidebar */}
       <LoggedInSideBar />
-      <div className="flex flex-col items-center w-full">
-        <div className="flex justify-center gap-16 mt-5 items-center">
+    </div>
+      <div className="flex flex-col items-center w-full p-4">
+        {/* Header */}
+        <div className="flex justify-center gap-4 mt-5 items-center">
           <img
-            className="cursor-pointer"
+            className="cursor-pointer w-10 h-10 rounded-full"
             onClick={() => navigate("/user-profile")}
-            alt=""
+            src="profile-icon.png"
+            alt="Profile"
           />
           <h1 className="font-bold text-2xl">Create new post</h1>
         </div>
         <hr className="bg-mainTheme h-1 w-full mt-3" />
 
-        <div className="flex flex-col items-center mt-10">
-          <p className="text-2xl font-semibold max-[364px]:text-xl">
+        {/* File Upload Section */}
+        <div className="flex flex-col items-center mt-10 w-full max-w-2xl">
+          <p className="text-2xl font-semibold max-[364px]:text-xl text-center">
             Drag photos and videos here
           </p>
           <input
@@ -126,14 +131,16 @@ const Posts = () => {
           />
           <button
             onClick={handleButtonClick}
-            className="border border-mainTheme px-8 py-1 rounded-2xl text-[24px] mt-4"
+            className="border border-mainTheme px-8 py-2 rounded-2xl text-lg mt-4 hover:bg-mainTheme hover:text-white transition-colors"
           >
             Select From Device
           </button>
         </div>
-        <div className="flex flex-col items-center mt-8 w-3/4">
+
+        {/* Post Type Selection */}
+        <div className="flex flex-col items-center mt-8 w-full max-w-2xl">
           <label className="text-lg font-semibold mb-2">Select Post Type</label>
-          <div className="flex justify-between gap-4">
+          <div className="flex flex-wrap justify-center gap-4">
             <button
               onClick={() => setPostType("post")}
               className={`px-4 py-2 rounded-lg ${
@@ -161,12 +168,14 @@ const Posts = () => {
           </div>
         </div>
 
-        <div className="flex flex-col items-center mt-8 w-3/4">
+        {/* Description and Additional Fields */}
+        <div className="flex flex-col items-center mt-8 w-full max-w-2xl">
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Enter description"
             className="border border-mainTheme px-4 py-2 rounded-lg w-full"
+            rows={4}
           />
 
           {postType === "devotional" && (
@@ -176,6 +185,7 @@ const Posts = () => {
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Enter devotional content"
                 className="border border-mainTheme px-4 py-2 rounded-lg w-full mt-4"
+                rows={6}
               />
               <input
                 type="text"
@@ -194,6 +204,7 @@ const Posts = () => {
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="Enter sermon content"
                 className="border border-mainTheme px-4 py-2 rounded-lg w-full mt-4"
+                rows={6}
               />
               <input
                 type="text"
@@ -213,8 +224,9 @@ const Posts = () => {
           )}
         </div>
 
+        {/* File Previews */}
         {selectedFiles.length > 0 && (
-          <div className="flex flex-col items-center mt-8 w-3/4">
+          <div className="flex flex-col items-center mt-8 w-full max-w-2xl">
             <ul className="flex flex-wrap gap-4">
               {selectedFiles.map((file, index) => (
                 <li key={index} className="w-24 h-24 relative">
@@ -238,23 +250,25 @@ const Posts = () => {
           </div>
         )}
 
-        <div className="flex flex-col items-center mt-8 w-3/4">
+        {/* Upload Button */}
+        <div className="flex flex-col items-center mt-8 w-full max-w-2xl">
           <button
             onClick={handleUpload}
             disabled={uploading}
             className={`border ${
               uploading ? "bg-gray-300" : "border-mainTheme"
-            } px-8 py-1 rounded-2xl text-[24px] mt-4`}
+            } px-8 py-2 rounded-2xl text-lg mt-4 hover:bg-mainTheme hover:text-white transition-colors`}
           >
             {uploading ? "Uploading..." : "Post"}
           </button>
         </div>
 
+        {/* Progress Bar */}
         {uploading && (
-          <div className="flex flex-col items-center mt-4 w-3/4">
-            <div className="w-full bg-gray-200 rounded-full h-4">
+          <div className="flex flex-col items-center mt-4 w-full max-w-2xl">
+            <div className="w-full bg-gray-200 rounded-full h-2">
               <div
-                className={`${getProgressBarColor()} h-4 rounded-full`}
+                className={`${getProgressBarColor()} h-2 rounded-full`}
                 style={{ width: `${uploadProgress}%` }}
               ></div>
             </div>
@@ -263,6 +277,7 @@ const Posts = () => {
         )}
       </div>
 
+      {/* Toast Notifications */}
       <ToastContainer
         position="top-right"
         autoClose={3000}

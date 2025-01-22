@@ -51,7 +51,9 @@ const Reels = ({ posts = [] }) => {
 
   return (
     <div className="flex min-h-screen">
-    <LoggedInSideBar />
+   <div className="w-6"> {/* Fixed width for sidebar */}
+      <LoggedInSideBar />
+    </div>
     <div className="flex flex-col flex-grow items-center justify-center">
     <div className="reels-container" onWheel={handleScroll}>
       {posts.length > 0 ? (

@@ -145,19 +145,7 @@ const Chats = () => {
     const data = await res.json();
     setMessages(data);
   };
-  // const fetchGroupMessages = async (groupId) => {
-  //   const token = localStorage.getItem("token");
-  //   const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/group-messages/${groupId}`, {
-  //     method: "GET",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       Authorization: `Bearer ${token}`,
-  //     },
-  //   });
-  //   const data = await res.json();
-  //   // setMessages(data);
-  //   setMessages(Array.isArray(data) ? data : []);
-  // };
+
 
   const fetchGroupMessages = async (groupId) => {
     const token = localStorage.getItem("token");
@@ -382,87 +370,98 @@ const filteredGroups = [...groupsWithConversations, ...groupsWithoutConversation
     user.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+
+  
   return (
+    
     <div className="flex gap-24 max-[833px]:flex-col-reverse">
+   <div className="w-6"> {/* Fixed width for sidebar */}
       <LoggedInSideBar />
-      <div className="w-full flex">
-        <div className="w-1/3">
-          <div>
-            <div className="flex items-center justify-between max-[613px]:px-4 px-20 mt-3">
-              <h1 className="font-bold text-2xl">Chats</h1>
-              <img src={people} alt="people icon"    onClick={() => setShowSuggestedUsersModal(true)}/>
-            </div>
-            <div className="flex justify-center items-center">
-              <div className="relative w-3/5 max-[600px]:w-[95%] mt-5 ml-3">
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 bg-[#EDEBEB] focus:ring-blue-500 flex flex-col justify-center"
-                />
-                <img
-                  src={Search}
-                  alt="search icon"
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-[21.05px] h-[40px] text-gray-400"
-                />
-              </div>
-            </div>
-            <div className="flex justify-between px-8 mb-5 items-center mt-3">
-              <p className="font-semibold">Messages</p>
-              <img
-                onClick={() => setShowFilter((prevState) => !prevState)}
-                src={filter}
-                alt=""
-                className="cursor-pointer"
+    </div>
+  
+    <div className="w-full flex">
+      {/* Left Side: Chat List */}
+      <div className="w-1/3">
+        <div>
+          <div className="flex items-center justify-between max-[613px]:px-4 px-20 mt-3">
+            <h1 className="font-bold text-2xl">Chats</h1>
+            <img
+              src={people}
+              alt="people icon"
+              onClick={() => setShowSuggestedUsersModal(true)}
+              className="cursor-pointer"
+            />
+          </div>
+          <div className="flex justify-center items-center">
+            <div className="relative w-3/5 max-[600px]:w-[95%] mt-5 ml-3">
+              <input
+                type="text"
+                placeholder="Search..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 bg-[#EDEBEB] focus:ring-blue-500"
               />
-              {showFilter && <ShowFilter />}
-            </div>
-            <div className="flex justify-between px-8 mb-5 items-center mt-3">
-              <button
-                onClick={() => setShowNewGroupPopup(true)}
-                className="font-semibold text-blue-500"
-              >
-                New Group
-              </button>
-              <button
-                onClick={() => setShowNewCommunityPopup(true)}
-                className="font-semibold text-blue-500"
-              >
-                New Community
-              </button>
-            </div>
-            <div className="mt-4">
-              {conversations.map((conversation) => (
-                <Chat
-                  key={conversation.conversationId || conversation.groupId}
-                  imgSrc={
-                    conversation.isGroup
-                      ? "group-icon.png"
-                      : conversation.receiver?.profilePicture || "default.png"
-                  }
-                  userName={
-                    conversation.isGroup
-                      ? conversation.group_name
-                      : conversation.receiver?.username || "Unknown"
-                  }
-                  userMessage="Last message here"
-                  onClick={() => handleSelectChat(conversation)}
-                />
-              ))}
-
-
-    {groupsWithConversations.map((group) => (
-      <Chat
-        key={group.id}
-        imgSrc="group-icon.png"
-        userName={group.group_name}
-        userMessage={group.role === "admin" ? "You are an admin" : "You are a member"}
-        onClick={() => handleGroupSelection(group)}
-      />
-    ))}
-
+              <img
+                src={Search}
+                alt="search icon"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-[21.05px] h-[40px] text-gray-400"
+              />
             </div>
           </div>
+          <div className="flex justify-between px-8 mb-5 items-center mt-3">
+            <p className="font-semibold">Messages</p>
+            <img
+              onClick={() => setShowFilter((prevState) => !prevState)}
+              src={filter}
+              alt=""
+              className="cursor-pointer"
+            />
+            {showFilter && <ShowFilter />}
+          </div>
+          <div className="flex justify-between px-8 mb-5 items-center mt-3">
+            <button
+              onClick={() => setShowNewGroupPopup(true)}
+              className="font-semibold text-blue-500"
+            >
+              New Group
+            </button>
+            <button
+              onClick={() => setShowNewCommunityPopup(true)}
+              className="font-semibold text-blue-500"
+            >
+              New Community
+            </button>
+          </div>
+          <div className="mt-4 overflow-y-auto h-[calc(100vh-300px)]">
+            {conversations.map((conversation) => (
+              <Chat
+                key={conversation.conversationId || conversation.groupId}
+                imgSrc={
+                  conversation.isGroup
+                    ? "group-icon.png"
+                    : conversation.receiver?.profilePicture || "default.png"
+                }
+                userName={
+                  conversation.isGroup
+                    ? conversation.group_name
+                    : conversation.receiver?.username || "Unknown"
+                }
+                userMessage="Last message here"
+                onClick={() => handleSelectChat(conversation)}
+              />
+            ))}
+
+            {groupsWithConversations.map((group) => (
+              <Chat
+                key={group.id}
+                imgSrc="group-icon.png"
+                userName={group.group_name}
+                userMessage={group.role === "admin" ? "You are an admin" : "You are a member"}
+                onClick={() => handleGroupSelection(group)}
+              />
+            ))}
+          </div>
         </div>
+      </div>
+
 
         <div className="w-2/3">
           {selectedChat || selectedUser ? (
@@ -653,21 +652,21 @@ function ChatDetails({
         <div ref={messageRef}></div>
       </div>
       {selectedChat && (
-        <div className="absolute bottom-0 w-full flex justify-center">
-          <form className="flex items-center gap-5" onSubmit={handleSendMessage}>
-            <img src={files} alt="" />
-            <input
-              type="text"
-              placeholder="Write Message"
-              className="border-[2px] border-gray-400 px-28 w-full py-4 rounded-xl"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-            />
-            <button className="bg-mainTheme text-white px-4 py-1 rounded-lg">Send</button>
-            <img src={camera} alt="" />
-            <img src={sound} alt="" />
-          </form>
-        </div>
+      <div className="absolute bottom-8 w-full flex justify-center"> {/* Adjusted to bottom-8 */}
+      <form className="flex items-center gap-5" onSubmit={handleSendMessage}>
+        <img src={files} alt="" />
+        <input
+          type="text"
+          placeholder="Write Message"
+          className="border-[2px] border-gray-400 px-28 w-full py-4 rounded-xl"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+        <button className="bg-mainTheme text-white px-4 py-1 rounded-lg">Send</button>
+        <img src={camera} alt="" />
+        <img src={sound} alt="" />
+      </form>
+    </div>
       )}
     </div>
   );

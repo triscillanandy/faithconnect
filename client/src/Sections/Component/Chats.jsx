@@ -137,7 +137,7 @@ const Chats = () => {
           conversationId: selectedChat.conversationId,
           senderId: user.id,
           message,
-          groupId
+          groupId:selectedChat.groupId
         }
       : {
           conversationId: selectedChat.conversationId,

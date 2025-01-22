@@ -190,10 +190,7 @@ export const sendMessage = async (req, res) => {
 
 
 export const sendGroupMessage = async (req, res) => {
-  const {       conversationId,
-    sender: senderId,
-    text: message,
-  groupId} = req.body;
+  const { conversationId, senderId, message, groupId } = req.body; 
 
   try {
     // Validate the conversation

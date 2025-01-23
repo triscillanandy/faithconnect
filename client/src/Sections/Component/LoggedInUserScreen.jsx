@@ -10,6 +10,7 @@ import comment from "./LoggedInScreenImages/comment.png";
 import save from "./LoggedInScreenImages/save.png";
 import union from "./LoggedInScreenImages/Union.png";
 import dots from "./LoggedInScreenImages/dots.png";
+import "./LoggedIn.css";
 
 const LoggedInUserScreen = () => {
   const navigate = useNavigate();
@@ -228,72 +229,67 @@ const LoggedInUserScreen = () => {
       {/* Navigation Bar */}
       <LoggedInSideBar />
 
-      <div className="flex flex-1 ml-20">
-        {/* Main Content */}
-        <div className="flex-1 p-4 overflow-y-auto h-screen scrollbar-hide">
-          <div className="flex gap-4 mb-4">
-            {/* Add content here if needed */}
-          </div>
-          <div>
-            {errorMessage ? (
-              <p className="text-red-500">{errorMessage}</p>
-            ) : (
-              posts.map((post) => (
-                <PostsComponent
-                  key={post.id}
-                  postId={post.id}
-                  userImg={post.user?.profileImage}
-                  userName={post.user?.username}
-                  description={post.description}
-                  media={post.media}
-                />
-              ))
-            )}
-          </div>
-        </div>
+   
+  {/* Main Content */}
+  <div className="flex-1 p-4 overflow-y-auto h-screen scrollbar-hide">
+    <div className="flex flex-col gap-4 mb-4">
+      {errorMessage ? (
+        <p className="text-red-500">{errorMessage}</p>
+      ) : (
+        posts.map((post) => (
+          <PostsComponent
+            key={post.id}
+            postId={post.id}
+            userImg={post.user?.profileImage}
+            userName={post.user?.username}
+            description={post.description}
+            media={post.media}
+          />
+        ))
+      )}
+    </div>
+  </div>
 
-        {/* Sidebar */}
-        <div className="w-[352px] p-4 hidden lg:block">
-          <div className="flex justify-between items-center mb-4">
-            <h1 className="font-bold text-lg">Suggested For You</h1>
-           
-          </div>
-          {suggestedPeople.slice(0, 6).map((people) => (
-            <SuggestedFollows
-              key={people.id}
-              userId={people.id}
-              userName={people.username}
-              imgSrc={people.profile_image}
-              followUser={followUser}
-              unfollowUser={unfollowUser}
-            />
-          ))}
-          <div className="flex justify-between items-center mt-6 mb-2">
-            <h2 className="font-bold text-lg">Prayer Groups</h2>
-            <p
-              className="text-blue-500 cursor-pointer"
-              onClick={() => setShowAllGroupsModal(true)}
-            >
-              See All
-            </p>
-          </div>
-          {groups.length > 0 ? (
-            groups.slice(0, 4).map((group) => (
-              <SuggestedGroups
-                key={group.id}
-                imgSrc={group.imgSrc}
-                group_name={group.group_name}
-                groupId={group.id}
-                isMember={group.is_member}
-                joinGroup={joinGroup}
-                leaveGroup={leaveGroup}
-              />
-            ))
-          ) : (
-            <p>No prayer groups available</p>
-          )}
-        </div>
-      </div>
+  {/* Sidebar (Hidden on Small Screens) */}
+  <div className="w-[352px] p-4 hidden lg:block">
+    <div className="flex justify-between items-center mb-4">
+      <h1 className="font-bold text-lg">Suggested For You</h1>
+    </div>
+    {suggestedPeople.slice(0, 6).map((people) => (
+      <SuggestedFollows
+        key={people.id}
+        userId={people.id}
+        userName={people.username}
+        imgSrc={people.profile_image}
+        followUser={followUser}
+        unfollowUser={unfollowUser}
+      />
+    ))}
+    <div className="flex justify-between items-center mt-6 mb-2">
+      <h2 className="font-bold text-lg">Prayer Groups</h2>
+      <p
+        className="text-blue-500 cursor-pointer"
+        onClick={() => setShowAllGroupsModal(true)}
+      >
+        See All
+      </p>
+    </div>
+    {groups.length > 0 ? (
+      groups.slice(0, 4).map((group) => (
+        <SuggestedGroups
+          key={group.id}
+          imgSrc={group.imgSrc}
+          group_name={group.group_name}
+          groupId={group.id}
+          isMember={group.is_member}
+          joinGroup={joinGroup}
+          leaveGroup={leaveGroup}
+        />
+      ))
+    ) : (
+      <p>No prayer groups available</p>
+    )}
+  </div>
 
       {/* Modal for "See All" Groups */}
       {showAllGroupsModal && (
@@ -480,38 +476,56 @@ function PostsComponent({ postId, userImg, userName, description, media }) {
 
   const settings = {
     dots: true,
-    infinite: true,
+    infinite: false, // Disable infinite looping to prevent cloning
     speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
+    slidesToShow: 1, // Show only one slide at a time
+    slidesToScroll: 1, // Scroll one slide at a time
     arrows: false,
-    className: "w-full",
+    adaptiveHeight: true, // Adjust height based on the current slide
   };
 
   return (
-    <div className="mt-8 border rounded-lg p-4 max-w-lg mx-auto bg-white shadow-sm">
+    <div className="mt-8 border rounded-lg p-4 w-full max-w-lg mx-auto bg-white shadow-sm">
+      {/* User Info Section */}
       <div className="flex items-center gap-4 mb-3">
-        <img src={userImg} alt={`${userName}'s profile`} className="w-10 h-10 rounded-full" />
+        <img
+          src={userImg}
+          alt={`${userName}'s profile`}
+          className="w-10 h-10 rounded-full object-cover"
+        />
         <p className="font-semibold">{userName}</p>
         <div className="cursor-pointer ml-auto">
           <img src={dots} alt="Options" className="w-5 h-5" />
         </div>
       </div>
-      <p className="mb-3 text-sm">{description}</p>
+  
+      {/* Text Description with Wrapping and Height Limit */}
+      <div className="mb-3 text-sm max-h-32 overflow-y-auto">
+        <p className="whitespace-pre-line break-words">{description}</p>
+      </div>
+  
+      {/* Media Section */}
       <div className="aspect-square overflow-hidden rounded-lg">
         <Slider {...settings}>
-          {media.map((item) =>
-            item.mediaType.startsWith("video") ? (
-              <video key={item.id} controls className="object-cover w-full h-full">
-                <source src={item.mediaUrl} type={item.mediaType} />
-                Your browser does not support the video tag.
-              </video>
-            ) : (
-              <img key={item.id} src={item.mediaUrl} alt="Post media" className="object-cover w-full h-full" />
-            )
-          )}
+          {media.map((item) => (
+            <div key={item.id}> {/* Ensure unique key */}
+              {item.mediaType.startsWith("video") ? (
+                <video controls className="object-cover w-full h-full">
+                  <source src={item.mediaUrl} type={item.mediaType} />
+                  Your browser does not support the video tag.
+                </video>
+              ) : (
+                <img
+                  src={item.mediaUrl}
+                  alt="Post media"
+                  className="object-cover w-full h-full"
+                />
+              )}
+            </div>
+          ))}
         </Slider>
       </div>
+      {/* Like, Comment, Share Buttons */}
       <div className="flex mt-4 gap-4 items-center">
         {isLiked ? (
           <FaHeart className="cursor-pointer w-6 h-6 text-red-500" onClick={toggleLike} />
@@ -522,6 +536,8 @@ function PostsComponent({ postId, userImg, userName, description, media }) {
         <img src={union} alt="Share" className="cursor-pointer w-6 h-6" />
         <img src={save} alt="Save" className="ml-auto cursor-pointer w-6 h-6" />
       </div>
+  
+      {/* Likes and Comments Count */}
       <div className="mt-4">
         <p className="text-sm font-semibold">{likesCount} Likes</p>
         <p className="text-sm font-semibold">{comments.length} Comments</p>
@@ -537,7 +553,8 @@ function PostsComponent({ postId, userImg, userName, description, media }) {
           </>
         )}
       </div>
-
+  
+      {/* Comment Modal */}
       <CommentModal
         postId={postId}
         userImg={userImg}
@@ -550,6 +567,8 @@ function PostsComponent({ postId, userImg, userName, description, media }) {
       />
     </div>
   );
+  
+
 }
 function CommentModal({ postId, userImg, userName, description, isOpen, onClose, addComment, fetchComments }) {
   const [comments, setComments] = useState([]);

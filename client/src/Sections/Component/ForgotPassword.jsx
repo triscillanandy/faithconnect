@@ -33,8 +33,8 @@ console.log(response);
   };
 
   return (
-    <div className="flex container mx-auto p-5 items-center gap-20">
-           <ToastContainer
+    <div className="flex flex-col md:flex-row container mx-auto p-5 items-center gap-5 md:gap-20">
+      <ToastContainer
         position="top-right"
         autoClose={3000}
         hideProgressBar={false}
@@ -45,42 +45,45 @@ console.log(response);
         draggable
         pauseOnHover
       />
-      
-      <SideBar />
-      <form className="max-forgotPasswordScreen:mx-auto">
-        <p className="font-bold text-2xl mt-[-150px] max-forgotPasswordScreen:mt-3 ">
+  
+      {/* Form placed first */}
+      <form className="w-full max-w-md mx-auto">
+        <p className="font-bold text-2xl mt-5 md:mt-0 text-center md:text-left">
           Forgot Your Password
         </p>
-        <p className="w-[425px] mt-7">
+        <p className="w-full mt-7 text-center md:text-left">
           Please enter your registered email below to receive your password
           reset instructions.
         </p>
         <input
           type="email"
-          className="w-[425px] h-[60px] rounded-[10px] border-[3px] border-gray-700 mt-7 placeholder:text-center text-center block"
+          className="w-full h-[60px] rounded-[10px] border-[3px] border-gray-700 mt-7 placeholder:text-center text-center block"
           placeholder="Email Address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
         <button
           type="submit"
-          className="bg-[#FF6132] w-[423px] h-[60px] rounded-[5px] text-white text-center mt-7"
+          className="bg-[#FF6132] w-full h-[60px] rounded-[5px] text-white text-center mt-7"
           onClick={handleSubmit}
         >
           Send
         </button>
-        <div className="flex items-center ml-8 gap-6 mt-8">
+        <div className="flex items-center justify-center gap-6 mt-8">
           <hr className="w-[140px] border border-[#180F4B]" />
           <p>Or</p>
           <hr className="w-[140px] border border-[#180F4B]" />
         </div>
         <p
-          className="text-[#ff6132] ml-44 mt-10 cursor-pointer"
+          className="text-[#ff6132] text-center mt-10 cursor-pointer"
           onClick={() => navigate("/Login")}
         >
           Go Back
         </p>
       </form>
+  
+      {/* Sidebar placed after the form */}
+      <SideBar />
     </div>
   );
 };

@@ -1,0 +1,19 @@
+@media (max-width: 640px) {
+    .responsive-container {
+      padding: 10px; /* Adjust padding for small screens */
+    }
+  
+    .responsive-media {
+      height: 200px; /* Adjust media height for small screens */
+    }
+  }
+  
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .responsive-container {
+      padding: 15px; /* Adjust padding for medium screens */
+    }
+  
+    .responsive-media {
+      height: 300px; /* Adjust media height for medium screens */
+    }
+  }

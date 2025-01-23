@@ -70,15 +70,19 @@ const ResetPassword = () => {
       setSuccess("");
     }
   };
-
   return (
-    <div className="flex mx-auto">
-      <SideBar />
-      <div className="w-[615px] h-[700px] flex flex-col justify-center items-center">
-      {error && <div className="text-red-500 mb-4">{error}</div>}
-      {success && <div className="text-green-500 mb-4">{success}</div>}
-        <h1 className="font-bold text-3xl mb-8">Reset Password</h1>
+    <div className="flex flex-col md:flex-row container mx-auto p-5 items-center gap-5 md:gap-20">
+      {/* Form Container - placed first on mobile */}
+      <div className="w-full md:w-[615px] h-auto md:h-[700px] flex flex-col justify-center items-center p-4 md:p-5">
+        {error && <div className="text-red-500 mb-4 text-center">{error}</div>}
+        {success && <div className="text-green-500 mb-4 text-center">{success}</div>}
+  
+        <h1 className="font-bold text-2xl md:text-3xl mb-6 md:mb-8 text-center">
+          Reset Password
+        </h1>
+  
         <form onSubmit={handleSubmit} className="w-full max-w-md">
+          {/* New Password Input */}
           <div className="mb-4">
             <label className="block text-sm font-medium mb-1">
               Input New Password
@@ -90,7 +94,7 @@ const ResetPassword = () => {
               onChange={handleChange}
             />
             <div className="mt-2">
-              <ul className="list-none pl-0">
+              <ul className="list-none pl-0 space-y-1">
                 <li style={{ color: validation.length ? "green" : "red" }}>
                   {validation.length ? "✔" : "✘"} At least 8 characters
                 </li>
@@ -103,6 +107,8 @@ const ResetPassword = () => {
               </ul>
             </div>
           </div>
+  
+          {/* Confirm Password Input */}
           <div className="mb-4">
             <label className="block text-sm font-medium mb-1">
               Confirm Password
@@ -126,17 +132,23 @@ const ResetPassword = () => {
                 : "✘ Passwords do not match. Please try again."}
             </div>
           </div>
-         
+  
+          {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-[#ff6132] text-white rounded py-2 mt-4"
+            className="w-full bg-[#ff6132] text-white rounded py-2 mt-4 hover:bg-[#e5532b] transition-colors"
           >
             Done
           </button>
         </form>
       </div>
+  
+      {/* Sidebar - placed below the form on mobile */}
+      <SideBar />
     </div>
   );
+  
+
 };
 
 export default ResetPassword;

@@ -14,7 +14,7 @@ dotenv.config(); // Load environment variables
 
 // Middleware
 var corsOptions = {
-  origin: 'http://localhost:5173',  // Adjust your frontend URL if needed
+  origin: 'https://faithconnect-1-3yv0.onrender.com',  // Adjust your frontend URL if needed
 };
 const app = express();
 app.use(express.json());

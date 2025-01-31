@@ -69,6 +69,7 @@ function Registration({ text }) {
       });
 
       if (response.ok) {
+        localStorage.setItem("email", email);
         toast.success("Registration successful. Please check your email to verify.");
         setTimeout(() => {
           navigate("/email-verification"); // Redirect after showing the message

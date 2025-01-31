@@ -1,24 +1,24 @@
 
 import express from 'express';
-import { register, verifyEmail, forgotPassword,resetPassword, login,getUserProfile, getProtectedData ,getMyProfile,updateProfile,uploadProfileImage,updatePreferences, getPreferences} from '../controllers/authController.js';
+import { register, verifyEmail,resendVerificationCode, forgotPassword,resetPassword, login,getUserProfile, getProtectedData ,getMyProfile,updateProfile,uploadProfileImage,updatePreferences, getPreferences} from '../controllers/authController.js';
 import { isAuthenticated } from '../middleware/authMiddleware.js';
 import { createPost,getMyPosts,getPosts,getPostById,deletePost,getOtherPosts,addComment,getCommentsByPostId,toggleLike, getLikesByPostId, } from '../controllers/postController.js';
 import { upload } from '../middleware/uploadMiddleware.js';
 import {creategroups,joingroups,leavegroups,listGroups,getGroupDetails} from '../controllers/groupController.js';
-
+import { getStreamUrl,startliveStream} from '../controllers/EventBroadcastController.js';
 import { createConversation, getConversations, getConversationByUsers,checkConversationExists,getGroupConversation, createGroupConversation,sendMessage,getMessages ,sendGroupMessage,getGroupMessages} from '../controllers/conversationController.js';
 import {followUser, unfollowUser,getFollowers,getSuggestedFriends, getFollowing,getSuggestedUsers} from '../controllers/followController.js'; // New controllers for follow functionality
 const router = express.Router();
 router.post('/register', register);
 // Use URL parameter for the token
 router.post('/verify-email', verifyEmail);
-
+router.post('/resend-code', resendVerificationCode);
 router.post('/login', login);
 router.get('/protected', isAuthenticated, getProtectedData);
 router.get('/profile', isAuthenticated, getMyProfile); // Authenticated user's profile
 router.put('/profile', isAuthenticated, updateProfile); // Endpoint for updating profile
 router.post('/profile/image', isAuthenticated, upload.single('profileImage'), uploadProfileImage);
-
+ 
 router.put('/preferences', isAuthenticated, updatePreferences); // Update preferences
 router.get('/preferences', isAuthenticated, getPreferences);   // Fetch preferences
 
@@ -79,6 +79,9 @@ router.post('/conversations/group', isAuthenticated,  createGroupConversation);
 router.get('/conversations/group/:id', isAuthenticated,  getGroupConversation);
 router.get('/group-messages/:id', isAuthenticated,  getGroupMessages);// Send a message to a group
 ///router.get('/group-messages/:groupId', isAuthenticated, getGroupMessages);  // Get all messages of a specific group
+
+router.get('/streams/:streamKey', isAuthenticated, getStreamUrl);
+router.post('/streams/start', isAuthenticated, startliveStream);
 
 export default router;
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; // Import toast styles
@@ -6,14 +6,24 @@ import verify from "./Registration-Images/verify.png";
 
 const EmailSide = () => {
   const [verificationCode, setVerificationCode] = useState(["", "", "", "", "", ""]);
-
+  const [email, setEmail] = useState(""); // State to store the email
   const navigate = useNavigate();
+
+  // Retrieve the email from localStorage when the component mounts
+  useEffect(() => {
+    const storedEmail = localStorage.getItem("email");
+    if (storedEmail) {
+      setEmail(storedEmail);
+    } else {
+      toast.error("No email found. Please register again.");
+      navigate("/individual-registration"); // Redirect to registration if no email is found
+    }
+  }, [navigate]);
 
   const handleVerify = async () => {
     const code = verificationCode.join(""); // Combine the input fields into a single code
 
     if (code.length !== 6 || verificationCode.includes("")) {
-      
       toast.error("Please enter a valid 6-digit verification code."); // Show error message with toast
       return;
     }
@@ -33,12 +43,32 @@ const EmailSide = () => {
         toast.success("Verification successful! Redirecting..."); // Success message
         navigate("/verified"); // Redirect to the verified page
       } else {
-        
         toast.error(result.message || "Verification failed. Please try again."); // Error message
       }
     } catch (error) {
-     
       toast.error("Something went wrong. Please try again."); // Error message
+    }
+  };
+
+  const handleResendCode = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/resend-code`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }), // Use the stored email
+      });
+
+      if (response.ok) {
+        toast.success("New verification code sent successfully.");
+      } else {
+        const data = await response.json();
+        toast.error(data.message || "Failed to resend verification code.");
+      }
+    } catch (error) {
+      console.error("Error during resend:", error);
+      toast.error("An error occurred. Please try again later.");
     }
   };
 
@@ -82,8 +112,8 @@ const EmailSide = () => {
           </p>
           <p>
             Please enter the <br className="hidden max-[444px]:block px-4" />{" "}
-            verification code that was sent your registered{" "}
-            <br className="hidden max-[444px]:block" /> email address
+            verification code that was sent to{" "}
+            <span className="font-bold">{email}</span>. {/* Display the email */}
           </p>
         </div>
 
@@ -106,7 +136,7 @@ const EmailSide = () => {
             />
           ))}
         </div>
-        
+
         <button
           className="text-[#ff6132] bg-white w-[453px] rounded-[12.11px] pt-[16.15px] pr-[48.44px] pb-[16.15px] pl-[48.44px] mb-4 max-[500px]:w-[250px]"
           onClick={handleVerify}
@@ -115,9 +145,9 @@ const EmailSide = () => {
         </button>
         <p>
           Didn't receive code?{" "}
-          <a href="#" className="text-black">
+          <button onClick={handleResendCode} className="text-black underline">
             Resend
-          </a>
+          </button>
         </p>
       </div>
     </div>

@@ -39,6 +39,54 @@ import crypto from 'crypto';
  * @param {Object} res - The response object.
  * @returns {Promise<void>} - A promise that resolves when the user is registered.
  */
+// export const register = async (req, res) => {
+//   const { username, email, phone, firstName, lastName, password, userType } = req.body;
+
+//   try {
+//     // Check if the user already exists
+//     const existingUser = await User.findOne({ where: { email } });
+//     if (existingUser) {
+//       return res.status(400).json({ message: 'User already exists' });
+//     }
+
+//     // Generate a 6-digit verification code
+//     const verificationCode = Math.floor(100000 + Math.random() * 900000);
+
+//     // Set an expiration time for the code (3 days from now)
+//     const verificationCodeExpires = Date.now() + 3 * 24 * 60 * 60 * 1000;
+
+//     // Create a new user
+//     const newUser = await User.create({
+//       username,
+//       email,
+//       phone,
+//       firstName,
+//       lastName,
+//       password, // Ensure you hash the password before saving
+//       isVerified: false,
+//       verificationCode,
+//       verificationCodeExpires,
+//       userType, // Add userType to the new user
+//     });
+
+//     // Send the verification email with the 6-digit code
+//     const mailOptions = {
+//       from: process.env.EMAIL_USER,
+//       to: email,
+//       subject: 'Email Verification',
+//       html: `<p>Your verification code is <strong>${verificationCode}</strong>.</p> 
+//              <p>Please enter this code on the verification page to activate your account.</p>`,
+//     };
+
+//     await transporter.sendMail(mailOptions);
+
+//     res.status(201).json({ message: 'User registered successfully. Please verify your account using the code sent to your email.'});
+//   } catch (error) {
+//     console.error('Error during registration:', error);
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
 export const register = async (req, res) => {
   const { username, email, phone, firstName, lastName, password, userType } = req.body;
 
@@ -55,6 +103,9 @@ export const register = async (req, res) => {
     // Set an expiration time for the code (3 days from now)
     const verificationCodeExpires = Date.now() + 3 * 24 * 60 * 60 * 1000;
 
+    // Generate a unique streamKey for organizations
+    const streamKey = userType === 'organization_church' ? Math.random().toString(36).substring(2, 15) : null;
+
     // Create a new user
     const newUser = await User.create({
       username,
@@ -66,7 +117,8 @@ export const register = async (req, res) => {
       isVerified: false,
       verificationCode,
       verificationCodeExpires,
-      userType, // Add userType to the new user
+      userType,
+      streamKey, // Add streamKey for organizations
     });
 
     // Send the verification email with the 6-digit code
@@ -80,13 +132,58 @@ export const register = async (req, res) => {
 
     await transporter.sendMail(mailOptions);
 
-    res.status(201).json({ message: 'User registered successfully. Please verify your account using the code sent to your email.'});
+    res.status(201).json({ message: 'User registered successfully. Please verify your account using the code sent to your email.', streamKey });
   } catch (error) {
     console.error('Error during registration:', error);
     res.status(500).json({ error: error.message });
   }
 };
 
+export const resendVerificationCode = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    // Find the user by email
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Check if the user is already verified
+    if (user.isVerified) {
+      return res.status(400).json({ message: 'User is already verified.' });
+    }
+
+    // Generate a new 6-digit verification code
+    const newVerificationCode = Math.floor(100000 + Math.random() * 900000);
+
+    // Set a new expiration time for the code (3 days from now)
+    const newVerificationCodeExpires = Date.now() + 3 * 24 * 60 * 60 * 1000;
+
+    // Update the user's verification code and expiration time
+    await user.update({
+      verificationCode: newVerificationCode,
+      verificationCodeExpires: newVerificationCodeExpires,
+    });
+
+    // Send the new verification email
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'New Verification Code',
+      html: `<p>Your new verification code is <strong>${newVerificationCode}</strong>.</p> 
+             <p>Please enter this code on the verification page to activate your account.</p>`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: 'New verification code sent successfully.' });
+  } catch (error) {
+    console.error('Error during resend verification code:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
 export const verifyEmail = async (req, res) => {
   const { verificationCode } = req.body; // Get the verification code from the request body
 
@@ -232,24 +329,6 @@ export const login = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
-// // Fetch authenticated user's profile
-// export const getMyProfile = async (req, res) => {
-//   try {
-//     // Fetch user data using the authenticated user's ID
-//     const user = await User.findByPk(req.user.id, {
-//       attributes: ['id', 'username', 'email', 'dateOfBirth', 'isVerified','profileImage'], // Limit exposed fields
-//     });
-
-//     if (!user) {
-//       return res.status(404).json({ message: 'User not found.' });
-//     }
-
-//     res.json({ user });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
 
 export const getUserProfile = async (req, res) => {
   try {

@@ -18,8 +18,10 @@ import Posts from "./Sections/Component/Posts";
 import EditProfile from "./Sections/Component/EditProfile";
 import Chats from "./Sections/Component/Chats";
 import Reels from "./Sections/Component/Reels"; // Import the Reels component
+import LiveStream from "./Sections/Component/LiveStream";
+import WatchStream from "./Sections/Component/WatchStream";
 import './App.css'
-
+import 'global'; // Add the global polyfill
 function App() {
   return (
     <>
@@ -43,6 +45,8 @@ function App() {
           <Route path="/edit-profile" element={<EditProfile />} />
           <Route path="/chats" element={<Chats/>} />
           <Route path="/reels" element={<Reels />} /> {/* Add the route for Reels */}
+          <Route path="/live" element={<LiveStream />} /> 
+          <Route path="/watch-stream/:streamKey" element={<WatchStream />} /> 
         </Routes>
       </Router>
     </>

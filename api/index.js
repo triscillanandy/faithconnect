@@ -9,7 +9,7 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { v2 as cloudinary } from 'cloudinary';
 import { Server as socketIo } from 'socket.io';  // Correct way to import socket.io
-
+import './rtmp-server.js'; // Import the RTMP server
 dotenv.config(); // Load environment variables
 
 // Middleware

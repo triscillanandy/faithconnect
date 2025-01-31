@@ -90,6 +90,11 @@ User.init(
       allowNull: true,
       field: 'user_type',
     },
+    streamKey: {
+      type: DataTypes.STRING,
+      allowNull: true, // Only organizations will have a streamKey
+      unique: true,
+    }
   },
   {
     sequelize, // Pass the sequelize instance

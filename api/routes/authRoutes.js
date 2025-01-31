@@ -1,6 +1,6 @@
 
 import express from 'express';
-import { register, verifyEmail, forgotPassword,resetPassword, login,getUserProfile, getProtectedData ,getMyProfile,updateProfile,uploadProfileImage,updatePreferences, getPreferences} from '../controllers/authController.js';
+import { register, verifyEmail,resendVerificationCode, forgotPassword,resetPassword, login,getUserProfile, getProtectedData ,getMyProfile,updateProfile,uploadProfileImage,updatePreferences, getPreferences} from '../controllers/authController.js';
 import { isAuthenticated } from '../middleware/authMiddleware.js';
 import { createPost,getMyPosts,getPosts,getPostById,deletePost,getOtherPosts,addComment,getCommentsByPostId,toggleLike, getLikesByPostId, } from '../controllers/postController.js';
 import { upload } from '../middleware/uploadMiddleware.js';
@@ -12,13 +12,13 @@ const router = express.Router();
 router.post('/register', register);
 // Use URL parameter for the token
 router.post('/verify-email', verifyEmail);
-
+router.post('/resend-code', resendVerificationCode);
 router.post('/login', login);
 router.get('/protected', isAuthenticated, getProtectedData);
 router.get('/profile', isAuthenticated, getMyProfile); // Authenticated user's profile
 router.put('/profile', isAuthenticated, updateProfile); // Endpoint for updating profile
 router.post('/profile/image', isAuthenticated, upload.single('profileImage'), uploadProfileImage);
-
+ 
 router.put('/preferences', isAuthenticated, updatePreferences); // Update preferences
 router.get('/preferences', isAuthenticated, getPreferences);   // Fetch preferences
 

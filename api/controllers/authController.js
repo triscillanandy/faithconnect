@@ -139,7 +139,51 @@ export const register = async (req, res) => {
   }
 };
 
+export const resendVerificationCode = async (req, res) => {
+  const { email } = req.body;
 
+  try {
+    // Find the user by email
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Check if the user is already verified
+    if (user.isVerified) {
+      return res.status(400).json({ message: 'User is already verified.' });
+    }
+
+    // Generate a new 6-digit verification code
+    const newVerificationCode = Math.floor(100000 + Math.random() * 900000);
+
+    // Set a new expiration time for the code (3 days from now)
+    const newVerificationCodeExpires = Date.now() + 3 * 24 * 60 * 60 * 1000;
+
+    // Update the user's verification code and expiration time
+    await user.update({
+      verificationCode: newVerificationCode,
+      verificationCodeExpires: newVerificationCodeExpires,
+    });
+
+    // Send the new verification email
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'New Verification Code',
+      html: `<p>Your new verification code is <strong>${newVerificationCode}</strong>.</p> 
+             <p>Please enter this code on the verification page to activate your account.</p>`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: 'New verification code sent successfully.' });
+  } catch (error) {
+    console.error('Error during resend verification code:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
 export const verifyEmail = async (req, res) => {
   const { verificationCode } = req.body; // Get the verification code from the request body
 

@@ -19,12 +19,13 @@ const Reels = ({ posts = [] }) => {
   const [isMuted, setIsMuted] = useState(true);
   const playerRef = useRef(null);
   const [liked, setLiked] = useState({});
+  const [touchStart, setTouchStart] = useState(0); // Track the touch start position
 
   const toggleLike = (reelId) => {
     setLiked((prev) => ({ ...prev, [reelId]: !prev[reelId] }));
   };
 
-  // Switch reels on scroll or swipe
+  // Switch reels on scroll (mouse wheel or swipe)
   const handleScroll = (e) => {
     const { deltaY } = e;
     if (deltaY > 0 && currentReel < posts.length - 1) {
@@ -34,19 +35,20 @@ const Reels = ({ posts = [] }) => {
     }
   };
 
+  // Handle touch start for mobile swipe
   const handleTouchStart = (e) => {
-    const touchStart = e.touches[0].clientY;
-    e.currentTarget.addEventListener("touchmove", (e) => handleTouchMove(e, touchStart));
+    const touchStartPosition = e.touches[0].clientY;
+    setTouchStart(touchStartPosition);
   };
 
-  const handleTouchMove = (e, touchStart) => {
-    const touchMove = e.touches[0].clientY;
-    if (touchMove - touchStart > 0 && currentReel > 0) {
-      setCurrentReel(currentReel - 1);
-    } else if (touchMove - touchStart < 0 && currentReel < posts.length - 1) {
-      setCurrentReel(currentReel + 1);
+  // Handle touch move for mobile swipe
+  const handleTouchMove = (e) => {
+    const touchEnd = e.touches[0].clientY;
+    if (touchStart - touchEnd > 50 && currentReel < posts.length - 1) {
+      setCurrentReel(currentReel + 1); // Swipe down to go to next reel
+    } else if (touchStart - touchEnd < -50 && currentReel > 0) {
+      setCurrentReel(currentReel - 1); // Swipe up to go to previous reel
     }
-    e.preventDefault(); // prevent default scrolling
   };
 
   const togglePlay = () => {
@@ -65,27 +67,12 @@ const Reels = ({ posts = [] }) => {
     }
   }, [currentReel]);
 
-  // Handle keyboard navigation (up/down arrow keys)
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "ArrowDown" && currentReel < posts.length - 1) {
-        setCurrentReel(currentReel + 1);
-      } else if (e.key === "ArrowUp" && currentReel > 0) {
-        setCurrentReel(currentReel - 1);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [currentReel, posts.length]);
-
   return (
     <div
       className="reels-container"
       onWheel={handleScroll}
-      onTouchStart={handleTouchStart} // Mobile touch support
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
     >
       {posts.length > 0 ? (
         posts.map((reel, index) => (
@@ -180,4 +167,66 @@ const Reels = ({ posts = [] }) => {
   );
 };
 
-export default Reels;
+
+
+// Parent Component (App)
+const App = () => {
+  const [posts, setPosts] = useState([]);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const fetchPosts = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setErrorMessage("No token provided. Please log in.");
+      return;
+    }
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/getOtherPosts`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const videoPosts = data.posts.filter((post) =>
+          post.media.some((media) => media.mediaType.startsWith("video"))
+        );
+        setPosts(videoPosts);
+      } else {
+        const errorData = await response.json();
+        setErrorMessage(errorData.message || "Failed to fetch posts.");
+      }
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      setErrorMessage("An error occurred while fetching posts.");
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  return (
+    <div className="app-container">
+      <LoggedInSideBar />
+      <div className="main-content">
+        {errorMessage ? (
+          <p className="error-message">{errorMessage}</p>
+        ) : (
+          // Wrap the reels inside a mobile-style container
+          <div className="mobile-reels-container">
+            <Reels posts={posts} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default App;

@@ -1,4 +1,4 @@
-import { FaHome, FaSearch, FaPrayingHands, FaFilm, FaPlusSquare, FaCommentDots, FaBell, FaUser } from "react-icons/fa";
+import { FaHome,  FaPrayingHands, FaFilm, FaPlusSquare, FaCommentDots, FaBell, FaUser } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import Pray from "./LoggedInScreenImages/Pray.png";
 import { useCallback } from "react";
@@ -26,15 +26,11 @@ const LoggedInSideBar = () => {
             title="Home"
             onClick={() => handleNavigation("/home")}
           />
-          <FaSearch
-            className="cursor-pointer w-6 h-6 md:w-8 md:h-8 text-gray-600 hover:text-gray-900 transition-colors"
-            title="Search"
-            onClick={() => handleNavigation("/search")}
-          />
+      
           <FaPrayingHands
             className="hidden md:flex cursor-pointer w-6 h-6 md:w-8 md:h-8 text-gray-600 hover:text-gray-900 transition-colors"
             title="Pray"
-            onClick={() => handleNavigation("/pray")}
+            onClick={() => handleNavigation("/search")}
           />
           <FaFilm
             className="cursor-pointer w-6 h-6 md:w-8 md:h-8 text-gray-600 hover:text-gray-900 transition-colors"

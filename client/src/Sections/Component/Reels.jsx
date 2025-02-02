@@ -10,63 +10,65 @@ import {
   FaVolumeUp,
   FaVolumeMute,
 } from "react-icons/fa";
-import "./Reels.css"; // Ensure you have this CSS file for styling
+import "./Reels.css";
 
 // Reels Component
 const Reels = ({ posts = [] }) => {
-  const [currentReel, setCurrentReel] = useState(0); // Track the currently active reel
-  const [isPlaying, setIsPlaying] = useState(true); // Play/pause state
-  const [isMuted, setIsMuted] = useState(true); // Mute/unmute state
-  const playerRef = useRef(null); // Reference to the ReactPlayer instance
+  const [currentReel, setCurrentReel] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
+  const playerRef = useRef(null);
+  const [liked, setLiked] = useState({});
 
-  // Handle scroll to switch between reels
+  const toggleLike = (reelId) => {
+    setLiked((prev) => ({ ...prev, [reelId]: !prev[reelId] }));
+  };
+
+  // Switch reels on scroll
   const handleScroll = (e) => {
     const { deltaY } = e;
     if (deltaY > 0 && currentReel < posts.length - 1) {
-      // Scroll down: move to the next reel
       setCurrentReel(currentReel + 1);
     } else if (deltaY < 0 && currentReel > 0) {
-      // Scroll up: move to the previous reel
       setCurrentReel(currentReel - 1);
     }
   };
 
-  // Toggle play/pause for the current reel
   const togglePlay = () => {
-    setIsPlaying(!isPlaying);
+    setIsPlaying((prev) => !prev);
   };
 
-  // Toggle mute/unmute for the current reel
   const toggleMute = () => {
-    setIsMuted(!isMuted);
+    setIsMuted((prev) => !prev);
   };
 
-  // Reset video when switching reels
+  // Reset video on reel change
   useEffect(() => {
     if (playerRef.current) {
-      playerRef.current.seekTo(0); // Start the video from the beginning
-      setIsPlaying(true); // Autoplay the new reel
+      playerRef.current.seekTo(0);
+      setIsPlaying(true);
     }
   }, [currentReel]);
 
   return (
-    <div className="flex min-h-screen">
-   <div className="w-6"> {/* Fixed width for sidebar */}
-      <LoggedInSideBar />
-    </div>
-    <div className="flex flex-col flex-grow items-center justify-center">
-    <div className="reels-container" onWheel={handleScroll}>
+    <div
+      className="reels-container"
+      onWheel={handleScroll}
+    >
       {posts.length > 0 ? (
         posts.map((reel, index) => (
           <div
             key={reel.id}
             className={`reel ${index === currentReel ? "active" : ""}`}
-            style={{ display: index === currentReel ? "flex" : "none" }}
+            style={{ display: index === currentReel ? "block" : "none" }}
           >
-            {/* Video Player */}
             <ReactPlayer
               ref={playerRef}
-              url={reel.media.find((media) => media.mediaType.startsWith("video")).mediaUrl}
+              url={
+                reel.media.find((media) =>
+                  media.mediaType.startsWith("video")
+                ).mediaUrl
+              }
               playing={index === currentReel && isPlaying}
               muted={isMuted}
               controls={false}
@@ -75,44 +77,73 @@ const Reels = ({ posts = [] }) => {
               loop
             />
 
-            {/* Overlay with user info and actions */}
+            {/* Overlay for info and controls */}
             <div className="overlay">
-              {/* User Info */}
-              <div className="user-info">
-                <img
-                  src={reel.user?.profileImage || "https://via.placeholder.com/40"}
-                  alt="User"
-                  className="user-avatar"
-                />
-                <span className="username">{reel.user?.username || "User"}</span>
+              {/* Top-left: User info and description */}
+              <div className="reel-info">
+                <div className="user-info">
+                  <img
+                    src={
+                      reel.user?.profileImage ||
+                      "https://via.placeholder.com/40"
+                    }
+                    alt="User"
+                    className="user-avatar"
+                  />
+                  <span className="username">
+                    {reel.user?.username || "User"}
+                  </span>
+                </div>
+                <div className="reel-description">
+                  {reel.description || "No description provided."}
+                </div>
               </div>
 
-              {/* Actions (Like, Comment, Share, Play/Pause, Mute/Unmute) */}
-              <div className="actions">
-                <button onClick={togglePlay}>
-                  {isPlaying ? <FaPause size={24} /> : <FaPlay size={24} />}
+              {/* Right side: Action buttons */}
+              <div className="reel-actions">
+                <button
+                  onClick={() => toggleLike(reel.id)}
+                  className="action-button"
+                >
+                  <FaHeart
+                    size={28}
+                    color={liked[reel.id] ? "red" : "white"}
+                  />
+                  <span>{reel.likes + (liked[reel.id] ? 1 : 0)}</span>
                 </button>
-                <button onClick={toggleMute}>
-                  {isMuted ? <FaVolumeMute size={24} /> : <FaVolumeUp size={24} />}
+                <button className="action-button">
+                  <FaComment size={28} color="white" />
+                  <span>{reel.comments || 0}</span>
                 </button>
-                <button>
-                  <FaHeart size={24} /> {reel.likes || 0}
+                <button className="action-button">
+                  <FaShare size={28} color="white" />
+                  <span>{reel.shares || 0}</span>
                 </button>
-                <button>
-                  <FaComment size={24} /> {reel.comments || 0}
+              </div>
+
+              {/* Bottom controls: Play/Pause and Mute/Unmute */}
+              <div className="bottom-controls">
+                <button onClick={togglePlay} className="control-button">
+                  {isPlaying ? (
+                    <FaPause size={24} color="white" />
+                  ) : (
+                    <FaPlay size={24} color="white" />
+                  )}
                 </button>
-                <button>
-                  <FaShare size={24} /> {reel.shares || 0}
+                <button onClick={toggleMute} className="control-button">
+                  {isMuted ? (
+                    <FaVolumeMute size={24} color="white" />
+                  ) : (
+                    <FaVolumeUp size={24} color="white" />
+                  )}
                 </button>
               </div>
             </div>
           </div>
         ))
       ) : (
-        <p className="text-white">No video posts available.</p>
+        <p className="no-posts-message">No video posts available.</p>
       )}
-    </div>
-    </div>
     </div>
   );
 };
@@ -122,7 +153,6 @@ const App = () => {
   const [posts, setPosts] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Fetch posts from the API
   const fetchPosts = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -130,21 +160,23 @@ const App = () => {
       return;
     }
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/getOtherPosts`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/getOtherPosts`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
-        // Filter posts to include only those with video media
         const videoPosts = data.posts.filter((post) =>
           post.media.some((media) => media.mediaType.startsWith("video"))
         );
-        setPosts(videoPosts); // Set only video posts to the state
+        setPosts(videoPosts);
       } else {
         const errorData = await response.json();
         setErrorMessage(errorData.message || "Failed to fetch posts.");
@@ -160,19 +192,17 @@ const App = () => {
   }, []);
 
   return (
-    <div className="flex flex-1 ml-20">
-      {/* Main Content */}
-      <div className="flex-1 p-4 overflow-y-auto h-screen scrollbar-hide">
-        <div className="flex gap-4 mb-4">
-          {/* Add content here if needed */}
-        </div>
-        <div>
-          {errorMessage ? (
-            <p className="text-red-500">{errorMessage}</p>
-          ) : (
+    <div className="app-container">
+      <LoggedInSideBar />
+      <div className="main-content">
+        {errorMessage ? (
+          <p className="error-message">{errorMessage}</p>
+        ) : (
+          // Wrap the reels inside a mobile-style container
+          <div className="mobile-reels-container">
             <Reels posts={posts} />
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

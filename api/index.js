@@ -343,23 +343,31 @@ io.on('connection', (socket) => {
       });
     }
   });
-
-  // Handle sending group messages
-  socket.on('sendGroupMessage', ({ senderId, message, conversationId, groupId }) => {
-    const groupMembers = activeGroups[groupId] || new Set();
-    console.log('groupMembers:', groupMembers); // Log group members
-    groupMembers.forEach((memberSocketId) => {
-      if (memberSocketId !== socket.id) { // Don't send message back to sender
-        io.to(memberSocketId).emit('receive-group-message', {
-          conversationId,
-          senderId,
-          message,
-          groupId,
-        });
-      }
-    });
-    console.log(`Group message sent to group ${groupId}:`, { senderId, message });
+// For group messages
+socket.on('sendGroupMessage', ({ senderId, message, groupId }) => {
+  const groupMembers = activeGroups[groupId] || new Set();
+  groupMembers.forEach((memberSocketId) => {
+    if (memberSocketId !== socket.id) { // Skip sender
+      io.to(memberSocketId).emit('receive-group-message', { message, senderId, groupId });
+    }
   });
+});
+  // Handle sending group messages
+//   socket.on('sendGroupMessage', ({ senderId, message, conversationId, groupId }) => {
+//     const groupMembers = activeGroups[groupId] || new Set();
+//     console.log('groupMembers:', groupMembers); // Log group members
+//     groupMembers.forEach((memberSocketId) => {
+//       if (memberSocketId !== socket.id) { // Don't send message back to sender
+//         io.to(memberSocketId).emit('receive-group-message', {
+//           conversationId,
+//           senderId,
+//           message,
+//           groupId,
+//         });
+//       }
+//     });
+//     console.log(`Group message sent to group ${groupId}:`, { senderId, message });
+//   });
 });
 
 // let activeUsers = []; // Track active users

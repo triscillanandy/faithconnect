@@ -1,9 +1,13 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { ClipLoader } from "react-spinners";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";// Import Toastify styles
 import SideBar from "./SideBar";
 
 const ResetPassword = () => {
-  const { token } = useParams(); // Extract the reset token from the URL
+  const { token } = useParams();
+  const navigate = useNavigate();
 
   const [password, setPassword] = useState("");
   const [validation, setValidation] = useState({
@@ -13,16 +17,14 @@ const ResetPassword = () => {
   });
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isMatch, setIsMatch] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false); // Loading state
 
   const validatePassword = (input) => {
-    const rules = {
+    setValidation({
       length: input.length >= 8,
       number: /\d/.test(input),
       specialChar: /[!@#$%^&*(),.?":{}|<>]/.test(input),
-    };
-    setValidation(rules);
+    });
   };
 
   const handleChange = (e) => {
@@ -41,52 +43,51 @@ const ResetPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isMatch) {
-      setError("Passwords do not match.");
+      toast.error("Passwords do not match.");
       return;
     }
+
+    setLoading(true);
 
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/reset-password`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          resetToken: token,
-          newPassword: password,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resetToken: token, newPassword: password }),
       });
 
       const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "An error occurred.");
 
-      if (!response.ok) {
-        throw new Error(data.message || "An error occurred.");
-      }
-
-      setSuccess(data.message);
-      setError("");
+      toast.success("Password reset successfully.");
+      setTimeout(() => navigate("/Login"), 1500);
     } catch (error) {
-      setError(error.message || "An error occurred.");
-      setSuccess("");
+      toast.error(error.message || "An error occurred.");
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
     <div className="flex flex-col md:flex-row container mx-auto p-5 items-center gap-5 md:gap-20">
-      {/* Form Container - placed first on mobile */}
+        <ToastContainer
+           position="top-right"
+           autoClose={3000}
+           hideProgressBar={false}
+           newestOnTop={false}
+           closeOnClick
+           rtl={false}
+           pauseOnFocusLoss
+           draggable
+           pauseOnHover
+         />
+   
       <div className="w-full md:w-[615px] h-auto md:h-[700px] flex flex-col justify-center items-center p-4 md:p-5">
-        {error && <div className="text-red-500 mb-4 text-center">{error}</div>}
-        {success && <div className="text-green-500 mb-4 text-center">{success}</div>}
-  
-        <h1 className="font-bold text-2xl md:text-3xl mb-6 md:mb-8 text-center">
-          Reset Password
-        </h1>
-  
+        <h1 className="font-bold text-2xl md:text-3xl mb-6 md:mb-8 text-center">Reset Password</h1>
+
         <form onSubmit={handleSubmit} className="w-full max-w-md">
-          {/* New Password Input */}
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">
-              Input New Password
-            </label>
+            <label className="block text-sm font-medium mb-1">Input New Password</label>
             <input
               type="password"
               className="w-full p-2 border rounded"
@@ -107,24 +108,16 @@ const ResetPassword = () => {
               </ul>
             </div>
           </div>
-  
-          {/* Confirm Password Input */}
+
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">
-              Confirm Password
-            </label>
+            <label className="block text-sm font-medium mb-1">Confirm Password</label>
             <input
               type="password"
               className="w-full p-2 border rounded"
               value={confirmPassword}
               onChange={handleConfirmPasswordChange}
             />
-            <div
-              style={{
-                color: isMatch ? "green" : "red",
-                marginTop: "10px",
-              }}
-            >
+            <div style={{ color: isMatch ? "green" : "red", marginTop: "10px" }}>
               {!password
                 ? ""
                 : isMatch
@@ -132,23 +125,19 @@ const ResetPassword = () => {
                 : "✘ Passwords do not match. Please try again."}
             </div>
           </div>
-  
-          {/* Submit Button */}
+
           <button
             type="submit"
-            className="w-full bg-[#ff6132] text-white rounded py-2 mt-4 hover:bg-[#e5532b] transition-colors"
+            className="w-full bg-[#ff6132] text-white rounded py-2 mt-4 flex justify-center items-center gap-2 hover:bg-[#e5532b] transition-colors"
+            disabled={loading}
           >
-            Done
+              {loading ? <ClipLoader size={20} color="#FF6132" /> : "Reset Password"}
           </button>
         </form>
       </div>
-  
-      {/* Sidebar - placed below the form on mobile */}
       <SideBar />
     </div>
   );
-  
-
 };
 
 export default ResetPassword;

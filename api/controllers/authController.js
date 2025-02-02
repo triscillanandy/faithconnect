@@ -11,6 +11,8 @@ import fs from 'fs';
 import { Op } from 'sequelize';
 dotenv.config();
 
+
+import crypto from 'crypto';
 // Configure Nodemailer
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
@@ -21,8 +23,6 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS,
   },
 });
-
-import crypto from 'crypto';
 
 // Register a new user
 /**

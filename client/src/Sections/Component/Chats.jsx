@@ -100,35 +100,39 @@ const Chats = () => {
   useEffect(() => {
     if (socket) {
       socket.emit("joinRoom", JSON.parse(localStorage.getItem("user:detail")).id);
-      console.log("Joining room:", JSON.parse(localStorage.getItem("user:detail")).id);
   
-      socket.on("get-users", (activeUsers) => {
+      // Define handler functions
+      const handleGetUsers = (activeUsers) => {
         console.log("Active users:", activeUsers);
-      });
+      };
   
-      socket.on("receive-message", (data) => {
+      const handleReceiveMessage = (data) => {
         setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
-      });
-
-      socket.on("receive-group-message", (data) => {
-        console.log("Received group message:", data); // Log the received data
+      };
   
+      const handleReceiveGroupMessage = (data) => {
+        console.log("Received group message:", data);
         if (data.groupId === selectedChat?.groupId) {
-          console.log("Group ID matches selected chat. Adding message to state.");
+          console.log("Group ID matches. Adding message.");
           setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
-        } else {
-          console.log("Group ID does not match selected chat. Ignoring message.");
         }
-      });
+      };
   
-      // socket.on("receive-group-message", (data) => {
-      //   if (data.groupId === selectedChat?.groupId) {
-      //     setMessages((prev) => [...prev, { text: data.message, senderId: data.senderId }]);
-      //   }
-      // });
+      // Add listeners
+      socket.on("get-users", handleGetUsers);
+      socket.on("receive-message", handleReceiveMessage);
+      socket.on("receive-group-message", handleReceiveGroupMessage);
+  
+      // Cleanup function
+      return () => {
+        socket.off("get-users", handleGetUsers);
+        socket.off("receive-message", handleReceiveMessage);
+        socket.off("receive-group-message", handleReceiveGroupMessage);
+      };
     }
-  }, [socket, selectedChat]);
+  }, [socket, selectedChat]); // Dependencies: socket and selectedChat
 
+  
   useEffect(() => {
     messageRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -208,8 +212,52 @@ const Chats = () => {
 
     setMessages((prev) => [...prev, { text: message, senderId: user.id }]);
     setMessage("");
-  };
-
+   };
+  // const handleSendMessage = async (e) => {
+  //   e.preventDefault();
+  //   if (!message.trim()) return;
+  
+  //   const user = JSON.parse(localStorage.getItem("user:detail"));
+  //   const token = localStorage.getItem("token");
+  //   const newMessage = selectedChat.isGroup
+  //     ? {
+  //         conversationId: selectedChat.conversationId,
+  //         senderId: user.id,
+  //         message,
+  //         groupId: selectedChat.groupId
+  //       }
+  //     : {
+  //         conversationId: selectedChat.conversationId,
+  //         senderId: user.id,
+  //         receiverId: selectedUser.id,
+  //         message,
+  //       };
+  
+  //   try {
+  //     const response = await fetch(
+  //       `${import.meta.env.VITE_API_URL}/api/auth/${selectedChat.isGroup ? "groupmessages" : "messages"}`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         body: JSON.stringify(newMessage),
+  //       }
+  //     );
+  
+  //     if (!response.ok) throw new Error('Failed to send message');
+  //     const data = await response.json();
+  
+  //     // Add the message from the server response
+  //     // setMessages((prev) => [...prev, data]);
+  //     setMessages((prev) => [...prev, { text: message, senderId: user.id }]);
+  //     setMessage("");
+  //     console.log("SENT", data);
+  //   } catch (error) {
+  //     console.error("Error sending message:", error);
+  //   }
+  // };
 
   const handleStartChat = async (user) => {
     setSelectedUser(user);

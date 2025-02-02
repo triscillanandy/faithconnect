@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import LoggedInSideBar from "./LoggedInSideBar";
+import TopSideBar from "./TopSideBar"; // Import TopSideBar
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -11,7 +12,7 @@ import save from "./LoggedInScreenImages/save.png";
 import union from "./LoggedInScreenImages/Union.png";
 import dots from "./LoggedInScreenImages/dots.png";
 import "./LoggedIn.css";
-
+// Import TopSideBar
 const LoggedInUserScreen = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
@@ -27,7 +28,6 @@ const LoggedInUserScreen = () => {
     fetchPrayerGroups();
   }, []);
 
-  
   const fetchSuggestedPeople = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -36,13 +36,16 @@ const LoggedInUserScreen = () => {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/suggested-users`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/suggested-users`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
@@ -63,14 +66,17 @@ const LoggedInUserScreen = () => {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/follow`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ followId: userId }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/follow`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ followId: userId }),
+        }
+      );
 
       if (response.ok) {
         //fetchSuggestedPeople(); // Refresh the suggested people list
@@ -90,14 +96,17 @@ const LoggedInUserScreen = () => {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/unfollow`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ unfollowId: userId }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/unfollow`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ unfollowId: userId }),
+        }
+      );
 
       if (response.ok) {
         fetchSuggestedPeople(); // Refresh the suggested people list
@@ -116,13 +125,16 @@ const LoggedInUserScreen = () => {
       return;
     }
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/getOtherPosts`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/getOtherPosts`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
@@ -145,13 +157,16 @@ const LoggedInUserScreen = () => {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/groups`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/groups`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
@@ -172,13 +187,16 @@ const LoggedInUserScreen = () => {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/groups/${groupId}/join`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/groups/${groupId}/join`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.ok) {
         fetchPrayerGroups(); // Refresh the prayer groups list
@@ -200,14 +218,17 @@ const LoggedInUserScreen = () => {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/groups/${groupId}/leave`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ user_id: user.id }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/groups/${groupId}/leave`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ user_id: user.id }),
+        }
+      );
 
       if (response.ok) {
         fetchPrayerGroups(); // Refresh the prayer groups list
@@ -226,70 +247,76 @@ const LoggedInUserScreen = () => {
 
   return (
     <div className="flex min-h-screen">
+      {/* Top Navigation Bar for Mobile */}
+      <div className="md:hidden">
+        <TopSideBar />
+      </div>
+
       {/* Navigation Bar */}
       <LoggedInSideBar />
 
-   
-  {/* Main Content */}
-  <div className="flex-1 p-4 overflow-y-auto h-screen scrollbar-hide">
-    <div className="flex flex-col gap-4 mb-4">
-      {errorMessage ? (
-        <p className="text-red-500">{errorMessage}</p>
-      ) : (
-        posts.map((post) => (
-          <PostsComponent
-            key={post.id}
-            postId={post.id}
-            userImg={post.user?.profileImage}
-            userName={post.user?.username}
-            description={post.description}
-            media={post.media}
-          />
-        ))
-      )}
-    </div>
-  </div>
+      {/* Main Content */}
+      <div className="flex-1 p-4 overflow-y-auto h-screen scrollbar-hide">
+        <div className="flex flex-col gap-4 mb-4">
+          {errorMessage ? (
+            <p className="text-red-500">{errorMessage}</p>
+          ) : (
+            posts.map((post) => (
+              <PostsComponent
+                key={post.id}
+                postId={post.id}
+                userImg={post.user?.profileImage}
+                userName={post.user?.username}
+                description={post.description}
+                media={post.media}
+              />
+            ))
+          )}
+        </div>
+      </div>
 
-  {/* Sidebar (Hidden on Small Screens) */}
-  <div className="w-[352px] p-4 hidden lg:block">
-    <div className="flex justify-between items-center mb-4">
-      <h1 className="font-bold text-lg">Suggested For You</h1>
-    </div>
-    {suggestedPeople.slice(0, 6).map((people) => (
-      <SuggestedFollows
-        key={people.id}
-        userId={people.id}
-        userName={people.username}
-        imgSrc={people.profile_image}
-        followUser={followUser}
-        unfollowUser={unfollowUser}
-      />
-    ))}
-    <div className="flex justify-between items-center mt-6 mb-2">
-      <h2 className="font-bold text-lg">Prayer Groups</h2>
-      <p
-        className="text-blue-500 cursor-pointer"
-        onClick={() => setShowAllGroupsModal(true)}
-      >
-        See All
-      </p>
-    </div>
-    {groups.length > 0 ? (
-      groups.slice(0, 4).map((group) => (
-        <SuggestedGroups
-          key={group.id}
-          imgSrc={group.imgSrc}
-          group_name={group.group_name}
-          groupId={group.id}
-          isMember={group.is_member}
-          joinGroup={joinGroup}
-          leaveGroup={leaveGroup}
-        />
-      ))
-    ) : (
-      <p>No prayer groups available</p>
-    )}
-  </div>
+      {/* Sidebar (Hidden on Small Screens) */}
+      <div className="w-[352px] p-4 hidden lg:block">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="font-bold text-lg">Suggested For You</h1>
+        </div>
+        {suggestedPeople.slice(0, 6).map((people) => (
+          <SuggestedFollows
+            key={people.id}
+            userId={people.id}
+            userName={people.username}
+            imgSrc={people.profile_image}
+            followUser={followUser}
+            unfollowUser={unfollowUser}
+          />
+        ))}
+        <div className="flex justify-between items-center mt-6 mb-2">
+          <h2 className="font-bold text-lg">Prayer Groups</h2>
+          <p
+            className="text-blue-500 cursor-pointer"
+            onClick={() => setShowAllGroupsModal(true)}
+          >
+            See All
+          </p>
+        </div>
+        {groups.length > 0 ? (
+          groups
+            .slice(0, 4)
+            .map((group) => (
+              <SuggestedGroups
+                key={group.id}
+                imgSrc={group.imgSrc}
+                group_name={group.group_name}
+                groupId={group.id}
+                isMember={group.is_member}
+                joinGroup={joinGroup}
+                leaveGroup={leaveGroup}
+              />
+            ))
+        ) : (
+          <p>No prayer groups available</p>
+        )}
+      </div>
 
       {/* Modal for "See All" Groups */}
       {showAllGroupsModal && (
@@ -337,7 +364,6 @@ const LoggedInUserScreen = () => {
 
 export default LoggedInUserScreen;
 
-
 function PostsComponent({ postId, userImg, userName, description, media }) {
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
@@ -360,13 +386,16 @@ function PostsComponent({ postId, userImg, userName, description, media }) {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/posts/${postId}/likes`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/posts/${postId}/likes`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
@@ -391,13 +420,16 @@ function PostsComponent({ postId, userImg, userName, description, media }) {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/posts/${postId}/comments`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/posts/${postId}/comments`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
@@ -422,14 +454,17 @@ function PostsComponent({ postId, userImg, userName, description, media }) {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/likes`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ postId, userId: user.id }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/likes`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ postId, userId: user.id }),
+        }
+      );
 
       if (response.ok) {
         setIsLiked((prev) => !prev);
@@ -454,14 +489,17 @@ function PostsComponent({ postId, userImg, userName, description, media }) {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/comments`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ postId, content }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/comments`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ postId, content }),
+        }
+      );
 
       if (!response.ok) {
         console.error("Failed to add comment.");
@@ -498,17 +536,19 @@ function PostsComponent({ postId, userImg, userName, description, media }) {
           <img src={dots} alt="Options" className="w-5 h-5" />
         </div>
       </div>
-  
+
       {/* Text Description with Wrapping and Height Limit */}
       <div className="mb-3 text-sm max-h-32 overflow-y-auto">
         <p className="whitespace-pre-line break-words">{description}</p>
       </div>
-  
+
       {/* Media Section */}
       <div className="aspect-square overflow-hidden rounded-lg">
         <Slider {...settings}>
           {media.map((item) => (
-            <div key={item.id}> {/* Ensure unique key */}
+            <div key={item.id}>
+              {" "}
+              {/* Ensure unique key */}
               {item.mediaType.startsWith("video") ? (
                 <video controls className="object-cover w-full h-full">
                   <source src={item.mediaUrl} type={item.mediaType} />
@@ -528,15 +568,26 @@ function PostsComponent({ postId, userImg, userName, description, media }) {
       {/* Like, Comment, Share Buttons */}
       <div className="flex mt-4 gap-4 items-center">
         {isLiked ? (
-          <FaHeart className="cursor-pointer w-6 h-6 text-red-500" onClick={toggleLike} />
+          <FaHeart
+            className="cursor-pointer w-6 h-6 text-red-500"
+            onClick={toggleLike}
+          />
         ) : (
-          <FaRegHeart className="cursor-pointer w-6 h-6 text-black" onClick={toggleLike} />
+          <FaRegHeart
+            className="cursor-pointer w-6 h-6 text-black"
+            onClick={toggleLike}
+          />
         )}
-        <img src={comment} alt="Comment" className="cursor-pointer w-6 h-6" onClick={toggleModal} />
+        <img
+          src={comment}
+          alt="Comment"
+          className="cursor-pointer w-6 h-6"
+          onClick={toggleModal}
+        />
         <img src={union} alt="Share" className="cursor-pointer w-6 h-6" />
         <img src={save} alt="Save" className="ml-auto cursor-pointer w-6 h-6" />
       </div>
-  
+
       {/* Likes and Comments Count */}
       <div className="mt-4">
         <p className="text-sm font-semibold">{likesCount} Likes</p>
@@ -544,16 +595,21 @@ function PostsComponent({ postId, userImg, userName, description, media }) {
         {comments.length > 0 && (
           <>
             <div className="mt-2">
-              <p className="text-sm font-semibold">{comments[0].user.username}</p>
+              <p className="text-sm font-semibold">
+                {comments[0].user.username}
+              </p>
               <p className="text-sm">{comments[0].content}</p>
             </div>
-            <p className="text-blue-500 cursor-pointer mt-2" onClick={toggleModal}>
+            <p
+              className="text-blue-500 cursor-pointer mt-2"
+              onClick={toggleModal}
+            >
               View all comments
             </p>
           </>
         )}
       </div>
-  
+
       {/* Comment Modal */}
       <CommentModal
         postId={postId}
@@ -567,10 +623,17 @@ function PostsComponent({ postId, userImg, userName, description, media }) {
       />
     </div>
   );
-  
-
 }
-function CommentModal({ postId, userImg, userName, description, isOpen, onClose, addComment, fetchComments }) {
+function CommentModal({
+  postId,
+  userImg,
+  userName,
+  description,
+  isOpen,
+  onClose,
+  addComment,
+  fetchComments,
+}) {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
 
@@ -598,24 +661,32 @@ function CommentModal({ postId, userImg, userName, description, isOpen, onClose,
       <div className="bg-white rounded-lg p-6 w-full max-w-lg">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Comments</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
             &times;
           </button>
         </div>
         <div className="mb-4">
           <div className="flex items-center gap-4 mb-3">
-            <img src={userImg} alt={`${userName}'s profile`} className="w-10 h-10 rounded-full" />
+            <img
+              src={userImg}
+              alt={`${userName}'s profile`}
+              className="w-10 h-10 rounded-full"
+            />
             <p className="font-semibold">{userName}</p>
           </div>
           <p className="mb-3 text-sm">{description}</p>
         </div>
         <div className="max-h-64 overflow-y-auto mb-4">
-          {comments && comments.map((comment) => (
-            <div key={comment.id} className="mb-2">
-              <p className="text-sm font-semibold">{comment.user.username}</p>
-              <p className="text-sm">{comment.content}</p>
-            </div>
-          ))}
+          {comments &&
+            comments.map((comment) => (
+              <div key={comment.id} className="mb-2">
+                <p className="text-sm font-semibold">{comment.user.username}</p>
+                <p className="text-sm">{comment.content}</p>
+              </div>
+            ))}
         </div>
         <div className="flex gap-2">
           <input
@@ -625,7 +696,10 @@ function CommentModal({ postId, userImg, userName, description, isOpen, onClose,
             className="flex-1 border rounded-lg p-2"
             placeholder="Add a comment..."
           />
-          <button onClick={handleAddComment} className="bg-blue-500 text-white rounded-lg px-4 py-2">
+          <button
+            onClick={handleAddComment}
+            className="bg-blue-500 text-white rounded-lg px-4 py-2"
+          >
             Post
           </button>
         </div>
@@ -634,8 +708,13 @@ function CommentModal({ postId, userImg, userName, description, isOpen, onClose,
   );
 }
 
-
-function SuggestedFollows({ imgSrc, userName, userId, followUser, unfollowUser }) {
+function SuggestedFollows({
+  imgSrc,
+  userName,
+  userId,
+  followUser,
+  unfollowUser,
+}) {
   const [isFollowing, setIsFollowing] = useState(false);
 
   const handleFollow = async () => {
@@ -655,7 +734,9 @@ function SuggestedFollows({ imgSrc, userName, userId, followUser, unfollowUser }
         <p className="text-[#A0A0A0] text-sm">Followed By</p>
       </div>
       <button
-        className={`rounded-[4px] px-4 py-1 text-white ${isFollowing ? "bg-gray-500" : "bg-[#ff6132]"}`}
+        className={`rounded-[4px] px-4 py-1 text-white ${
+          isFollowing ? "bg-gray-500" : "bg-[#ff6132]"
+        }`}
         onClick={handleFollow}
       >
         {isFollowing ? "Following" : "Follow"}
@@ -664,7 +745,14 @@ function SuggestedFollows({ imgSrc, userName, userId, followUser, unfollowUser }
   );
 }
 
-function SuggestedGroups({ imgSrc, group_name, groupId, isMember, joinGroup, leaveGroup }) {
+function SuggestedGroups({
+  imgSrc,
+  group_name,
+  groupId,
+  isMember,
+  joinGroup,
+  leaveGroup,
+}) {
   const [isGroupMember, setIsGroupMember] = useState(isMember);
 
   const handleJoinLeave = async () => {
@@ -684,7 +772,9 @@ function SuggestedGroups({ imgSrc, group_name, groupId, isMember, joinGroup, lea
         <p className="text-[#A0A0A0] text-sm">Kashaf House</p>
       </div>
       <button
-        className={`rounded-[4px] px-4 py-1 text-white ${isGroupMember ? "bg-gray-500" : "bg-[#ff6132]"}`}
+        className={`rounded-[4px] px-4 py-1 text-white ${
+          isGroupMember ? "bg-gray-500" : "bg-[#ff6132]"
+        }`}
         onClick={handleJoinLeave}
       >
         {isGroupMember ? "Leave" : "Join"}

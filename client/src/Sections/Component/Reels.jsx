@@ -10,24 +10,21 @@ import {
   FaVolumeUp,
   FaVolumeMute,
 } from "react-icons/fa";
-import "./Reels.css"; // Ensure you update this file as shown below
+import "./Reels.css";
 
 // Reels Component
 const Reels = ({ posts = [] }) => {
-  const [currentReel, setCurrentReel] = useState(0); // active reel index
+  const [currentReel, setCurrentReel] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const playerRef = useRef(null);
-  const containerRef = useRef(null);
-
-  // Maintain like state per reel (you can later integrate with an API)
   const [liked, setLiked] = useState({});
 
   const toggleLike = (reelId) => {
     setLiked((prev) => ({ ...prev, [reelId]: !prev[reelId] }));
   };
 
-  // Handle scroll to switch reels
+  // Switch reels on scroll
   const handleScroll = (e) => {
     const { deltaY } = e;
     if (deltaY > 0 && currentReel < posts.length - 1) {
@@ -37,17 +34,15 @@ const Reels = ({ posts = [] }) => {
     }
   };
 
-  // Toggle play/pause
   const togglePlay = () => {
     setIsPlaying((prev) => !prev);
   };
 
-  // Toggle mute/unmute
   const toggleMute = () => {
     setIsMuted((prev) => !prev);
   };
 
-  // When the reel changes, reset the video to start and autoplay
+  // Reset video on reel change
   useEffect(() => {
     if (playerRef.current) {
       playerRef.current.seekTo(0);
@@ -57,7 +52,6 @@ const Reels = ({ posts = [] }) => {
 
   return (
     <div
-      ref={containerRef}
       className="reels-container"
       onWheel={handleScroll}
     >
@@ -68,7 +62,6 @@ const Reels = ({ posts = [] }) => {
             className={`reel ${index === currentReel ? "active" : ""}`}
             style={{ display: index === currentReel ? "block" : "none" }}
           >
-            {/* Video Player */}
             <ReactPlayer
               ref={playerRef}
               url={
@@ -86,7 +79,7 @@ const Reels = ({ posts = [] }) => {
 
             {/* Overlay for info and controls */}
             <div className="overlay">
-              {/* Left side: User info and description */}
+              {/* Top-left: User info and description */}
               <div className="reel-info">
                 <div className="user-info">
                   <img
@@ -116,9 +109,7 @@ const Reels = ({ posts = [] }) => {
                     size={28}
                     color={liked[reel.id] ? "red" : "white"}
                   />
-                  <span>
-                    {reel.likes + (liked[reel.id] ? 1 : 0)}
-                  </span>
+                  <span>{reel.likes + (liked[reel.id] ? 1 : 0)}</span>
                 </button>
                 <button className="action-button">
                   <FaComment size={28} color="white" />
@@ -130,7 +121,7 @@ const Reels = ({ posts = [] }) => {
                 </button>
               </div>
 
-              {/* Bottom Controls: Play/Pause and Mute/Unmute */}
+              {/* Bottom controls: Play/Pause and Mute/Unmute */}
               <div className="bottom-controls">
                 <button onClick={togglePlay} className="control-button">
                   {isPlaying ? (
@@ -162,7 +153,6 @@ const App = () => {
   const [posts, setPosts] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Fetch posts from your API
   const fetchPosts = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -183,7 +173,6 @@ const App = () => {
 
       if (response.ok) {
         const data = await response.json();
-        // Only include posts that have video media
         const videoPosts = data.posts.filter((post) =>
           post.media.some((media) => media.mediaType.startsWith("video"))
         );
@@ -209,7 +198,10 @@ const App = () => {
         {errorMessage ? (
           <p className="error-message">{errorMessage}</p>
         ) : (
-          <Reels posts={posts} />
+          // Wrap the reels inside a mobile-style container
+          <div className="mobile-reels-container">
+            <Reels posts={posts} />
+          </div>
         )}
       </div>
     </div>

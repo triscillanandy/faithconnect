@@ -32,7 +32,7 @@ const LoggedInSideBar = () => {
             onClick={() => handleNavigation("/search")}
           />
           <FaPrayingHands
-            className="cursor-pointer w-6 h-6 md:w-8 md:h-8 text-gray-600 hover:text-gray-900 transition-colors"
+            className="hidden md:flex cursor-pointer w-6 h-6 md:w-8 md:h-8 text-gray-600 hover:text-gray-900 transition-colors"
             title="Pray"
             onClick={() => handleNavigation("/pray")}
           />
@@ -52,7 +52,7 @@ const LoggedInSideBar = () => {
             onClick={() => handleNavigation("/chats")}
           />
           <FaBell
-            className="cursor-pointer w-6 h-6 md:w-8 md:h-8 text-gray-600 hover:text-gray-900 transition-colors"
+            className="hidden md:flex cursor-pointer w-6 h-6 md:w-8 md:h-8 text-gray-600 hover:text-gray-900 transition-colors"
             title="Notifications"
           />
           <FaUser

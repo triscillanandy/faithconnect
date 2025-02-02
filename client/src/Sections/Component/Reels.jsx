@@ -19,35 +19,38 @@ const Reels = ({ posts = [] }) => {
   const [isMuted, setIsMuted] = useState(true);
   const playerRef = useRef(null);
   const [liked, setLiked] = useState({});
-  const [touchStart, setTouchStart] = useState(0); // Track the touch start position
+  const [touchStart, setTouchStart] = useState(0);
 
   const toggleLike = (reelId) => {
     setLiked((prev) => ({ ...prev, [reelId]: !prev[reelId] }));
   };
 
-  // Switch reels on scroll (mouse wheel or swipe)
-  const handleScroll = (e) => {
+  // Switch reels on scroll (mouse wheel)
+  const handleWheel = (e) => {
+    // Prevent default scroll behavior
+    e.preventDefault();
     const { deltaY } = e;
     if (deltaY > 0 && currentReel < posts.length - 1) {
-      setCurrentReel(currentReel + 1);
+      setCurrentReel((prev) => prev + 1);
     } else if (deltaY < 0 && currentReel > 0) {
-      setCurrentReel(currentReel - 1);
+      setCurrentReel((prev) => prev - 1);
     }
   };
 
   // Handle touch start for mobile swipe
   const handleTouchStart = (e) => {
-    const touchStartPosition = e.touches[0].clientY;
-    setTouchStart(touchStartPosition);
+    setTouchStart(e.touches[0].clientY);
   };
 
   // Handle touch move for mobile swipe
   const handleTouchMove = (e) => {
+    // Prevent the default scroll behavior
+    e.preventDefault();
     const touchEnd = e.touches[0].clientY;
     if (touchStart - touchEnd > 50 && currentReel < posts.length - 1) {
-      setCurrentReel(currentReel + 1); // Swipe down to go to next reel
+      setCurrentReel((prev) => prev + 1); // Swipe up to go to next reel
     } else if (touchStart - touchEnd < -50 && currentReel > 0) {
-      setCurrentReel(currentReel - 1); // Swipe up to go to previous reel
+      setCurrentReel((prev) => prev - 1); // Swipe down to go to previous reel
     }
   };
 
@@ -67,12 +70,25 @@ const Reels = ({ posts = [] }) => {
     }
   }, [currentReel]);
 
+  // For mobile: attach non-passive event listeners if needed
+  useEffect(() => {
+    const container = document.querySelector(".reels-container");
+    if (container) {
+      // Ensure that touchmove is not passive so preventDefault() can work
+      container.addEventListener("touchmove", handleTouchMove, { passive: false });
+      return () => {
+        container.removeEventListener("touchmove", handleTouchMove);
+      };
+    }
+  }, [touchStart, currentReel]);
+
   return (
     <div
       className="reels-container"
-      onWheel={handleScroll}
+      onWheel={handleWheel}
       onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
+      // You can remove onTouchMove here if you are attaching it manually in useEffect
+      // onTouchMove={handleTouchMove}
     >
       {posts.length > 0 ? (
         posts.map((reel, index) => (
@@ -84,9 +100,8 @@ const Reels = ({ posts = [] }) => {
             <ReactPlayer
               ref={playerRef}
               url={
-                reel.media.find((media) =>
-                  media.mediaType.startsWith("video")
-                ).mediaUrl
+                reel.media.find((media) => media.mediaType.startsWith("video"))
+                  .mediaUrl
               }
               playing={index === currentReel && isPlaying}
               muted={isMuted}
@@ -166,8 +181,6 @@ const Reels = ({ posts = [] }) => {
     </div>
   );
 };
-
-
 
 // Parent Component (App)
 const App = () => {

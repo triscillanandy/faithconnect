@@ -11,14 +11,11 @@ import {
   FaVolumeMute,
 } from "react-icons/fa";
 import "./Reels.css";
-
-// Reels Component
 const Reels = ({ posts = [] }) => {
   const [currentReel, setCurrentReel] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [liked, setLiked] = useState({});
-  const [touchStart, setTouchStart] = useState(0);
   const containerRef = useRef(null);
   const playerRefs = useRef([]);
 
@@ -26,12 +23,13 @@ const Reels = ({ posts = [] }) => {
     setLiked((prev) => ({ ...prev, [reelId]: !prev[reelId] }));
   };
 
-  const togglePlay = () => setIsPlaying((prev) => !prev);
   const toggleMute = () => setIsMuted((prev) => !prev);
 
-  // Handle wheel scroll for desktop
+  const handlePlayPause = () => {
+    setIsPlaying((prev) => !prev);
+  };
+
   const handleWheel = (e) => {
-    
     const { deltaY } = e;
     if (deltaY > 0 && currentReel < posts.length - 1) {
       setCurrentReel((prev) => prev + 1);
@@ -40,23 +38,6 @@ const Reels = ({ posts = [] }) => {
     }
   };
 
-  // Handle touch start for mobile swipe
-  const handleTouchStart = (e) => {
-    setTouchStart(e.touches[0].clientY);
-  };
-
-  // Handle touch move for mobile swipe
-  const handleTouchMove = (e) => {
-    e.preventDefault();
-    const touchEnd = e.touches[0].clientY;
-    if (touchStart - touchEnd > 50 && currentReel < posts.length - 1) {
-      setCurrentReel((prev) => prev + 1);
-    } else if (touchStart - touchEnd < -50 && currentReel > 0) {
-      setCurrentReel((prev) => prev - 1);
-    }
-  };
-
-  // Reset video on reel change
   useEffect(() => {
     if (playerRefs.current[currentReel]) {
       playerRefs.current[currentReel].seekTo(0);
@@ -64,25 +45,12 @@ const Reels = ({ posts = [] }) => {
     }
   }, [currentReel]);
 
-  // Attach touch event listeners for mobile
-  useEffect(() => {
-    const container = containerRef.current;
-    if (container) {
-      container.addEventListener("touchmove", handleTouchMove, { passive: false });
-  
-      return () => {
-        container.removeEventListener("touchmove", handleTouchMove);
-      };
-    }
-  }, [touchStart, currentReel]);
-  
-
   return (
     <div
       className="reels-container"
       ref={containerRef}
       onWheel={handleWheel}
-      onTouchStart={handleTouchStart}
+      onClick={handlePlayPause} // Click anywhere in the container will toggle play/pause
     >
       {posts.length > 0 ? (
         posts.map((reel, index) => {
@@ -94,45 +62,27 @@ const Reels = ({ posts = [] }) => {
               className={`reel ${index === currentReel ? "active" : ""}`}
               style={{ display: index === currentReel ? "block" : "none" }}
             >
-              {/* <ReactPlayer
+              <ReactPlayer
                 ref={(el) => (playerRefs.current[index] = el)}
                 url={videoMedia?.mediaUrl}
                 playing={index === currentReel && isPlaying}
                 muted={isMuted}
-                controls={false}
+                loop
                 width="100%"
                 height="100%"
-                loop
                 playsinline
+                pip={false}
                 config={{
                   file: {
                     attributes: {
                       playsInline: true,
-                      webkitPlaysinline: true,
+                      webkitPlaysinline: "true",
+                      disablePictureInPicture: true,
                     },
                   },
                 }}
-              /> */}
-   <ReactPlayer
-              ref={(el) => (playerRefs.current[index] = el)}
-              url={videoMedia?.mediaUrl}
-              playing={index === currentReel && isPlaying}
-              muted={isMuted}
-              loop
-              width="100%"
-              height="100%"
-              playsinline
-              pip={false} // Disable Picture-in-Picture
-              config={{
-                file: {
-                  attributes: {
-                    playsInline: true,
-                    webkitPlaysInline: true,
-                    disablePictureInPicture: true, // Prevent PiP on mobile
-                  },
-                },
-              }}
-            />
+              />
+
               {/* Overlay for info and controls */}
               <div className="overlay">
                 {/* Top-left: User info and description */}
@@ -165,24 +115,17 @@ const Reels = ({ posts = [] }) => {
                     <span>{reel.shares || 0}</span>
                   </button>
                 </div>
+              </div>
 
-                {/* Bottom controls: Play/Pause and Mute/Unmute */}
-                <div className="bottom-controls">
-                  <button onClick={togglePlay} className="control-button">
-                    {isPlaying ? (
-                      <FaPause size={24} color="white" />
-                    ) : (
-                      <FaPlay size={24} color="white" />
-                    )}
-                  </button>
-                  <button onClick={toggleMute} className="control-button">
-                    {isMuted ? (
-                      <FaVolumeMute size={24} color="white" />
-                    ) : (
-                      <FaVolumeUp size={24} color="white" />
-                    )}
-                  </button>
-                </div>
+              {/* Move the mute button to the top-right corner */}
+              <div className="bottom-controls">
+                <button onClick={toggleMute} className="control-button">
+                  {isMuted ? (
+                    <FaVolumeMute size={24} color="white" />
+                  ) : (
+                    <FaVolumeUp size={24} color="white" />
+                  )}
+                </button>
               </div>
             </div>
           );
@@ -193,6 +136,7 @@ const Reels = ({ posts = [] }) => {
     </div>
   );
 };
+
 
 // Parent Component (App)
 const App = () => {

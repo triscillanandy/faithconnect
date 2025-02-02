@@ -17,21 +17,24 @@ import no from "./chat-images/no.png";
 import blocked from "./chat-images/blocked.png";
 import LoggedInSideBar from "./LoggedInSideBar";
 
+
 const Chats = () => {
   const [selectedChat, setSelectedChat] = useState(null);
-  const [showFilter, setShowFilter] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [message, setMessage] = useState("");
-  const [conversations, setConversations] = useState([]);
-  const [groupsList, setGroupsList] = useState([]);
-  const [socket, setSocket] = useState(null);
   const [showNewGroupPopup, setShowNewGroupPopup] = useState(false);
   const [showNewCommunityPopup, setShowNewCommunityPopup] = useState(false);
-  const [suggestedUsers, setSuggestedUsers] = useState([]);
   const [showSuggestedUsersModal, setShowSuggestedUsersModal] = useState(false);
+  const [showFilter, setShowFilter] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isMobileView, setIsMobileView] = useState(window.innerWidth <= 833);
+  const [socket, setSocket] = useState(null);
+  const [conversations, setConversations] = useState([]);
+  const [groupsList, setGroupsList] = useState([]);
+  const [suggestedUsers, setSuggestedUsers] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [message, setMessage] = useState("");
   const messageRef = useRef(null);
+
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user:detail"));
@@ -418,19 +421,24 @@ const filteredGroups = [...groupsWithConversations, ...groupsWithoutConversation
     user.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileView(window.innerWidth <= 833);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-  
   return (
-    
     <div className="flex gap-24 max-[833px]:flex-col-reverse">
-   <div className="w-6"> {/* Fixed width for sidebar */}
-      <LoggedInSideBar />
-    </div>
-  
-    <div className="w-full flex">
-      {/* Left Side: Chat List */}
-      <div className="w-1/3">
-        <div>
+      {/* Sidebar */}
+      <div className="w-6 max-[833px]:hidden">
+        <LoggedInSideBar />
+      </div>
+
+      {/* Chat List */}
+      <div className={`w-full flex ${isMobileView && selectedChat ? "hidden" : ""}`}>
+        <div className="w-full">
           <div className="flex items-center justify-between max-[613px]:px-4 px-20 mt-3">
             <h1 className="font-bold text-2xl">Chats</h1>
             <img
@@ -497,7 +505,7 @@ const filteredGroups = [...groupsWithConversations, ...groupsWithoutConversation
               />
             ))}
 
-            {groupsWithConversations.map((group) => (
+            {groupsList.map((group) => (
               <Chat
                 key={group.id}
                 imgSrc="group-icon.png"
@@ -510,103 +518,55 @@ const filteredGroups = [...groupsWithConversations, ...groupsWithoutConversation
         </div>
       </div>
 
-
-        <div className="w-2/3">
-          {selectedChat || selectedUser ? (
-            <ChatDetails
-              selectedChat={selectedChat}
-              messages={messages}
-              message={message}
-              setMessage={setMessage}
-              handleSendMessage={handleSendMessage}
-              goBack={() => {
-                setSelectedChat(null);
-                setSelectedUser(null);
-              }}
-              messageRef={messageRef}
-              selectedUser={selectedUser}
-            />
-          ) : (
-            <div className="mt-4 flex justify-center items-center h-full">
-              <button
-                onClick={() => setShowSuggestedUsersModal(true)}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-              >
-                Start Chat
-              </button>
-            </div>
-          )}
-        </div>
+      {/* Chat Details */}
+      <div className={`w-full ${isMobileView && !selectedChat ? "hidden" : ""}`}>
+        {selectedChat || selectedUser ? (
+          <ChatDetails
+            selectedChat={selectedChat}
+            messages={messages}
+            message={message}
+            setMessage={setMessage}
+            handleSendMessage={handleSendMessage}
+            goBack={() => {
+              setSelectedChat(null);
+              setSelectedUser(null);
+            }}
+            messageRef={messageRef}
+            selectedUser={selectedUser}
+          />
+        ) : (
+          <div className="mt-4 flex justify-center items-center h-full">
+            <button
+              onClick={() => setShowSuggestedUsersModal(true)}
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+            >
+              Start Chat
+            </button>
+          </div>
+        )}
       </div>
 
+      {/* Modals */}
       {showNewGroupPopup && <NewGroupPopup onClose={() => setShowNewGroupPopup(false)} />}
       {showNewCommunityPopup && <NewCommunityPopup onClose={() => setShowNewCommunityPopup(false)} />}
-
       {showSuggestedUsersModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-    <div className="bg-white p-5 rounded-lg w-96">
-      <h2 className="text-xl font-bold mb-4">Start a New Chat</h2>
-      <input
-        type="text"
-        placeholder="Search users or groups..."
-        className="w-full px-3 py-2 border rounded-lg mb-4"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-      />
-      <div className="overflow-y-auto max-h-60">
-        {/* Suggested Users */}
-        <h3 className="font-bold mb-2">Users</h3>
-        {filteredSuggestedUsers.map((user) => (
-          <div
-            key={user.id}
-            className="flex items-center mb-4 cursor-pointer"
-            onClick={() => {
-              handleStartChat(user); // Automatically create a conversation
-              setShowSuggestedUsersModal(false); // Close the modal
-            }}
-          >
-            <img className="w-10 h-10 rounded-full" src={user.profilePicture || "default.png"} alt={user.username} />
-            <div className="ml-4">
-              <p className="font-bold">{user.username}</p>
-            </div>
-          </div>
-        ))}
-
-        {/* Groups */}
-        <h3 className="font-bold mb-2 mt-4">Groups</h3>
-        {filteredGroups.map((group) => (
-          <div
-            key={group.id}
-            className="flex items-center mb-4 cursor-pointer"
-            onClick={() => {
-              handleGroupSelection(group); // Handle group selection
-              setShowSuggestedUsersModal(false); // Close the modal
-            }}
-          >
-            <img className="w-10 h-10 rounded-full" src="group-icon.png" alt={group.group_name} />
-            <div className="ml-4">
-              <p className="font-bold">{group.group_name}</p>
-              <p className="text-sm text-gray-500">{group.role === "admin" ? "Admin" : "Member"}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-      <button
-        onClick={() => setShowSuggestedUsersModal(false)}
-        className="mt-4 bg-red-500 text-white px-4 py-2 rounded-lg"
-      >
-        Close
-      </button>
-    </div>
-  </div>
-)}
+        <SuggestedUsersModal
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          filteredSuggestedUsers={suggestedUsers.filter((user) =>
+            user.username.toLowerCase().includes(searchQuery.toLowerCase())
+          )}
+          filteredGroups={groupsList}
+          handleStartChat={handleStartChat}
+          handleGroupSelection={handleGroupSelection}
+          onClose={() => setShowSuggestedUsersModal(false)}
+        />
+      )}
     </div>
   );
 };
 
-// Other components (ShowFilter, FilterTags, Chat, ChatDetails, NewGroupPopup, NewCommunityPopup) remain unchanged.
 export default Chats;
-
 
 
 function Chat({ imgSrc, userName, userMessage, onClick }) {

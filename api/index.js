@@ -13,8 +13,11 @@ import { Server as socketIo } from 'socket.io';  // Correct way to import socket
 dotenv.config(); // Load environment variables
 
 // Middleware
+// var corsOptions = {
+//   origin: 'http://localhost:5173',  // Adjust your frontend URL if needed
+// };
 var corsOptions = {
-  origin: 'https://faithconnect-1-6k42.onrender.com',  // Adjust your frontend URL if needed
+  origin: process.env.FRONTEND_URL  // Adjust your frontend URL if needed
 };
 const app = express();
 app.use(express.json());

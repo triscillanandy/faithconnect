@@ -12,6 +12,9 @@ import LoggedInUserScreen from "./Sections/Component/LoggedInUserScreen";
 import UserProfile from "./Sections/Component/UserProfile";
 import "./App.css";
 import Search from "./Sections/Component/Search";
+import ContentDetail from "./Sections/Component/ContentDetail";
+import CategoryPage from "./Sections/Component/CategoryPage";
+
 import Devotional from "./Sections/Component/Devotional";
 import LandingPage1 from "./Sections/LandingPage1";
 import Posts from "./Sections/Component/Posts";
@@ -40,6 +43,8 @@ function App() {
           <Route path="/email-popup" element={<EmailInstruction />} />
           <Route path="/user-profile" element={<UserProfile />} />
           <Route path="/search" element={<Search />} />
+          <Route path="/content/:type/:id" element={<ContentDetail />} />
+          <Route path="/category/:category" element={<CategoryPage />} />
           <Route path="/devotional" element={<Devotional />} />
           <Route path="/post" element={<Posts />} />
           <Route path="/edit-profile" element={<EditProfile />} />
